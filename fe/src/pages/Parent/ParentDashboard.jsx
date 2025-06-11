@@ -91,7 +91,6 @@ const ParentDashboard = () => {
 
   return (
     <div>
-      <Header />
       <div className="min-h-screen bg-gray-50 p-6">
         {/* Children List */}
         <div className="mb-8">

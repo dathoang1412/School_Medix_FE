@@ -12,6 +12,8 @@ import NurseDashboard from "../pages/Nurse/NurseDashboard";
 import ParentLayout from "../layouts/ParentLayout";
 import SendDrug from "../pages/Parent/SendDrug";
 import SendDrugForm from "../pages/Parent/SendDrugForm";
+import StudentInfo from "../pages/Parent/StudentInfo";
+import VaccineInfo from "../pages/Parent/VaccineInfo";
 
 const routes = createBrowserRouter([
   {
@@ -60,12 +62,24 @@ const routes = createBrowserRouter([
         element: <ParentLayout />,
         children: [
           {
+            path: "general-information",
+            element: <StudentInfo />,
+          },
+          {
             path: "send-drug",
             element: <SendDrug />,
           },
           {
             path: "send-drug-form",
             element: <SendDrugForm />,
+          },
+          {
+            path: "vaccine-info",
+            element: <VaccineInfo />,
+          },
+          {
+            path: "health-check",
+            element: <HealthCheck />,
           },
         ],
       },

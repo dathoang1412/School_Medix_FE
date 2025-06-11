@@ -1,4 +1,5 @@
 import React from 'react'
+import TabHeader from '../../components/TabHeader'
 
 const SendDrug = () => {
   return (
