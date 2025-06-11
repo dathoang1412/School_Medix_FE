@@ -69,6 +69,7 @@ const Header = () => {
               onClick={() => {
                 if (getUser()) {
                   navigate('/' + getUser()?.app_metadata?.role);
+                  console.log("User data: ", getUser())
                 } else {
                   navigate("/login");
                 }

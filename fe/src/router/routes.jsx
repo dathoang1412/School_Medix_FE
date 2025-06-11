@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
-import HomePage from '../pages/HomePage'
+import HomePage from "../pages/HomePage";
 import Login from "../pages/Auth/Login";
 import PrivateRoute from "./PrivateRoute";
 import AdminLayout from "../layouts/AdminLayout";
@@ -19,8 +19,8 @@ const routes = createBrowserRouter([
     element: <MainLayout />,
     children: [
       {
-        index: true, 
-        element: <HomePage/>,
+        index: true,
+        element: <HomePage />,
       },
       {
         path: "login",
@@ -30,7 +30,7 @@ const routes = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <PrivateRoute allowedRoles={["admin"]} currentRole={"admin"}/>,
+    element: <PrivateRoute allowedRoles={["admin"]} currentRole={"admin"} />,
     children: [
       {
         element: <AdminLayout />,
@@ -48,49 +48,49 @@ const routes = createBrowserRouter([
     ],
   },
   {
-    path: "/parent", 
-    element: <PrivateRoute allowedRoles={["parent"]} currentRole={"parent"}/>,
+    path: "/parent",
+    element: <PrivateRoute allowedRoles={["parent"]} currentRole={"parent"} />,
     children: [
-       {
-        path: "/parent",
+      {
+        path: "",
+        element: <ParentDashboard />,
+      },
+      {
+        path: "edit",
         element: <ParentLayout />,
         children: [
           {
-            path: '',
-            element: <ParentDashboard/>
+            path: "send-drug",
+            element: <SendDrug />,
           },
           {
-            path: 'send-drug',
-            element: <SendDrug/>
+            path: "send-drug-form",
+            element: <SendDrugForm />,
           },
-          {
-            path: 'send-drug-form',
-            element: <SendDrugForm/>
-          }
-        ]
-       } 
-    ]
+        ],
+      },
+    ],
   },
   {
     path: "/nurse",
-    element: <PrivateRoute allowedRoles={["nurse"]} currentRole={"nurse"}/>,
+    element: <PrivateRoute allowedRoles={["nurse"]} currentRole={"nurse"} />,
     children: [
       {
         path: "/nurse",
-        element: <AdminLayout/>,
+        element: <AdminLayout />,
         children: [
           {
             path: "",
-            element: <NurseDashboard/>
+            element: <NurseDashboard />,
           },
           {
             path: "send-drug",
             element: <SendDrugManagementNurse />,
-          }
-        ]
-      }
-    ]
-  }
+          },
+        ],
+      },
+    ],
+  },
 ]);
 
 export default routes;

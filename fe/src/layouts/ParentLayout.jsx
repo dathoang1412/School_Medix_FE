@@ -7,6 +7,9 @@ const ParentLayout = () => {
     <div>
       <Header />
       <div>
+        hello
+      </div>
+      <div>
         <Outlet />
       </div>
     </div>

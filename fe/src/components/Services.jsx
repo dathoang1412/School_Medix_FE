@@ -1,10 +1,16 @@
+import { useNavigate } from "react-router-dom";
+
 export const Services = ({ services }) => {
+  const navigate = useNavigate();
   return (
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <div
+              onClick={() => {
+                navigate(service.path)
+              }}
               key={index}
               className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300"
             >
