@@ -1,189 +1,258 @@
-import { useState } from 'react';
-import TabHeader from '../../components/TabHeader';
+import { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
+import axiosClient from "../../config/axiosClient";
+import { getUser } from "../../service/authService";
+import { useNavigate } from "react-router-dom";
 
 const SendDrugForm = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    diseaseName: '',
-    receiveDate: '',
-    prescription_file_url: null,
-    drugMethod: '',
-    intakeDate: '',
-    addDrug: '',
-    note: ''
+    diagnosis: "",
+    scheduleSendDate: "",
+    intakeDate: "",
+    note: "",
+    requestItems: [{ name: "", intakeTemplateTime: [], dosageUsage: "" }],
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [currChild, setCurrChild] = useState({});
 
-  const handleInputChange = (e) => {
-    const { name, value, type, files } = e.target;
-    setFormData(prev => ({
+  useEffect(() => {
+    const fetchChildData = async () => {
+      const user = getUser();
+      if (!user?.id) {
+        setError("Vui lòng đăng nhập để gửi đơn thuốc.");
+        return;
+      }
+
+      const selectedChild = localStorage.getItem("selectedChild");
+      if (!selectedChild) {
+        setError("Vui lòng chọn một đứa trẻ để gửi đơn thuốc.");
+        return;
+      }
+
+      const child = JSON.parse(selectedChild);
+      setCurrChild(child);
+    };
+
+    fetchChildData();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRequestItemChange = (index, e) => {
+    const { name, value } = e.target;
+    const newRequestItems = [...formData.requestItems];
+    newRequestItems[index][name] = value;
+    setFormData((prev) => ({ ...prev, requestItems: newRequestItems }));
+  };
+
+  const handleAddRequestItem = () => {
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'file' ? files[0] : value
+      requestItems: [...prev.requestItems, { name: "", intakeTemplateTime: [], dosageUsage: "" }],
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleIntakeTimeChange = (index, e) => {
+    const times = e.target.value.split(",").map((t) => t.trim());
+    const newRequestItems = [...formData.requestItems];
+    newRequestItems[index].intakeTemplateTime = times;
+    setFormData((prev) => ({ ...prev, requestItems: newRequestItems }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form data:', formData);
-    alert('Đơn thuốc đã được gửi thành công!');
+    setIsLoading(true);
+    const user = getUser();
+    if (!currChild?.id || !user?.id) {
+      setError("Thông tin người dùng hoặc học sinh không hợp lệ.");
+      setIsLoading(false);
+      return;
+    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("student_id", currChild.id);
+    formDataToSend.append("create_by", user.id);
+    formDataToSend.append("diagnosis", formData.diagnosis);
+    formDataToSend.append("schedule_send_date", formData.scheduleSendDate);
+    formDataToSend.append("intake_date", formData.intakeDate);
+    formDataToSend.append("note", formData.note);
+    formDataToSend.append("status", "PROCESSING");
+    formData.requestItems.forEach((item, index) => {
+      formDataToSend.append(`request_items[${index}][name]`, item.name);
+      formDataToSend.append(`request_items[${index}][intake_template_time]`, JSON.stringify(item.intakeTemplateTime));
+      formDataToSend.append(`request_items[${index}][dosage_usage]`, item.dosageUsage);
+    });
+
+    try {
+      const response = await axiosClient.post("/send-drug-request", formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (response.data.error) {
+        throw new Error(response.data.message);
+      }
+      alert("Gửi đơn thuốc thành công!");
+      navigate("/drug-table");
+    } catch (error) {
+      console.error("Error submitting drug request:", error);
+      setError(error.message || "Không thể gửi đơn thuốc. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <>
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Đơn dặn thuốc cho học sinh</h1>
-          <p className="text-blue-100 text-lg">Vui lòng điền đầy đủ thông tin bên dưới</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-sm">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Đơn Thuốc Học Sinh</h2>
+        <p className="text-sm text-gray-500 text-center mb-6">Vui lòng điền đầy đủ thông tin dưới đây</p>
 
-        {/* Form Content */}
-        <div className="p-8">
-          <div className="space-y-8">
-            {/* Thông tin bệnh */}
-            <div className="bg-gray-50 p-6 rounded-xl">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6 pb-3 border-b-2 border-blue-500 inline-block">
-                Thông tin bệnh
-              </h2>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="diseaseName" className="block text-sm font-medium text-gray-700">
-                    Chuẩn đoán bệnh: <span className="text-red-500">*</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    id="diseaseName" 
-                    name="diseaseName" 
-                    required 
-                    value={formData.diseaseName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 outline-none"
-                    placeholder="Nhập chuẩn đoán bệnh..."
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="receiveDate" className="block text-sm font-medium text-gray-700">
-                    Ngày nhận thuốc: <span className="text-red-500">*</span>
-                  </label>
-                  <input 
-                    type="date" 
-                    id="receiveDate" 
-                    name="receiveDate" 
-                    required 
-                    value={formData.receiveDate}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Chi tiết thuốc */}
-            <div className="bg-blue-50 p-6 rounded-xl">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6 pb-3 border-b-2 border-purple-500 inline-block">
-                Chi tiết thuốc
-              </h2>
-              
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label htmlFor="prescription_file_url" className="block text-sm font-medium text-gray-700">
-                    File đơn thuốc: <span className="text-red-500">*</span>
-                  </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors duration-200">
-                    <input 
-                      type="file" 
-                      id="prescription_file_url" 
-                      name="prescription_file_url" 
-                      required 
-                      onChange={handleInputChange}
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
-                    <p className="text-gray-500 text-sm mt-2">Chọn file PDF, JPG hoặc PNG</p>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label htmlFor="drugMethod" className="block text-sm font-medium text-gray-700">
-                      Cách dùng và liều lượng: <span className="text-red-500">*</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      id="drugMethod" 
-                      name="drugMethod" 
-                      required 
-                      value={formData.drugMethod}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 outline-none"
-                      placeholder="VD: Uống 1 viên sau ăn, ngày 2 lần"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="intakeDate" className="block text-sm font-medium text-gray-700">
-                      Thời điểm uống thuốc: <span className="text-red-500">*</span>
-                    </label>
-                    <input 
-                      type="date" 
-                      id="intakeDate" 
-                      name="intakeDate" 
-                      required 
-                      value={formData.intakeDate}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="addDrug" className="block text-sm font-medium text-gray-700">
-                    Thêm thuốc:
-                  </label>
-                  <textarea 
-                    id="addDrug" 
-                    name="addDrug" 
-                    rows="4"
-                    value={formData.addDrug}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 outline-none resize-vertical"
-                    placeholder="Thông tin thuốc bổ sung (nếu có)..."
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="note" className="block text-sm font-medium text-gray-700">
-                    Ghi chú:
-                  </label>
-                  <textarea 
-                    id="note" 
-                    name="note" 
-                    rows="3"
-                    value={formData.note}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 outline-none resize-vertical"
-                    placeholder="Ghi chú thêm (nếu có)..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <div className="flex justify-center pt-6">
-              <button 
-                type="submit" 
-                onClick={handleSubmit}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300"
-              >
-                Gửi đơn thuốc
-              </button>
+        <form onSubmit={handleSubmit}>
+          {/* Thông tin học sinh (đã disabled từ useEffect) */}
+          <div className="mb-6 p-4 border rounded-lg">
+            <h3 className="text-lg font-medium text-gray-700 mb-4">Thông tin học sinh</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <label className="block text-sm font-medium text-gray-700">Họ và tên học sinh</label>
+              <input
+                type="text"
+                name="studentName"
+                value={currChild?.name || ""}
+                placeholder="Họ và tên học sinh"
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled
+              />
+              <label className="block text-sm font-medium text-gray-700">Lớp</label>
+              <input
+                type="text"
+                name="class"
+                value={currChild?.class || "Chưa có thông tin"}
+                placeholder="Lớp"
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled
+              />
             </div>
           </div>
-        </div>
+
+          {/* Thông tin gửi */}
+          <div className="mb-6 p-4 border rounded-lg">
+            <h3 className="text-lg font-medium text-gray-700 mb-4">Thông tin gửi</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <label className="block text-sm font-medium text-gray-700">Tên người gửi</label>
+              <input
+                type="text"
+                name="parentName"
+                value={getUser()?.user_metadata?.name || ""}
+                placeholder="Tên gửi"
+                className="w-full bg-gray-300 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled
+              />
+              <label className="block text-sm font-medium text-gray-700">Ngày hẹn gửi thuốc</label>
+              <input
+                type="date"
+                name="scheduleSendDate"
+                value={formData.scheduleSendDate}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <label className="block text-sm font-medium text-gray-700">Ngày cho uống thuốc</label>
+              <input
+                type="date"
+                name="intakeDate"
+                value={formData.intakeDate}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <label className="block text-sm font-medium text-gray-700">Ghi chú</label>
+              <input
+                type="text"
+                name="note"
+                value={formData.note}
+                onChange={handleChange}
+                placeholder="Ghi chú"
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Chỉ thị thuốc */}
+          <div className="mb-6 p-4 border rounded-lg">
+            <h3 className="text-lg font-medium text-gray-700 mb-4">Chỉ thị thuốc</h3>
+            {formData.requestItems.map((item, index) => (
+              <div key={index} className="grid grid-cols-1 gap-4 mb-4 p-4 border rounded-lg">
+                <label className="block text-sm font-medium text-gray-700">Tên thuốc</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={item.name}
+                  onChange={(e) => handleRequestItemChange(index, e)}
+                  placeholder="Tên thuốc"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+                <label className="block text-sm font-medium text-gray-700">Cách sử dụng</label>
+                <input
+                  type="text"
+                  name="dosageUsage"
+                  value={item.dosageUsage}
+                  onChange={(e) => handleRequestItemChange(index, e)}
+                  placeholder="Cách sử dụng (VD: Uống 1 lần/ngày)"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+                <label className="block text-sm font-medium text-gray-700">Thời gian uống (nhập nhiều thời gian cách nhau bằng dấu phẩy)</label>
+                <input
+                  type="text"
+                  name="intakeTemplateTime"
+                  value={item.intakeTemplateTime.join(", ")}
+                  onChange={(e) => handleIntakeTimeChange(index, e)}
+                  placeholder="VD: 8h, 12h, 18h"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={handleAddRequestItem}
+              className="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" /> Thêm thuốc
+            </button>
+          </div>
+
+          {/* Submit Buttons */}
+          <div className="flex justify-between">
+            <button
+              type="button"
+              onClick={() => navigate("/drug-table")}
+              className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
+            >
+              {isLoading ? "Đang gửi..." : "Gửi đơn thuốc"}
+            </button>
+          </div>
+        </form>
+
+        {error && (
+          <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
       </div>
     </div>
-  </>
-  )
-}
+  );
+};
 
-export default SendDrugForm
+export default SendDrugForm;

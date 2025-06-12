@@ -1,30 +1,48 @@
-const TabHeader = ({ activeIndex }) =>{
-    const services = [
-    "Thông tin cá nhân",
-    "Thông tin tiêm chủng",
-    "Thông tin bệnh",
-    "Khám sức khỏe định kỳ",
-    "Đơn thuốc gửi",
+import { NavLink } from "react-router-dom";
+
+const TabHeader = () => {
+  const menu = [
+    {
+      label: "Thông tin cá nhân",
+      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/general-information`,
+    },
+    {
+      label: "Thông tin tiêm chủng",
+      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/vaccine-info`,
+    },
+    {
+      label: "Khám sức khỏe định kỳ",
+      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/health-check`,
+    },
+    {
+      label: "Gửi thuốc cho nhà trường",
+      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/send-drug`,
+    },
+    {
+      label: "Hồ sơ sức khỏe",
+      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/health-record`,
+    },
   ];
-    return (
-      <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">Xin chào, phụ huynh Phạm Thành Phúc</h1>
-        <ul className="flex flex-wrap gap-2 border-b border-gray-200 mb-4">
-          {services.map((service, index) => (
-            <li key={index}>
-              <div
-                className={`px-3 py-2 rounded-t-md transition-colors duration-200
-                  ${index === activeIndex
-                    ? "text-blue-600 font-semibold border-b-2 border-blue-600 bg-blue-50"
-                    : "text-gray-700"
-                  }`}
-              >
-                {service}
-              </div>
-            </li>
-          ))}
-        </ul>
+  return (
+    <nav className="w-full bg-white border-b border-gray-200 shadow-sm pt-5">
+      <div className="max-w-7xl mx-auto flex gap-2 px-2 sm:px-4">
+        {menu.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `px-4 py-3 rounded-t transition font-medium ${
+                isActive
+                  ? "bg-blue-100 text-blue-700 border-b-2 border-blue-600"
+                  : "text-gray-700 hover:bg-blue-50"
+              }`
+            }
+          >
+            {item.label}
+          </NavLink>
+        ))}
       </div>
-    )
-}
+    </nav>
+  );
+};
 export default TabHeader;

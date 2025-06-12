@@ -3,11 +3,6 @@ import { User, ChevronRight } from 'lucide-react';
 import TabHeader from '../../components/TabHeader';
 export const StudentInfo = () => {
 
-  const child = {
-    name: "Nguyễn Minh An",
-    class: "Lớp 3A",
-    image: "Anh học sinh",
-  };
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4">
       {/* Title & Tabs */}

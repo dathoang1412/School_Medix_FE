@@ -1,62 +1,58 @@
 import { useState, useCallback, useEffect } from "react";
-import {
-  Heart,
-  Calendar,
-  Activity,
-  Pill,
-  Syringe,
-  BarChart3,
-} from "lucide-react";
+import { Heart, Calendar, Activity, Pill, Syringe, BarChart3 } from "lucide-react";
 import { Services } from "../../components/Services";
 import axiosClient from "../../config/axiosClient";
 import { getUser } from "../../service/authService";
 import Header from "../../components/Header";
 
-const services = [
-  {
-    icon: <Syringe className="w-8 h-8 text-green-600" />,
-    title: "Tiêm Chủng",
-    description: "Theo dõi và cập nhật lịch tiêm chủng",
-    path: "",
-  },
-  {
-    icon: <Heart className="w-8 h-8 text-red-600" />,
-    title: "Khám sức khỏe định kỳ",
-    description: "Lịch khám và kết quả khám định kỳ",
-    path: "",
-  },
-  {
-    icon: <Activity className="w-8 h-8 text-blue-600" />,
-    title: "Khảo sát y tế",
-    description: "Các khảo sát về tình trạng sức khỏe",
-    path: "",
-  },
-  {
-    icon: <Pill className="w-8 h-8 text-purple-600" />,
-    title: "Gửi thuốc cho nhà trường",
-    description: "Đăng ký và theo dõi thuốc tại trường",
-    info: "1 đơn thuốc đang chờ xác nhận",
-    path: "edit/send-drug-form",
-  },
-  {
-    icon: <Calendar className="w-8 h-8 text-orange-600" />,
-    title: "Tổng quan sức khỏe",
-    description: "Xem tổng quan sức khỏe và lịch sử",
-    path: "",
-  },
-  {
-    icon: <BarChart3 className="w-8 h-8 text-cyan-600" />,
-    title: "Báo cáo sức khỏe",
-    description: "Xem báo cáo tổng quan sức khỏe",
-    path: "",
-  },
-];
-
 const ParentDashboard = () => {
-  const [selectedChild, setSelectedChild] = useState(null);
+  const [selectedChild, setSelectedChild] = useState(() => {
+    const savedChild = localStorage.getItem("selectedChild");
+    return savedChild ? JSON.parse(savedChild) : null;
+  });
   const [children, setChildren] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const services = [
+    {
+      icon: <Syringe className="w-8 h-8 text-green-600" />,
+      title: "Tiêm Chủng",
+      description: "Theo dõi và cập nhật lịch tiêm chủng",
+      path: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-info` : "#",
+    },
+    {
+      icon: <Heart className="w-8 h-8 text-red-600" />,
+      title: "Khám sức khỏe định kỳ",
+      description: "Lịch khám và kết quả khám định kỳ",
+      path: selectedChild ? `/parent/edit/${selectedChild.id}/health-check` : "#",
+    },
+    {
+      icon: <Activity className="w-8 h-8 text-blue-600" />,
+      title: "Khảo sát y tế",
+      description: "Các khảo sát về tình trạng sức khỏe",
+      path: selectedChild ? `/parent/edit/${selectedChild.id}/survey` : "#",
+    },
+    {
+      icon: <Pill className="w-8 h-8 text-purple-600" />,
+      title: "Gửi thuốc cho nhà trường",
+      description: "Đăng ký và theo dõi thuốc tại trường",
+      info: "1 đơn thuốc đang chờ xác nhận",
+      path: selectedChild ? `/parent/edit/${selectedChild.id}/send-drug` : "#",
+    },
+    {
+      icon: <Calendar className="w-8 h-8 text-orange-600" />,
+      title: "Tổng quan sức khỏe",
+      description: "Xem tổng quan sức khỏe và lịch sử",
+      path: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
+    },
+    {
+      icon: <BarChart3 className="w-8 h-8 text-cyan-600" />,
+      title: "Báo cáo sức khỏe",
+      description: "Xem báo cáo tổng quan sức khỏe",
+      path: selectedChild ? `/parent/edit/${selectedChild.id}/health-check` : "#",
+    },
+  ];
 
   useEffect(() => {
     const fetchChildren = async () => {
@@ -69,6 +65,7 @@ const ParentDashboard = () => {
       setIsLoading(true);
       try {
         const res = await axiosClient.get(`/parent/${user.id}/student`);
+        console.log("Children data: ", res.data.data);
         setChildren(res.data.data || []);
       } catch (error) {
         console.error("Error at Parent Dashboard:", error);
@@ -82,8 +79,10 @@ const ParentDashboard = () => {
   }, []);
 
   const handleSelectChild = useCallback((index) => {
-    setSelectedChild(index);
-  }, []);
+    const child = children[index];
+    setSelectedChild(child);
+    localStorage.setItem("selectedChild", JSON.stringify(child));
+  }, [children]);
 
   const getInitials = (name) => {
     return name?.charAt(0)?.toUpperCase() || "?";
@@ -91,6 +90,7 @@ const ParentDashboard = () => {
 
   return (
     <div>
+      <Header />
       <div className="min-h-screen bg-gray-50 p-6">
         {/* Children List */}
         <div className="mb-8">
@@ -113,29 +113,27 @@ const ParentDashboard = () => {
                   key={child.id || index}
                   onClick={() => handleSelectChild(index)}
                   className={`
-                  bg-white p-4 rounded-lg shadow-sm border-2 cursor-pointer
-                  hover:shadow-md transition-all duration-200
-                  ${
-                    selectedChild === index
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }
-                `}
+                    bg-white p-4 rounded-lg shadow-sm border-2 cursor-pointer
+                    hover:shadow-md transition-all duration-200
+                    ${
+                      selectedChild?.id === child.id
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }
+                  `}
                   aria-label={`Chọn ${child.name}`}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`
-                    w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold
-                    ${selectedChild === index ? "bg-blue-500" : "bg-gray-400"}
-                  `}
+                        w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold
+                        ${selectedChild?.id === child.id ? "bg-blue-500" : "bg-gray-400"}
+                      `}
                     >
                       {getInitials(child.name)}
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-800">
-                        {child.name}
-                      </h3>
+                      <h3 className="font-medium text-gray-800">{child.name}</h3>
                       <p className="text-sm text-gray-600">
                         {child.class || "Chưa có thông tin lớp"}
                       </p>
@@ -155,12 +153,10 @@ const ParentDashboard = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">
             Quản lý y tế học đường{" "}
-            {selectedChild !== null
-              ? `cho ${children[selectedChild]?.name}`
-              : ""}
+            {selectedChild ? `cho ${selectedChild.name}` : ""}
           </h2>
 
-          {selectedChild !== null ? (
+          {selectedChild ? (
             <Services services={services} />
           ) : (
             <div className="text-center py-12">

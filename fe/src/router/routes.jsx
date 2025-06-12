@@ -10,10 +10,10 @@ import ParentDashboard from "../pages/Parent/ParentDashboard";
 import SendDrugManagementNurse from "../pages/Nurse/SendDrugManagementNurse";
 import NurseDashboard from "../pages/Nurse/NurseDashboard";
 import ParentLayout from "../layouts/ParentLayout";
-import SendDrug from "../pages/Parent/SendDrug";
 import SendDrugForm from "../pages/Parent/SendDrugForm";
 import StudentInfo from "../pages/Parent/StudentInfo";
 import VaccineInfo from "../pages/Parent/VaccineInfo";
+import DrugTable from "../pages/Parent/DrugTable";
 
 const routes = createBrowserRouter([
   {
@@ -58,7 +58,7 @@ const routes = createBrowserRouter([
         element: <ParentDashboard />,
       },
       {
-        path: "edit",
+        path: "edit/:student_id",
         element: <ParentLayout />,
         children: [
           {
@@ -67,7 +67,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "send-drug",
-            element: <SendDrug />,
+            element: <DrugTable />,
           },
           {
             path: "send-drug-form",
@@ -79,7 +79,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "health-check",
-            element: <HealthCheck />,
+            // element: <HealthCheck />,
           },
         ],
       },
