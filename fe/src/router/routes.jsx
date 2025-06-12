@@ -4,16 +4,17 @@ import HomePage from "../pages/HomePage";
 import Login from "../pages/Auth/Login";
 import PrivateRoute from "./PrivateRoute";
 import AdminLayout from "../layouts/AdminLayout";
-import SendDrugManagement from "../pages/Admin/SendDrugManagement";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import ParentDashboard from "../pages/Parent/ParentDashboard";
-import SendDrugManagementNurse from "../pages/Nurse/SendDrugManagementNurse";
 import NurseDashboard from "../pages/Nurse/NurseDashboard";
 import ParentLayout from "../layouts/ParentLayout";
 import SendDrugForm from "../pages/Parent/SendDrugForm";
 import StudentInfo from "../pages/Parent/StudentInfo";
 import VaccineInfo from "../pages/Parent/VaccineInfo";
 import DrugTable from "../pages/Parent/DrugTable";
+import SendDrugManagement from "../pages/Admin&Nurse/SendDrugManagement";
+import DailyHealth from "../pages/Nurse/DailyHealth";
+import UserManagement from "../pages/Admin/UserManagement";
 
 const routes = createBrowserRouter([
   {
@@ -44,7 +45,10 @@ const routes = createBrowserRouter([
           {
             path: "send-drug",
             element: <SendDrugManagement />,
-          },
+          },{
+            path: "user-manage",
+            element: <UserManagement/>
+          }
         ],
       },
     ],
@@ -99,8 +103,12 @@ const routes = createBrowserRouter([
           },
           {
             path: "send-drug",
-            element: <SendDrugManagementNurse />,
+            element: <SendDrugManagement />,
           },
+          {
+            path: "daily-health",
+            element: <DailyHealth />,
+          }
         ],
       },
     ],

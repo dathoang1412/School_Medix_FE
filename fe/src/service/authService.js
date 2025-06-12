@@ -9,3 +9,7 @@ export const removeUser = () => {
 export const getUser = () => {
     return JSON.parse(localStorage.getItem("user"));
 }
+
+export const getUserRole = () => {
+    return getUser()?.app_metadata?.role;
+}

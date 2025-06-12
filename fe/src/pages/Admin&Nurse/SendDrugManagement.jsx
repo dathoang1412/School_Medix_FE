@@ -1,11 +1,215 @@
-import React from 'react'
+import React from "react";
+import useSendDrugManagement from "./SendDrugManagementLogic";
+import { useNavigate } from "react-router-dom";
+import {
+  Search,
+  Filter,
+  Eye,
+  CheckIcon,
+  Trash2,
+  XCircle,
+  TicketCheck, // Icon cho Nhận thuốc
+  Plus,
+} from "lucide-react";
+import { SnackbarProvider } from "notistack";
 
 const SendDrugManagement = () => {
-  return (
-    <div>
-      
-    </div>
-  )
-}
+  const navigate = useNavigate();
+  const {
+    drugs,
+    filteredDrugs,
+    searchTerm,
+    statusFilter,
+    error,
+    currChild,
+    childClass,
+    handleSearch,
+    handleFilterChange,
+    handleView,
+    handleAccept,
+    handleRefuse,
+    handleCancel,
+    handleReceive,
+  } = useSendDrugManagement();
 
-export default SendDrugManagement
+  return (
+    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+      <div className="min-h-screen w-6/7 bg-gray-50 p-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo mô tả bệnh"
+                value={searchTerm}
+                onChange={handleSearch}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <Search className="absolute left-3 top-2.5 text-gray-400 w-5 h-5" />
+            </div>
+            <div className="flex gap-4 w-full sm:w-auto">
+              <div className="relative w-full sm:w-48">
+                <Filter className="absolute left-3 top-2.5 text-gray-400 w-5 h-5" />
+                <select
+                  value={statusFilter}
+                  onChange={handleFilterChange}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option>Tất cả trạng thái</option>
+                  <option>PROCESSING</option>
+                  <option>ACCEPTED</option>
+                  <option>REFUSED</option>
+                  <option>DONE</option>
+                  <option>CANCELLED</option>
+                  <option>RECEIVED</option>
+                </select>
+              </div>
+              <button
+                onClick={() => navigate("/nurse/edit/send-drug-form")}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2 whitespace-nowrap"
+              >
+                <Plus className="w-5 h-5" />
+                Thêm đơn thuốc
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            {filteredDrugs.length > 0 ? (
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Mã đơn
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tên học sinh
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Lớp
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tên thuốc
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Mô tả bệnh
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Trạng thái
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thao tác
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredDrugs.map((drug) => (
+                    <tr key={drug.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {drug.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {currChild?.name || "Không xác định"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {childClass?.class_name || "Chưa có thông tin"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[150px] truncate">
+                        {drug?.request_items?.[0]?.name || "Không có dữ liệu"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[150px] truncate">
+                        {drug?.diagnosis || "Không có mô tả"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            {
+                              PROCESSING: "bg-yellow-100 text-yellow-800",
+                              ACCEPTED: "bg-green-100 text-green-800",
+                              REFUSED: "bg-red-100 text-red-800",
+                              DONE: "bg-blue-100 text-blue-800",
+                              CANCELLED: "bg-gray-100 text-gray-800",
+                              RECEIVED: "bg-purple-100 text-purple-800",
+                            }[drug.status] || "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {drug.status || "Chưa xác định"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50"
+                            onClick={() => handleView(drug)}
+                            title="Xem chi tiết"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                          {drug.status === "PROCESSING" && (
+                            <>
+                              <button
+                                className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50"
+                                onClick={() => handleAccept(drug.id)}
+                                title="Chấp nhận"
+                              >
+                                <CheckIcon className="w-5 h-5" />
+                              </button>
+                              <button
+                                className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50"
+                                onClick={() => handleRefuse(drug.id)}
+                                title="Từ chối"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </>
+                          )}
+                          {drug.status === "ACCEPTED" && (
+                            <button
+                              className="text-purple-600 hover:text-purple-800 p-1 rounded hover:bg-purple-50"
+                              onClick={() => handleReceive(drug.id)}
+                              title="Nhận thuốc"
+                            >
+                              <TicketCheck className="w-5 h-5" />
+                            </button>
+                          )}
+                          {![
+                            "RECEIVED",
+                            "DONE",
+                            "CANCELLED",
+                            "REFUSED",
+                          ].includes(drug.status) && (
+                            <button
+                              className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-50"
+                              onClick={() => handleCancel(drug.id)}
+                              title="Hủy đơn"
+                            >
+                              <XCircle className="w-5 h-5" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                {drugs.length === 0
+                  ? "Không có dữ liệu đơn thuốc."
+                  : "Không tìm thấy đơn thuốc phù hợp."}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </SnackbarProvider>
+  );
+};
+
+export default SendDrugManagement;
