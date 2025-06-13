@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {AnimatePresence } from "framer-motion";
+import {AnimatePresence, motion } from "framer-motion";
 import useSendDrugManagement from "./SendDrugManagementLogic";
 import { useNavigate } from "react-router-dom";
 import {

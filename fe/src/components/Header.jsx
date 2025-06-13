@@ -1,7 +1,7 @@
 import { User, Menu, X, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MdOutlineSchool } from "react-icons/md";
-import { getUser, removeUser } from "../service/authService";
+import { getUser, getUserRole, removeUser } from "../service/authService";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useRef } from "react";
@@ -26,9 +26,9 @@ const Header = () => {
   ];
 
   const userMenuItems = [
-    { title: "Hồ sơ cá nhân", path: "/profile", icon: User },
+    { title: "Tiện ích", path: getUserRole(), icon: User },
     { title: "Cài đặt", path: "/settings", icon: User },
-    { title: "Thông báo", path: "/notifications", icon: User },
+    { title: "Profile", path: "/notifications", icon: User },
     { title: "Lịch sử", path: "/history", icon: User },
     { 
       title: "Đăng xuất", 
