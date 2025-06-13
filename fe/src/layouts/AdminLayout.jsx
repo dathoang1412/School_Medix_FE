@@ -6,8 +6,8 @@ const AdminLayout = () => {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="pt-4 pl-4 min-w-full">
-        <Outlet />
+      <div className="grow pt-4 pl-4">
+        <Outlet/>
       </div>
     </div>
   );

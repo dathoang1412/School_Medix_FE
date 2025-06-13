@@ -8,10 +8,9 @@ import {
   CheckIcon,
   Trash2,
   XCircle,
-  TicketCheck, // Icon cho Nhận thuốc
+  TicketCheck, 
   Plus,
 } from "lucide-react";
-import { SnackbarProvider } from "notistack";
 
 const SendDrugManagement = () => {
   const navigate = useNavigate();
@@ -33,7 +32,6 @@ const SendDrugManagement = () => {
   } = useSendDrugManagement();
 
   return (
-    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
       <div className="min-h-screen w-6/7 bg-gray-50 p-6">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
@@ -208,7 +206,6 @@ const SendDrugManagement = () => {
           </div>
         </div>
       </div>
-    </SnackbarProvider>
   );
 };
 
