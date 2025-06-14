@@ -203,7 +203,7 @@ const DrugTable = () => {
                           {drug.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {currChild?.name || "Không xác định"}
+                          {currChild?.profile.name || "Không xác định"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {childClass?.class_name || "Chưa có thông tin"}

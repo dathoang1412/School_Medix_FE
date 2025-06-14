@@ -51,7 +51,7 @@
         path: "/health-record",
         icon: <BsTextIndentLeft />,
       },
-      { title: "Tiêm chủng", path: "/vaccination", icon: <LuSyringe /> },
+      { title: "Kế hoạch tiêm chủng", path: "vaccine-campaign", icon: <LuSyringe /> },
     ]);
 
     const navigate = useNavigate();

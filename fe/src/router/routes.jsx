@@ -15,7 +15,8 @@ import DrugTable from "../pages/Parent/DrugTable";
 import SendDrugManagement from "../pages/Admin&Nurse/SendDrugManagement";
 import DailyHealth from "../pages/Nurse/DailyHealth";
 import UserManagement from "../pages/Admin/UserManagement";
-import HealthProfile from "../pages/Parent/VaccineInfo";
+import HealthProfile from "../pages/Parent/HealthProfile";
+import VaccinationCampaignManagement from "../pages/Admin/VaccinationCampaignManagement";
 
 const routes = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ const routes = createBrowserRouter([
           },{
             path: "user-manage",
             element: <UserManagement/>
+          },
+          {
+            path: "vaccine-campaign",
+            element: <VaccinationCampaignManagement/>
           }
         ],
       },

@@ -1,11 +1,8 @@
-import React from 'react'
+import TabHeader from "../../components/TabHeader";
 
-const HealthProfile = () => {
+const VaccineInfo = () => {
   return (
-    <div>
-      hssk
-    </div>
-  )
+    <p>this is vaccine</p>
+  );
 }
-
-export default HealthProfile
+export default VaccineInfo;

@@ -64,7 +64,7 @@ const ParentDashboard = () => {
 
       setIsLoading(true);
       try {
-        const res = await axiosClient.get(`/parent/${user.id}/student`);
+        const res = await axiosClient.get(`/parent/${user?.user_metadata.id}/student`);
         console.log("Children data: ", res.data.data);
         setChildren(res.data.data || []);
       } catch (error) {
@@ -121,7 +121,7 @@ const ParentDashboard = () => {
                         : "border-gray-200 hover:border-gray-300"
                     }
                   `}
-                  aria-label={`Chọn ${child.name}`}
+                  aria-label={`Chọn ${child.profile.name}`}
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -130,10 +130,10 @@ const ParentDashboard = () => {
                         ${selectedChild?.id === child.id ? "bg-blue-500" : "bg-gray-400"}
                       `}
                     >
-                      {getInitials(child.name)}
+                      {getInitials(child.profile.name)}
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-800">{child.name}</h3>
+                      <h3 className="font-medium text-gray-800">{child.profile.name}</h3>
                       <p className="text-sm text-gray-600">
                         {child.class || "Chưa có thông tin lớp"}
                       </p>
