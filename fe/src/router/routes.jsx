@@ -9,14 +9,13 @@ import ParentDashboard from "../pages/Parent/ParentDashboard";
 import NurseDashboard from "../pages/Nurse/NurseDashboard";
 import ParentLayout from "../layouts/ParentLayout";
 import SendDrugForm from "../pages/Parent/SendDrugForm";
-import StudentInfo from "../pages/Parent/HealthProfile";
 import VaccineInfo from "../pages/Parent/VaccineInfo";
 import DrugTable from "../pages/Parent/DrugTable";
 import SendDrugManagement from "../pages/Admin&Nurse/SendDrugManagement";
-import DailyHealth from "../pages/Nurse/DailyHealth";
 import UserManagement from "../pages/Admin/UserManagement";
 import HealthProfile from "../pages/Parent/HealthProfile";
 import VaccinationCampaignManagement from "../pages/Admin/VaccinationCampaignManagement";
+import DailyHealthRecord from "../pages/Admin&Nurse/DailyHealthRecord";
 
 const routes = createBrowserRouter([
   {
@@ -54,6 +53,10 @@ const routes = createBrowserRouter([
           {
             path: "vaccine-campaign",
             element: <VaccinationCampaignManagement/>
+          },
+          {
+            path: "daily-health",
+            element: <DailyHealthRecord/>
           }
         ],
       },
@@ -117,7 +120,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "daily-health",
-            element: <DailyHealth />,
+            element: <DailyHealthRecord />,
           }
         ],
       },
