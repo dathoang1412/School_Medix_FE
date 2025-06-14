@@ -43,7 +43,36 @@ const UserManagement = () => {
       studentList: 'Trần Minh Đức',
       class: 'Lớp 3C',
       status: 'Hoạt động'
-    }
+    },
+    {
+      id: "AD001",
+      password: "******",
+      role: "Admin",
+      fullName: "Lê Văn Hùng",
+      phone: "0901234567",
+      email: "hung.le@email.com",
+      status: "Hoạt động"
+    },
+    {
+      id: "YT001",
+      password: "******",
+      role: "Y tá",
+      fullName: "Phạm Thị Lan",
+      phone: "0935678901",
+      email: "lan.pham@email.com",
+      status: "Hoạt động"
+    },
+    {
+      id: "HS001",
+      password: "******",
+      role: "Học sinh",
+      fullName: "Ngô Minh Tuấn",
+      phone: "0971234567",
+      email: "tuan.ngo@email.com",
+      parent: "Nguyễn Văn Minh",
+      class: "Lớp 4B",
+      status: "Hoạt động"
+    },
   ]);
 
   const itemsPerPage = 20;
@@ -87,7 +116,7 @@ const UserManagement = () => {
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Tài khoản đăng nhập</label>
+            <label className="block text-sm font-medium mb-1">Tài khoản</label>
             <input type="text" className="w-full border border-gray-300 rounded-lg px-3 py-2" />
           </div>
           <div>
@@ -100,6 +129,8 @@ const UserManagement = () => {
               <option value="">Chọn vai trò</option>
               <option value="Phụ huynh">Phụ huynh</option>
               <option value="Admin">Admin</option>
+              <option value="Y tá">Y tá</option>
+              <option value="Học sinh">Học sinh</option>
             </select>
           </div>
           <div>
@@ -140,7 +171,7 @@ const UserManagement = () => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold">Thông tin chi tiết phụ huynh</h3>
+          <h3 className="text-xl font-semibold">Thông tin chi tiết {selectedUser?.fullName}</h3>
           <button onClick={() => setShowDetailModal(false)}>
             <X size={20} />
           </button>
@@ -178,7 +209,7 @@ const UserManagement = () => {
               </div>
             </div>
             
-            <div className="col-span-1 md:col-span-2">
+            {(selectedUser?.studentList) && <div className="col-span-1 md:col-span-2">
               <h4 className="text-lg font-medium mb-4">Danh sách học sinh</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg flex items-center">
@@ -196,7 +227,17 @@ const UserManagement = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div>}
+            {selectedUser?.parent && (
+              <div className="col-span-1 md:col-span-2">
+                <h4 className="text-lg font-medium mb-4">Thông tin phụ huynh</h4>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="font-medium">{selectedUser.parent}</p>
+                  <p className="text-sm text-gray-600">Số điện thoại: {selectedUser.phone}</p>
+                  <p className="text-sm text-gray-600">Email: {selectedUser.email}</p>
+                </div>  
+              </div>
+              )}
           </div>
         )}
         
@@ -224,20 +265,58 @@ const UserManagement = () => {
       {/* Header */}
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Quản lý người dùng</h1>
 
-      {/* Action Bar */}
+      {/* Combined Action Bar and Search */}
       <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo tên phụ huynh hoặc..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 text-sm"
+              />
+            </div>
+            <button 
+              onClick={() => setFilterRole('Admin')}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                filterRole === '' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Tất cả
+            </button>
+            <button 
+              onClick={() => setFilterRole('Admin')}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                filterRole === 'Admin' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
               Admin
             </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm">
+            <button 
+              onClick={() => setFilterRole('Y tá')}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                filterRole === 'Y tá' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
               Y tá
             </button>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+            <button 
+              onClick={() => setFilterRole('Phụ huynh')}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                filterRole === 'Phụ huynh' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
               Phụ huynh
             </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm">
+            <button 
+              onClick={() => setFilterRole('Học sinh')}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                filterRole === 'Học sinh' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
               Học sinh
             </button>
           </div>
@@ -252,66 +331,25 @@ const UserManagement = () => {
         </div>
       </div>
 
-      {/* Search and Actions */}
-      <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm theo tên phụ huynh hoặc..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 text-sm"
-              />
-            </div>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">
-              🗂️ Tải lại
-            </button>
-            <select 
-              value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            >
-              <option value="">Sắp xếp theo</option>
-              <option value="Phụ huynh">Phụ huynh</option>
-              <option value="Admin">Admin</option>
-            </select>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 text-sm">
-              <Download size={16} />
-              Xuất excel
-            </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 text-sm">
-              <Upload size={16} />
-              Nhập excel
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Tài khoản đăng nhập</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Tài khoản </th>
                 <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Mật khẩu</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Vai trò</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Họ và tên phụ huynh</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Họ và tên</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Số điện thoại</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Email</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Danh sách học sinh</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Lớp</th>
+                {(filterRole === 'Phụ huynh') && <th className="text-left py-3 px-7 font-medium text-gray-700 text-sm">Danh sách học sinh</th>}
+                {(filterRole === 'Phụ huynh') && <th className="text-left py-3 px-7 font-medium text-gray-700 text-sm">Lớp</th>}
                 <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map((user, index) => (
+              {filteredUsers.map((user) => (
                 <tr key={user.id} className="border-b hover:bg-gray-50">
                   <td className="py-3 px-4 text-sm">{user.id}</td>
                   <td className="py-3 px-4 text-sm">{user.password}</td>
@@ -319,8 +357,8 @@ const UserManagement = () => {
                   <td className="py-3 px-4 text-sm font-medium">{user.fullName}</td>
                   <td className="py-3 px-4 text-sm">{user.phone}</td>
                   <td className="py-3 px-4 text-sm text-blue-600">{user.email}</td>
-                  <td className="py-3 px-4 text-sm whitespace-pre-line">{user.studentList}</td>
-                  <td className="py-3 px-4 text-sm whitespace-pre-line">{user.class}</td>
+                  {(filterRole === 'Phụ huynh') && <td className="py-3 px-4 text-sm whitespace-pre-line">{user.studentList}</td>}
+                  {(filterRole === 'Phụ huynh') && <td className="py-3 px-4 text-sm whitespace-pre-line">{user.class}</td>}
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <button 
