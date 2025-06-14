@@ -26,7 +26,7 @@ const Header = () => {
   ];
 
   const userMenuItems = [
-    { title: "Tiện ích", path: getUserRole(), icon: User },
+    { title: "Tiện ích", path: "/" + getUserRole(), icon: User },
     { title: "Cài đặt", path: "/settings", icon: User },
     { title: "Profile", path: "/notifications", icon: User },
     { title: "Lịch sử", path: "/history", icon: User },
@@ -144,15 +144,6 @@ const Header = () => {
                     <span className="text-sm font-medium text-gray-800 hidden sm:block">
                       {user?.user_metadata?.name || "Người dùng"}
                     </span>
-                  </button>
-
-                  {/* Quick Logout Button */}
-                  <button
-                    onClick={handleLogout}
-                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                    title="Đăng xuất"
-                  >
-                    <LogOut className="w-5 h-5" />
                   </button>
                 </div>
               ) : (

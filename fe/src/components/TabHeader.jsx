@@ -3,28 +3,24 @@ import { NavLink } from "react-router-dom";
 const TabHeader = () => {
   const menu = [
     {
-      label: "Thông tin cá nhân",
-      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/general-information`,
+      label: "Hồ sơ sức khỏe",
+      to: `/parent/edit/${JSON.parse(localStorage.getItem("selectedChild"))?.id}/health-profile`,
     },
     {
       label: "Thông tin tiêm chủng",
-      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/vaccine-info`,
+      to: `/parent/edit/${JSON.parse(localStorage.getItem("selectedChild"))?.id}/vaccine-info`,
     },
     {
       label: "Khám sức khỏe định kỳ",
-      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/health-check`,
+      to: `/parent/edit/${JSON.parse(localStorage.getItem("selectedChild"))?.id}/health-check`,
     },
     {
       label: "Gửi thuốc cho nhà trường",
-      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/send-drug`,
-    },
-    {
-      label: "Hồ sơ sức khỏe",
-      to: `/parent/edit/${localStorage.getItem("selectedChild")?.id}/health-record`,
-    },
+      to: `/parent/edit/${JSON.parse(localStorage.getItem("selectedChild"))?.id}/send-drug`,
+    }
   ];
   return (
-    <nav className="w-full bg-white border-b border-gray-200 shadow-sm pt-5">
+    <nav className="w-full bg-white text-[14px] pt-5">
       <div className="max-w-7xl mx-auto flex gap-2 px-2 sm:px-4">
         {menu.map((item) => (
           <NavLink

@@ -7,6 +7,7 @@ import {
   handleRefuse,
   handleCancel,
   handleReceive,
+  handleDone,
 } from "../../utils/statusUpdateHandler";
 import { useSnackbar } from "notistack";
 
@@ -29,21 +30,17 @@ const useSendDrugManagement = () => {
           setError("Vui lòng đăng nhập để xem lịch sử gửi thuốc");
           return;
         }
-
         const selectedChild = localStorage.getItem("selectedChild");
         if (!selectedChild) {
           setError("Vui lòng chọn một đứa trẻ để xem lịch sử gửi thuốc.");
           return;
         }
-
         const child = JSON.parse(selectedChild);
         setCurrChild(child);
-
         const [clas, res] = await Promise.all([
           getChildClass(child?.class_id),
           axiosClient.get(`/student/${child.id}/send-drug-request`),
         ]);
-
         setChildClass(clas || "Chưa có thông tin");
         const drugData = res.data.data || [];
         setDrugs(drugData);
@@ -53,25 +50,21 @@ const useSendDrugManagement = () => {
         setError("Không thể tải lịch sử gửi thuốc. Vui lòng thử lại sau.");
       }
     };
-
     fetchDrugHistory();
   }, []);
 
   useEffect(() => {
     let result = [...drugs];
-
     if (statusFilter === "Tất cả trạng thái") {
       result = result.map((drug) => drug);
     } else {
       result = result.filter((drug) => drug.status === statusFilter);
     }
-
     if (searchTerm) {
       result = result.filter((drug) =>
         drug.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
     setFilteredDrugs(result);
   }, [searchTerm, statusFilter, drugs]);
 
@@ -85,8 +78,9 @@ const useSendDrugManagement = () => {
 
   const handleView = (drug) => {
     alert(`Xem chi tiết đơn thuốc ${drug.id}`);
-    // Thêm logic xem chi tiết (ví dụ: mở modal hoặc redirect)
+    //* Thêm logic xem chi tiết (ví dụ: mở modal hoặc redirect)*
   };
+
 
   return {
     drugs,
@@ -107,6 +101,8 @@ const useSendDrugManagement = () => {
       handleCancel(id, setError, setDrugs, setFilteredDrugs, () => {}, enqueueSnackbar),
     handleReceive: (id) =>
       handleReceive(id, setError, setDrugs, setFilteredDrugs, () => {}, enqueueSnackbar),
+    handleDone: (id) =>
+      handleDone(id, setError, setDrugs, setFilteredDrugs, () => {}, enqueueSnackbar),
   };
 };
 

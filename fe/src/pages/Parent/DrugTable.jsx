@@ -116,7 +116,7 @@ const DrugTable = () => {
   };
 
   return (
-    <div className="min-h-screen w-6/7 bg-gray-50 p-6">
+    <div className="min-h-screen w-full bg-gray-50 p-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
           <div className="relative w-full sm:w-64">

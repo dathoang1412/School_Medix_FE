@@ -39,3 +39,6 @@ export const handleCancel = (id, setError, setDrugs, setFilteredDrugs, cb, enque
 
 export const handleReceive = (id, setError, setDrugs, setFilteredDrugs, cb, enqueueSnackbar) =>
   handleStatusUpdate(cb, "RECEIVED", "receive", id, setError, setDrugs, setFilteredDrugs, "Đã xác nhận nhận thuốc!", enqueueSnackbar);
+
+export const handleDone = (id, setError, setDrugs, setFilteredDrugs, cb, enqueueSnackbar) =>
+  handleStatusUpdate(cb, "DONE", "done", id, setError, setDrugs, setFilteredDrugs, "Đã xác nhận hoàn thành!", enqueueSnackbar);

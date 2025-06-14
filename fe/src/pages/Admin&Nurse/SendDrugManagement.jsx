@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import useSendDrugManagement from "./SendDrugManagementLogic";
 import { useNavigate } from "react-router-dom";
 import {
@@ -30,6 +30,7 @@ const SendDrugManagement = () => {
     handleRefuse,
     handleCancel,
     handleReceive,
+    handleDone,
   } = useSendDrugManagement();
 
   // Trạng thái để theo dõi nhiều đơn thuốc đang được mở rộng
@@ -45,7 +46,7 @@ const SendDrugManagement = () => {
   };
 
   return (
-    <div className="min-h-screen w-6/7 bg-gray-50 p-6">
+    <div className="min-h-screen w-full bg-gray-50 p-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
           <div className="relative w-full sm:w-64">
@@ -85,7 +86,8 @@ const SendDrugManagement = () => {
           </div>
         </div>
 
-        {error && (<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
             {error}
           </div>
         )}
@@ -112,6 +114,9 @@ const SendDrugManagement = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Trạng thái
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hoàn thành
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Thao tác
@@ -141,7 +146,7 @@ const SendDrugManagement = () => {
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             {
-PROCESSING: "bg-yellow-100 text-yellow-800",
+                              PROCESSING: "bg-yellow-100 text-yellow-800",
                               ACCEPTED: "bg-green-100 text-green-800",
                               REFUSED: "bg-red-100 text-red-800",
                               DONE: "bg-blue-100 text-blue-800",
@@ -152,6 +157,21 @@ PROCESSING: "bg-yellow-100 text-yellow-800",
                         >
                           {drug.status || "Chưa xác định"}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {drug.status === "RECEIVED" && (
+                          <input
+                            type="checkbox"
+                            onChange={() => handleDone(drug.id)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
+                            title="Đánh dấu hoàn thành"
+                          />
+                        )}
+                        {drug.status === "DONE" && (
+                          <div className="flex justify-center">
+                            <CheckIcon className="w-5 h-5 text-green-600" title="Đã hoàn thành" />
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="flex items-center gap-2">
@@ -196,7 +216,7 @@ PROCESSING: "bg-yellow-100 text-yellow-800",
                           {![
                             "RECEIVED",
                             "DONE",
-"CANCELLED",
+                            "CANCELLED",
                             "REFUSED",
                           ].includes(drug.status) && (
                             <button
@@ -218,7 +238,7 @@ PROCESSING: "bg-yellow-100 text-yellow-800",
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.3, ease: "easeInOut" }}
                         >
-                          <td colSpan="7" className="px-6 py-4 bg-gray-50">
+                          <td colSpan="8" className="px-6 py-4 bg-gray-50">
                             <motion.div
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -244,7 +264,7 @@ PROCESSING: "bg-yellow-100 text-yellow-800",
                                     <span className="text-gray-900">{drug?.diagnosis || "Không có mô tả"}</span>
                                   </p>
                                   <p className="text-sm">
-<span className="font-semibold text-gray-700">Trạng thái:</span>{" "}
+                                    <span className="font-semibold text-gray-700">Trạng thái:</span>{" "}
                                     <span
                                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                         {
