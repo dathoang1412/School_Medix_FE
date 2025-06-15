@@ -201,7 +201,8 @@ const VaccinationCampaignManagement = () => {
 
       <Outlet />
     </div>
-  );
+  
+);
 };
 
 export default VaccinationCampaignManagement;
