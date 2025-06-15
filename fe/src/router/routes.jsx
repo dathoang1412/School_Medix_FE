@@ -16,6 +16,7 @@ import UserManagement from "../pages/Admin/UserManagement";
 import HealthProfile from "../pages/Parent/HealthProfile";
 import VaccinationCampaignManagement from "../pages/Admin/VaccinationCampaignManagement";
 import DailyHealthRecord from "../pages/Admin&Nurse/DailyHealthRecord";
+import NewVaccineCampaign from "../components/NewVaccineCampaign";
 
 const routes = createBrowserRouter([
   {
@@ -46,18 +47,23 @@ const routes = createBrowserRouter([
           {
             path: "send-drug",
             element: <SendDrugManagement />,
-          },{
+          },
+          {
             path: "user-manage",
-            element: <UserManagement/>
+            element: <UserManagement />,
           },
           {
             path: "vaccine-campaign",
-            element: <VaccinationCampaignManagement/>
+            element: <VaccinationCampaignManagement />,
           },
           {
             path: "daily-health",
-            element: <DailyHealthRecord/>
-          }
+            element: <DailyHealthRecord />,
+          },
+          {
+            path: "vaccine-campaign-creation",
+            element: <NewVaccineCampaign />,
+          },
         ],
       },
     ],
@@ -121,7 +127,7 @@ const routes = createBrowserRouter([
           {
             path: "daily-health",
             element: <DailyHealthRecord />,
-          }
+          },
         ],
       },
     ],

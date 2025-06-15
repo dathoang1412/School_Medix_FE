@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp, Calendar, MapPin, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, MapPin, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react';
+import { useNavigate, Outlet } from 'react-router-dom'; // Add Outlet
 import axiosClient from '../../config/axiosClient';
 
 const VaccinationCampaignManagement = () => {
   const [campaignList, setCampaignList] = useState([]);
   const [expandedItems, setExpandedItems] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCam = async () => {
-      const res = await axiosClient.get('/vaccine/get-all');
-      setCampaignList(res.data.data);
-      console.log("Campaign list: ", res?.data?.data);
-    }
+      try {
+        const res = await axiosClient.get('/campaign/get-all');
+        setCampaignList(res.data.data);
+        console.log("Campaign list: ", res?.data?.data);
+      } catch (error) {
+        console.error("Error fetching campaigns:", error);
+      }
+    };
     fetchCam();
   }, []);
 
@@ -20,6 +26,10 @@ const VaccinationCampaignManagement = () => {
       ...prev,
       [id]: !prev[id]
     }));
+  };
+
+  const handleAddNewCampaign = () => {
+    navigate('/admin/vaccine-campaign-creation'); // Use relative path
   };
 
   const formatDate = (dateString) => {
@@ -74,9 +84,23 @@ const VaccinationCampaignManagement = () => {
 
   return (
     <div className="w-full mx-auto p-10 bg-gray-50 min-h-screen">
+      {/* Header section with title and add button */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Quản lý Chiến dịch Tiêm chủng</h1>
-        <p className="text-gray-600">Danh sách các chiến dịch tiêm chủng và thông tin chi tiết</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Quản lý Chiến dịch Tiêm chủng</h1>
+            <p className="text-gray-600">Danh sách các chiến dịch tiêm chủng và thông tin chi tiết</p>
+          </div>
+          
+          {/* Add New Campaign Button */}
+          <button
+            onClick={handleAddNewCampaign}
+            className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Thêm mới kế hoạch y tế</span>
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -176,8 +200,20 @@ const VaccinationCampaignManagement = () => {
           </div>
           <p className="text-gray-500 text-lg">Chưa có chiến dịch tiêm chủng nào</p>
           <p className="text-gray-400 text-sm mt-1">Dữ liệu sẽ được hiển thị khi có chiến dịch mới</p>
+          
+          {/* Add button when no campaigns exist */}
+          <button
+            onClick={handleAddNewCampaign}
+            className="mt-4 flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md mx-auto"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Thêm mới kế hoạch y tế</span>
+          </button>
         </div>
       )}
+
+      {/* Outlet for child routes */}
+      <Outlet />
     </div>
   );
 };
