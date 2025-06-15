@@ -17,6 +17,7 @@ import HealthProfile from "../pages/Parent/HealthProfile";
 import VaccinationCampaignManagement from "../pages/Admin/VaccinationCampaignManagement";
 import DailyHealthRecord from "../pages/Admin&Nurse/DailyHealthRecord";
 import NewVaccineCampaign from "../components/NewVaccineCampaign";
+import AddRecordPage from "../pages/Admin&Nurse/AddRecordPage";
 
 const routes = createBrowserRouter([
   {
@@ -64,6 +65,10 @@ const routes = createBrowserRouter([
             path: "vaccine-campaign-creation",
             element: <NewVaccineCampaign />,
           },
+          {
+            path: "add-record",
+            element: <AddRecordPage/>
+          }
         ],
       },
     ],
@@ -128,6 +133,10 @@ const routes = createBrowserRouter([
             path: "daily-health",
             element: <DailyHealthRecord />,
           },
+          {
+            path: "add-record",
+            element: <AddRecordPage/>
+          }
         ],
       },
     ],

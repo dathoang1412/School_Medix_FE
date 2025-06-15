@@ -37,7 +37,7 @@ const VaccinationCampaignManagement = () => {
   }, []);
 
   const handleAddNewCampaign = () => {
-    navigate('vaccine-campaign-creation'); // Relative path
+    navigate('/admin/vaccine-campaign-creation'); // Relative path
   };
 
   const formatDate = (dateString) => {
@@ -64,7 +64,7 @@ const VaccinationCampaignManagement = () => {
     switch (status) {
       case 'completed': return 'Đã hoàn thành';
       case 'ongoing': return 'Đang diễn ra';
-      case 'planned': return 'Đã lên kế hoạch';
+      case 'PREPARING': return 'Đã lên kế hoạch';
       default: return 'Không xác định';
     }
   };
