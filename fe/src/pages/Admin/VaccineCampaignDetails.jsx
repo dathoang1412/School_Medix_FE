@@ -145,12 +145,12 @@ const VaccineCampaignDetails = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Chi tiết Chiến dịch Tiêm chủng</h1>
             <p className="text-gray-600 text-lg">Thông tin chi tiết về chiến dịch #{details.campaign_id}</p>
           </div>
-          <div className="flex space-x-3">
+          {/* <div className="flex space-x-3">
             <button className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
               <Edit className="w-5 h-5" />
               <span>Chỉnh sửa</span>
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 

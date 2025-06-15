@@ -21,6 +21,7 @@ import HealthRecord from "../pages/Parent/HealthRecord";
 import VaccineCampaignDetails from "../pages/Admin/VaccineCampaignDetails";
 import VaccineCampaignManagement from "../pages/Admin/VaccineCampaignManagement";
 import VaccineStudentList from "../pages/Admin/VaccineStudentList";
+import Survey from "../pages/Parent/Survey";
 
 const routes = createBrowserRouter([
   {
@@ -101,6 +102,10 @@ const routes = createBrowserRouter([
         path: "edit/:student_id",
         element: <ParentLayout />,
         children: [
+          {
+            path: "survey/:campaign_id",
+            element: <Survey/>
+          },
           {
             path: "health-profile",
             element: <HealthProfile />,

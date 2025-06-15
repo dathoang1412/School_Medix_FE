@@ -242,8 +242,8 @@ const VaccineCampaignManagement = () => {
                     Chỉnh sửa
                   </button>
                   {campaign.status === 'PREPARING' && (
-                    <button className="px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors duration-200">
-                      Bắt đầu chiến dịch
+                    <button className="cursor-pointer px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors duration-200">
+                      Đóng đơn
                     </button>
                   )}
                 </div>
