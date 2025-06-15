@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from "react";
-import axiosClient from "../config/axiosClient"; // Ensure path matches src/config/axiosClient.js
+import axiosClient from "../../config/axiosClient"; // Ensure path matches src/config/axiosClient.js
 import { Plus, X, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 
 const NewVaccineCampaign = () => {
@@ -196,14 +196,6 @@ const NewVaccineCampaign = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Breadcrumb */}
-      <div className="flex items-center text-sm text-gray-600 mb-4">
-        <span>🏠 Trang chủ</span>
-        <ChevronRight size={16} className="mx-2" />
-        <span>Quản lý chiến dịch tiêm chủng</span>
-        <ChevronRight size={16} className="mx-2" />
-        <span>Thêm kế hoạch mới</span>
-      </div>
 
       {/* Header */}
       <h1 className="text-2xl font-bold text-gray-900 mb-6">

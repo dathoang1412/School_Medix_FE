@@ -29,9 +29,9 @@ const ParentDashboard = () => {
     },
     {
       icon: <Activity className="w-8 h-8 text-blue-600" />,
-      title: "Khảo sát y tế",
+      title: "Sức khỏe hằng ngày",
       description: "Các khảo sát về tình trạng sức khỏe",
-      path: selectedChild ? `/parent/edit/${selectedChild.id}/survey` : "#",
+      path: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
     },
     {
       icon: <Pill className="w-8 h-8 text-purple-600" />,

@@ -41,6 +41,7 @@ const AddRecordPage = () => {
         ...formData,
         detect_time: formatDateForAPI(formData.detect_time),
       };
+      console.log("Health record POST: ", payload)
       await axiosClient.post('/daily-health-record', payload);
       navigate('/daily-health-record', { state: { success: 'Hồ sơ y tế đã được tạo thành công!' } });
     } catch (error) {

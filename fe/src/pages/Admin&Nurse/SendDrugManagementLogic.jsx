@@ -17,9 +17,8 @@ const useSendDrugManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Tất cả trạng thái");
   const [error, setError] = useState(null);
-  const [currChild, setCurrChild] = useState({});
-  const [childClass, setChildClass] = useState(null);
-  const enqueueSnackbar = useSnackbar().enqueueSnackbar;
+  const [classMap, setClassMap] = useState({}); // Lưu thông tin lớp theo class_id
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     const fetchDrugHistory = async () => {
@@ -27,27 +26,31 @@ const useSendDrugManagement = () => {
         setError(null);
         const user = getUser();
         if (!user?.id) {
-          setError("Vui lòng đăng nhập để xem lịch sử gửi thuốc");
+          setError("Vui lòng đăng nhập để xem danh sách đơn thuốc");
           return;
         }
-        const selectedChild = localStorage.getItem("selectedChild");
-        if (!selectedChild) {
-          setError("Vui lòng chọn một đứa trẻ để xem lịch sử gửi thuốc.");
-          return;
-        }
-        const child = JSON.parse(selectedChild);
-        setCurrChild(child);
-        const [clas, res] = await Promise.all([
-          getChildClass(child?.class_id),
-          axiosClient.get(`/student/${child.id}/send-drug-request`),
-        ]);
-        setChildClass(clas || "Chưa có thông tin");
+
+        // Gọi endpoint lấy tất cả drug requests
+        const res = await axiosClient.get("/send-drug-request");
         const drugData = res.data.data || [];
+
+        // Lấy danh sách class_id duy nhất từ drug requests
+        const classIds = [...new Set(drugData.map((drug) => drug.student?.class_id).filter(Boolean))];
+
+        // Lấy thông tin lớp học cho các class_id
+        const classPromises = classIds.map((class_id) => getChildClass(class_id));
+        const classResults = await Promise.all(classPromises);
+        const classMap = classResults.reduce((acc, classInfo, index) => {
+          if (classInfo) acc[classIds[index]] = classInfo;
+          return acc;
+        }, {});
+
+        setClassMap(classMap);
         setDrugs(drugData);
         setFilteredDrugs(drugData);
       } catch (error) {
-        console.error("Error fetching drug history or class:", error);
-        setError("Không thể tải lịch sử gửi thuốc. Vui lòng thử lại sau.");
+        console.error("Error fetching drug history or classes:", error);
+        setError("Không thể tải danh sách đơn thuốc. Vui lòng thử lại sau.");
       }
     };
     fetchDrugHistory();
@@ -55,9 +58,7 @@ const useSendDrugManagement = () => {
 
   useEffect(() => {
     let result = [...drugs];
-    if (statusFilter === "Tất cả trạng thái") {
-      result = result.map((drug) => drug);
-    } else {
+    if (statusFilter !== "Tất cả trạng thái") {
       result = result.filter((drug) => drug.status === statusFilter);
     }
     if (searchTerm) {
@@ -76,23 +77,15 @@ const useSendDrugManagement = () => {
     setStatusFilter(e.target.value);
   };
 
-  const handleView = (drug) => {
-    alert(`Xem chi tiết đơn thuốc ${drug.id}`);
-    //* Thêm logic xem chi tiết (ví dụ: mở modal hoặc redirect)*
-  };
-
-
   return {
     drugs,
     filteredDrugs,
     searchTerm,
     statusFilter,
     error,
-    currChild,
-    childClass,
+    classMap, // Trả về classMap thay vì childClass
     handleSearch,
     handleFilterChange,
-    handleView,
     handleAccept: (id) =>
       handleAccept(id, setError, setDrugs, setFilteredDrugs, () => {}, enqueueSnackbar),
     handleRefuse: (id) =>

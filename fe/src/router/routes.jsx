@@ -14,10 +14,13 @@ import DrugTable from "../pages/Parent/DrugTable";
 import SendDrugManagement from "../pages/Admin&Nurse/SendDrugManagement";
 import UserManagement from "../pages/Admin/UserManagement";
 import HealthProfile from "../pages/Parent/HealthProfile";
-import VaccinationCampaignManagement from "../pages/Admin/VaccinationCampaignManagement";
 import DailyHealthRecord from "../pages/Admin&Nurse/DailyHealthRecord";
-import NewVaccineCampaign from "../components/NewVaccineCampaign";
+import NewVaccineCampaign from "../pages/Admin/NewVaccineCampaign";
 import AddRecordPage from "../pages/Admin&Nurse/AddRecordPage";
+import HealthRecord from "../pages/Parent/HealthRecord";
+import VaccineCampaignDetails from "../pages/Admin/VaccineCampaignDetails";
+import VaccineCampaignManagement from "../pages/Admin/VaccineCampaignManagement";
+import VaccineStudentList from "../pages/Admin/VaccineStudentList";
 
 const routes = createBrowserRouter([
   {
@@ -55,7 +58,8 @@ const routes = createBrowserRouter([
           },
           {
             path: "vaccine-campaign",
-            element: <VaccinationCampaignManagement />,
+            element: <VaccineCampaignManagement />,
+
           },
           {
             path: "daily-health",
@@ -68,6 +72,14 @@ const routes = createBrowserRouter([
           {
             path: "add-record",
             element: <AddRecordPage/>
+          },
+          {
+            path: "vaccine-campaign/:id",
+            element: <VaccineCampaignDetails/>
+          },
+          {
+            path: "vaccine-campaign/student-list/:id",
+            element: <VaccineStudentList/>
           }
         ],
       },
@@ -94,7 +106,7 @@ const routes = createBrowserRouter([
             element: <HealthProfile />,
           },
           {
-            path: "send-drug",
+            path: "drug-table",
             element: <DrugTable />,
           },
           {
@@ -106,8 +118,8 @@ const routes = createBrowserRouter([
             element: <VaccineInfo />,
           },
           {
-            path: "health-check",
-            // element: <HealthCheck />,
+            path: "health-record",
+            element: <HealthRecord/>
           },
         ],
       },

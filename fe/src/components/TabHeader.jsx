@@ -16,8 +16,13 @@ const TabHeader = () => {
     },
     {
       label: "Gửi thuốc cho nhà trường",
-      to: `/parent/edit/${JSON.parse(localStorage.getItem("selectedChild"))?.id}/send-drug`,
-    }
+      to: `/parent/edit/${JSON.parse(localStorage.getItem("selectedChild"))?.id}/drug-table`,
+    },
+      {
+        label: "Sức khỏe hằng ngày",
+        to: `/parent/edit/${JSON.parse(localStorage.getItem("selectedChild"))?.id}/health-record`,
+      }
+    
   ];
   return (
     <nav className="w-full bg-white text-[14px] pt-5">

@@ -42,7 +42,7 @@ const SendDrugForm = () => {
       setFormData((prev) => ({
         ...prev,
         student_id: child.id || "",
-        create_by: user.id || "",
+        create_by: user?.user_metadata.id || "",
       }));
     };
     fetchData();
@@ -126,7 +126,7 @@ const SendDrugForm = () => {
         throw new Error(response.data.message);
       }
       alert("Gửi đơn thuốc thành công!");
-      navigate("/drug-table");
+      navigate(`/parent/edit/${currChild.id}/drug-table`);
     } catch (error) {
       console.error("Error submitting drug request:", error);
       setError(

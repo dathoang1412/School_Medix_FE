@@ -22,8 +22,7 @@ const SendDrugManagement = () => {
     searchTerm,
     statusFilter,
     error,
-    currChild,
-    childClass,
+    classMap,
     handleSearch,
     handleFilterChange,
     handleAccept,
@@ -33,15 +32,13 @@ const SendDrugManagement = () => {
     handleDone,
   } = useSendDrugManagement();
 
-  // Trạng thái để theo dõi nhiều đơn thuốc đang được mở rộng
   const [expandedRows, setExpandedRows] = useState([]);
 
-  // Hàm xử lý khi nhấn nút "Eye" để mở rộng/thu gọn chi tiết
   const handleView = (drug) => {
     if (expandedRows.includes(drug.id)) {
-      setExpandedRows(expandedRows.filter((id) => id !== drug.id)); // Thu gọn
+      setExpandedRows(expandedRows.filter((id) => id !== drug.id));
     } else {
-      setExpandedRows([...expandedRows, drug.id]); // Mở rộng
+      setExpandedRows([...expandedRows, drug.id]);
     }
   };
 
@@ -76,13 +73,7 @@ const SendDrugManagement = () => {
                 <option>RECEIVED</option>
               </select>
             </div>
-            <button
-              onClick={() => navigate("/nurse/edit/send-drug-form")}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2 whitespace-nowrap"
-            >
-              <Plus className="w-5 h-5" />
-              Thêm đơn thuốc
-            </button>
+            
           </div>
         </div>
 
@@ -131,10 +122,10 @@ const SendDrugManagement = () => {
                         {drug.id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {currChild?.name || "Không xác định"}
+                        {drug.student?.name || "Không xác định"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {childClass?.class_name || "Chưa có thông tin"}
+                        {classMap[drug.student?.class_id]?.class_name || "Chưa có thông tin"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[150px] truncate">
                         {drug?.request_items?.[0]?.name || "Không có dữ liệu"}
@@ -253,11 +244,13 @@ const SendDrugManagement = () => {
                                 <div className="space-y-4">
                                   <p className="text-sm">
                                     <span className="font-semibold text-gray-700">Tên học sinh:</span>{" "}
-                                    <span className="text-gray-900">{currChild?.name || "Không xác định"}</span>
+                                    <span className="text-gray-900">{drug.student?.name || "Không xác định"}</span>
                                   </p>
                                   <p className="text-sm">
                                     <span className="font-semibold text-gray-700">Lớp:</span>{" "}
-                                    <span className="text-gray-900">{childClass?.class_name || "Chưa có thông tin"}</span>
+                                    <span className="text-gray-900">
+                                      {classMap[drug.student?.class_id]?.class_name || "Chưa có thông tin"}
+                                    </span>
                                   </p>
                                   <p className="text-sm">
                                     <span className="font-semibold text-gray-700">Mô tả bệnh:</span>{" "}
@@ -310,7 +303,7 @@ const SendDrugManagement = () => {
             </table>
           ) : (
             <div className="text-center py-12 text-gray-500">
-              {drugs.length === 0
+              {drugs.length === 0 
                 ? "Không có dữ liệu đơn thuốc."
                 : "Không tìm thấy đơn thuốc phù hợp."}
             </div>
