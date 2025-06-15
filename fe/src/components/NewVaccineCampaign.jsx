@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import axiosClient from "../config/axiosClient";
-import { Plus, X, ChevronRight } from "lucide-react";
 
-const VaccinationCampaignManagement = () => {
+import React, { useState, useEffect, useCallback } from "react";
+import axiosClient from "../config/axiosClient"; // Ensure path matches src/config/axiosClient.js
+import { Plus, X, ChevronRight, Loader2, AlertCircle } from "lucide-react";
+
+const NewVaccineCampaign = () => {
   const [campaignForm, setCampaignForm] = useState({
     vaccine_id: "",
     description: "",
@@ -18,25 +19,34 @@ const VaccinationCampaignManagement = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [vaccines, setVaccines] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch vaccines from the database
+  // Fetch vaccines
   useEffect(() => {
-    const fetchVaccines = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const response = await axiosClient.get("/vaccine/get-all");
-        if (response.data.error) {
-          setError(response.data.message);
+        const vaccineResponse = await axiosClient.get("/vaccine");
+        console.log("Vaccines response:", vaccineResponse.data);
+        if (vaccineResponse.data.error) {
+          setError(vaccineResponse.data.message);
         } else {
-          setVaccines(response.data.data || []);
+          setVaccines(vaccineResponse.data.data || []);
         }
       } catch (err) {
-        setError(err.response?.data?.message || "Không thể tải danh sách vaccine");
+        console.error("Fetch error:", err);
+        setError(
+          err.response?.data?.message ||
+            "Không thể kết nối với server. Vui lòng kiểm tra backend."
+        );
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchVaccines();
+    fetchData();
   }, []);
 
-  // Set default vaccine_id when vaccines are loaded
+  // Set default vaccine_id
   useEffect(() => {
     if (vaccines.length > 0 && !campaignForm.vaccine_id) {
       setCampaignForm((prev) => ({
@@ -44,57 +54,145 @@ const VaccinationCampaignManagement = () => {
         vaccine_id: vaccines[0].id.toString(),
       }));
     }
-  }, [vaccines, campaignForm.vaccine_id]);
+  }, [vaccines]);
 
-  const handleCampaignChange = (e) => {
+  const handleCampaignChange = useCallback((e) => {
     const { name, value } = e.target;
     setCampaignForm((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleVaccineChange = (e) => {
+  const handleVaccineChange = useCallback((e) => {
     const { name, value } = e.target;
     setVaccineForm((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleCampaignSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+  const handleCampaignSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setError("");
+      setSuccess("");
+      setIsLoading(true);
 
-    try {
-      await axiosClient.post("/campaign", campaignForm);
-      setSuccess("Tạo chiến dịch thành công");
-      setCampaignForm({
-        vaccine_id: vaccines.length > 0 ? vaccines[0].id.toString() : "",
-        description: "",
-        location: "",
-        start_date: "",
-        end_date: "",
-      });
-    } catch (err) {
-      setError(err.response?.data?.message || "Lỗi hệ thống");
-    }
-  };
-
-  const handleVaccineSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    try {
-      await axiosClient.post("/vaccine", vaccineForm);
-      setSuccess("Tạo vaccine mới thành công");
-      setVaccineForm({ name: "", description: "" });
-      setShowVaccineModal(false);
-      // Refresh vaccine list
-      const response = await axiosClient.get("/vaccine/get-all");
-      if (!response.data.error) {
-        setVaccines(response.data.data || []);
+      if (!campaignForm.vaccine_id) {
+        setError("Vui lòng chọn vaccine");
+        setIsLoading(false);
+        return;
       }
-    } catch (err) {
-      setError(err.response?.data?.message || "Lỗi hệ thống");
-    }
-  };
+      if (!campaignForm.description.trim()) {
+        setError("Vui lòng nhập mô tả chiến dịch");
+        setIsLoading(false);
+        return;
+      }
+      if (!campaignForm.location.trim()) {
+        setError("Vui lòng nhập địa điểm");
+        setIsLoading(false);
+        return;
+      }
+      if (!campaignForm.start_date || !campaignForm.end_date) {
+        setError("Vui lòng chọn ngày bắt đầu và kết thúc");
+        setIsLoading(false);
+        return;
+      }
+      if (new Date(campaignForm.end_date) < new Date(campaignForm.start_date)) {
+        setError("Ngày kết thúc phải sau ngày bắt đầu");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        console.log("Submitting campaign:", campaignForm);
+        const response = await axiosClient.post("/vaccination-campaign", campaignForm);
+        setSuccess(response.data.message || "Tạo chiến dịch thành công");
+        setCampaignForm({
+          vaccine_id: vaccines.length > 0 ? vaccines[0].id.toString() : "",
+          description: "",
+          location: "",
+          start_date: "",
+          end_date: "",
+        });
+      } catch (err) {
+        console.error("Campaign submit error:", err);
+        setError(
+          err.response?.data?.message ||
+            "Lỗi hệ thống khi tạo chiến dịch. Vui lòng kiểm tra server."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [campaignForm, vaccines]
+  );
+
+  const handleVaccineSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setError("");
+      setSuccess("");
+      setIsLoading(true);
+
+      if (!vaccineForm.name.trim()) {
+        setError("Vui lòng nhập tên vaccine");
+        setIsLoading(false);
+        return;
+      }
+      if (!vaccineForm.description.trim()) {
+        setError("Vui lòng nhập mô tả vaccine");
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate description format
+      const descriptionRegex = /bệnh\s+(.+?)(?=\s+-)/i;
+      const diseaseMatch = vaccineForm.description.match(descriptionRegex);
+      if (!diseaseMatch || !diseaseMatch[1]) {
+        setError(
+          "Mô tả phải có định dạng: 'bệnh [Tên bệnh] - [Chi tiết]'. Ví dụ: 'Phòng bệnh Sởi - Vắc-xin cho trẻ em'"
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      const payload = {
+        name: vaccineForm.name.trim(),
+        description: vaccineForm.description.trim(),
+      };
+
+      try {
+        console.log("Submitting vaccine:", payload);
+        const response = await axiosClient.post("/vaccine", payload);
+        setSuccess(response.data.message || "Tạo vaccine mới thành công");
+        setVaccineForm({ name: "", description: "" });
+        setShowVaccineModal(false);
+        // Refresh vaccine list
+        const vaccineResponse = await axiosClient.get("/vaccine");
+        console.log("Refreshed vaccines:", vaccineResponse.data);
+        if (!vaccineResponse.data.error) {
+          setVaccines(vaccineResponse.data.data || []);
+        }
+      } catch (err) {
+        console.error("Vaccine submit error:", err);
+        const errorMessage = err.response?.data?.message;
+        if (err.response?.status === 409) {
+          setError(`Vaccine "${vaccineForm.name}" đã tồn tại`);
+        } else if (err.response?.status === 400 && errorMessage?.includes("Cannot extract disease name")) {
+          setError(
+            "Không thể trích xuất tên bệnh từ mô tả. Vui lòng kiểm tra định dạng: 'bệnh [Tên bệnh] - [Chi tiết]'"
+          );
+        } else if (err.response?.status === 400 && errorMessage?.includes("Cannot find disease ID")) {
+          setError(
+            `Tên bệnh "${diseaseMatch[1].trim()}" không tồn tại trong cơ sở dữ liệu. Vui lòng kiểm tra lại.`
+          );
+        } else if (err.response?.status === 400 && errorMessage?.includes("Missing required fields")) {
+          setError("Vui lòng điền đầy đủ các trường bắt buộc.");
+        } else {
+          setError(errorMessage || "Lỗi hệ thống khi tạo vaccine. Vui lòng kiểm tra server.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [vaccineForm]
+  );
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -115,8 +213,36 @@ const VaccinationCampaignManagement = () => {
       {/* Campaign Form */}
       <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
         <h2 className="text-lg font-semibold mb-4">Tạo Kế Hoạch Mới</h2>
-        {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
-        {success && <p className="text-green-600 text-sm mb-4">{success}</p>}
+        {error && (
+          <div className="flex items-center text-red-600 text-sm mb-4">
+            <AlertCircle size={16} className="mr-2" />
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="flex items-center text-green-600 text-sm mb-4">
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            {success}
+          </div>
+        )}
+        {isLoading && (
+          <div className="flex items-center text-gray-600 text-sm mb-4">
+            <Loader2 className="animate-spin mr-2" size={16} />
+            Đang xử lý...
+          </div>
+        )}
         <form onSubmit={handleCampaignSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Vaccine</label>
@@ -126,11 +252,12 @@ const VaccinationCampaignManagement = () => {
               onChange={handleCampaignChange}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
               required
+              disabled={isLoading}
             >
               <option value="">Chọn vaccine</option>
               {vaccines.map((vaccine) => (
                 <option key={vaccine.id} value={vaccine.id}>
-                  {vaccine.name}
+                  {vaccine.name} ({vaccine.disease_name})
                 </option>
               ))}
             </select>
@@ -145,6 +272,7 @@ const VaccinationCampaignManagement = () => {
               rows="4"
               required
               placeholder="Nhập mô tả chiến dịch"
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -157,6 +285,7 @@ const VaccinationCampaignManagement = () => {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
               required
               placeholder="Nhập địa điểm"
+              disabled={isLoading}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -169,6 +298,7 @@ const VaccinationCampaignManagement = () => {
                 onChange={handleCampaignChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -180,6 +310,7 @@ const VaccinationCampaignManagement = () => {
                 onChange={handleCampaignChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -188,6 +319,7 @@ const VaccinationCampaignManagement = () => {
               type="button"
               onClick={() => setShowVaccineModal(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium"
+              disabled={isLoading}
             >
               <Plus size={16} />
               Thêm Vaccine Mới
@@ -195,7 +327,11 @@ const VaccinationCampaignManagement = () => {
             <button
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              disabled={isLoading}
             >
+              {isLoading ? (
+                <Loader2 className="animate-spin inline-block mr-2" size={16} />
+              ) : null}
               Tạo Kế Hoạch
             </button>
           </div>
@@ -208,7 +344,7 @@ const VaccinationCampaignManagement = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Thêm Vaccine Mới</h3>
-              <button onClick={() => setShowVaccineModal(false)}>
+              <button onClick={() => setShowVaccineModal(false)} disabled={isLoading}>
                 <X size={20} />
               </button>
             </div>
@@ -222,13 +358,12 @@ const VaccinationCampaignManagement = () => {
                   onChange={handleVaccineChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                   required
-                  placeholder="Nhập tên vaccine"
+                  placeholder="Nhập tên vaccine (VD: Vắc-xin Sởi)"
+                  disabled={isLoading}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  Mô tả (bao gồm tên bệnh, ví dụ: 'Phòng bệnh Sởi - ...')
-                </label>
+                <label className="block text-sm font-medium mb-1">Mô tả</label>
                 <textarea
                   name="description"
                   value={vaccineForm.description}
@@ -236,21 +371,30 @@ const VaccinationCampaignManagement = () => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                   rows="4"
                   required
-                  placeholder="Nhập mô tả vaccine"
+                  placeholder="Phòng bệnh Sởi - Vắc-xin phòng ngừa bệnh sởi cho trẻ em"
+                  disabled={isLoading}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Mô tả phải có định dạng: "bệnh [Tên bệnh] - [Chi tiết]". Tên bệnh phải tồn tại (VD: Sởi, Quai bị).
+                </p>
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowVaccineModal(false)}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+                  disabled={isLoading}
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                  disabled={isLoading}
                 >
+                  {isLoading ? (
+                    <Loader2 className="animate-spin inline-block mr-2" size={16} />
+                  ) : null}
                   Thêm Vaccine
                 </button>
               </div>
@@ -262,4 +406,4 @@ const VaccinationCampaignManagement = () => {
   );
 };
 
-export default VaccinationCampaignManagement;
+export default NewVaccineCampaign;
