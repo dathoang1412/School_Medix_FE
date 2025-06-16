@@ -25,6 +25,7 @@ import Survey from "../pages/Parent/Survey";
 import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport";
 import VaccineReport from "../pages/Admin&Nurse/VaccineReport";
 import RegularCheckup from "../pages/Admin&Nurse/RegularCheckup";
+import StudentRegularCheckup from "../pages/Parent/StudentRegularCheckup";
 
 const routes = createBrowserRouter([
   {
@@ -137,6 +138,10 @@ const routes = createBrowserRouter([
             path: "health-record",
             element: <HealthRecord/>
           },
+          {
+            path: "regular-checkup",
+            element: <StudentRegularCheckup/>
+          }
         ],
       },
     ],

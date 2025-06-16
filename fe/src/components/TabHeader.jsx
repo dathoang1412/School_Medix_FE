@@ -12,7 +12,7 @@ const TabHeader = () => {
     },
     {
       label: "Khám sức khỏe định kỳ",
-      to: `/parent/edit/${JSON.parse(localStorage.getItem("selectedChild"))?.id}/health-check`,
+      to: `/parent/edit/${JSON.parse(localStorage.getItem("selectedChild"))?.id}/regular-checkup`,
     },
     {
       label: "Gửi thuốc cho nhà trường",

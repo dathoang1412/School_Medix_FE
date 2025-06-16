@@ -25,7 +25,7 @@ const ParentDashboard = () => {
       icon: <Heart className="w-8 h-8 text-red-600" />,
       title: "Khám sức khỏe định kỳ",
       description: "Lịch khám và kết quả khám định kỳ",
-      path: selectedChild ? `/parent/edit/${selectedChild.id}/health-check` : "#",
+      path: selectedChild ? `/parent/edit/${selectedChild.id}/regular-checkup` : "#",
     },
     {
       icon: <Activity className="w-8 h-8 text-blue-600" />,
@@ -46,12 +46,12 @@ const ParentDashboard = () => {
       description: "Xem tổng quan sức khỏe và lịch sử",
       path: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
     },
-    {
-      icon: <BarChart3 className="w-8 h-8 text-cyan-600" />,
-      title: "Báo cáo sức khỏe",
-      description: "Xem báo cáo tổng quan sức khỏe",
-      path: selectedChild ? `/parent/edit/${selectedChild.id}/health-check` : "#",
-    },
+    // {
+    //   icon: <BarChart3 className="w-8 h-8 text-cyan-600" />,
+    //   title: "Báo cáo sức khỏe",
+    //   description: "Xem báo cáo tổng quan sức khỏe",
+    //   path: selectedChild ? `/parent/edit/${selectedChild.id}/health-check` : "#",
+    // },
   ];
 
   useEffect(() => {

@@ -190,6 +190,11 @@ const VaccineCampaignManagement = () => {
 
   return (
     <div className="w-full mx-auto p-10 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+      
+      <div>
+        
+      </div>
+      
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>

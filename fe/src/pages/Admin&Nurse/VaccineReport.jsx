@@ -2,16 +2,17 @@ import React, { useEffect, useState } from "react";
 import axiosClient from "../../config/axiosClient";
 import { getUserRole } from "../../service/authService";
 import { IoChevronBackOutline } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useParams } from "react-router-dom";
 
 const VaccineReport = () => {
-  // const { campaign_id } = useParams(); // Uncomment khi sử dụng thực tế
-  const campaign_id = 6; // Mock campaign_id
+  const { campaign_id } = useParams();
   const [studentList, setStudentList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [updatingRecords, setUpdatingRecords] = useState(new Set());
+  const [vaccinationStatus, setVaccinationStatus] = useState("");
+
   const navigate = useNavigate();
+
   const fetchStudentList = async () => {
     try {
       setLoading(true);
@@ -20,26 +21,30 @@ const VaccineReport = () => {
       );
       console.log(res);
       console.log("REGISTERED LIST: ", res.data.data);
-      // Sử dụng mock data để demo
+      
       setTimeout(() => {
         setStudentList(res.data.data);
         setLoading(false);
       }, 500);
+
+      const res2 = await axiosClient.get(
+        `/vaccination-campaign/${campaign_id}`
+      );
+      console.log("CAMPAIGN DETAILS: ", res2.data);
+      setVaccinationStatus(res2.data.data.status);
     } catch (error) {
       console.error("Error fetching student list:", error);
       setLoading(false);
     }
   };
+
   useEffect(() => {
     if (campaign_id) {
-      // Mock fetch - thay thế bằng API call thực tế
-
       fetchStudentList();
     }
   }, [campaign_id]);
 
   const handleVaccinationUpdate = async (recordId, studentName) => {
-    // Không cho phép update nếu đã đang update hoặc đã được tiêm
     const record = studentList.find((s) => s.id === recordId);
     if (updatingRecords.has(recordId) || record?.is_vaccinated) {
       return;
@@ -48,7 +53,6 @@ const VaccineReport = () => {
     try {
       setUpdatingRecords((prev) => new Set([...prev, recordId]));
 
-      // API call thực tế - uncomment khi sử dụng
       const response = await axiosClient.patch(
         `/vaccination-record/${recordId}/complete`,
         {
@@ -57,18 +61,15 @@ const VaccineReport = () => {
         }
       );
 
-      // Mock success response
       console.log(
         `Updating vaccination record ${recordId} for student: ${studentName}`
       );
 
-      // Update local state
       fetchStudentList();
 
       console.log(`Successfully updated vaccination record for ${studentName}`);
     } catch (error) {
       console.error("Error updating vaccination record:", error);
-      // Có thể thêm toast notification hoặc alert ở đây
       alert("Có lỗi xảy ra khi cập nhật trạng thái tiêm chủng!");
     } finally {
       setUpdatingRecords((prev) => {
@@ -86,7 +87,6 @@ const VaccineReport = () => {
       </div>
     );
   }
-
 
   return (
     <div className="p-6 pt-20 bg-white relative">
@@ -138,12 +138,13 @@ const VaccineReport = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {student.student_profile?.name || "N/A"}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {student.student_profile?.gender || "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex items-center justify-center">
-                      {student.status === "PENDING" && (
+                      {/* Chỉ hiển thị checkbox khi campaign chưa completed */}
+                      {student.status === "PENDING" && vaccinationStatus !== "COMPLETED" && (
                         <input
                           type="checkbox"
                           checked={student.is_vaccinated}
@@ -160,7 +161,7 @@ const VaccineReport = () => {
                           }`}
                           onChange={() =>
                             handleVaccinationUpdate(
-                              student.record_id,
+                              student.id,
                               student.student_profile?.name
                             )
                           }
@@ -171,14 +172,25 @@ const VaccineReport = () => {
                           }
                         />
                       )}
-                      {updatingRecords.has(student.record_id) && (
-                        <span className="ml-2 text-xs text-blue-600">
-                          Đang cập nhật...
+
+                      {(student.status === "COMPLETED" &&
+                        <span className="text-xs text-green-600 font-medium">
+                          ✓ Đã tiêm
                         </span>
                       )}
-                      {student.status === "COMPLETED" && (
-                        <span className="ml-2 text-xs text-green-600 font-medium">
-                          ✓ Đã tiêm
+
+                      {/* Hiển thị trạng thái chưa tiêm khi campaign đã completed nhưng student chưa tiêm */}
+                      {student.status === "PENDING" && 
+                       vaccinationStatus === "COMPLETED" && 
+                       !student.is_vaccinated && (
+                        <span className="text-xs text-red-600 font-medium">
+                          ✗ Chưa tiêm
+                        </span>
+                      )}
+
+                      {updatingRecords.has(student.id) && (
+                        <span className="ml-2 text-xs text-blue-600">
+                          Đang cập nhật...
                         </span>
                       )}
                     </div>
