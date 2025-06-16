@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, StepBackIcon } from 'lucide-react';
 import axiosClient from '../../config/axiosClient';
 import { getUserRole } from '../../service/authService';
 
@@ -61,6 +61,7 @@ const AddRecordPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+
       <div className="container mx-auto max-w-3xl">
         {/* Header */}
         <div className="mb-8 flex items-center gap-4">

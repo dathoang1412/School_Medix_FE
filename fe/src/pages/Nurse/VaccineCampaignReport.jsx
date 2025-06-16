@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ChevronDown, ChevronUp, Calendar, MapPin, CheckCircle, Clock, AlertCircle, Plus, XCircle, PlayCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, MapPin, CheckCircle, Clock, AlertCircle, XCircle, PlayCircle, FileText } from 'lucide-react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import axiosClient from '../../config/axiosClient';
-import { enqueueSnackbar } from 'notistack';
 
-const VaccineCampaignManagement = () => {
+const VaccineCampaignReport = () => {
   const [campaignList, setCampaignList] = useState([]);
   const [expandedItems, setExpandedItems] = useState({});
-  const [loadingActions, setLoadingActions] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,56 +35,6 @@ const VaccineCampaignManagement = () => {
       [id]: !prev[id]
     }));
   }, []);
-
-  const handleAddNewCampaign = () => {
-    navigate('/admin/vaccine-campaign-creation');
-  };
-
-  // Handle campaign actions
-  const handleCampaignAction = async (campaignId, action) => {
-    try {
-      setLoadingActions(prev => ({ ...prev, [campaignId]: true }));
-      
-      let endpoint = '';
-      let successMessage = '';
-      
-      switch (action) {
-        case 'close-register':
-          endpoint = `/vaccination-campaign/${campaignId}/close-register`;
-          successMessage = 'Đã đóng đăng ký thành công';
-          break;
-        case 'start':
-          endpoint = `/vaccination-campaign/${campaignId}/start`;
-          successMessage = 'Đã bắt đầu chiến dịch thành công';
-          break;
-        case 'complete':
-          endpoint = `/vaccination-campaign/${campaignId}/complete`;
-          successMessage = 'Đã hoàn thành chiến dịch thành công';
-          break;
-        case 'cancel':
-          endpoint = `/vaccination-campaign/${campaignId}/cancel`;
-          successMessage = 'Đã hủy chiến dịch thành công';
-          break;
-        default:
-          throw new Error('Invalid action');
-      }
-
-      await axiosClient.patch(endpoint);
-      
-      // Refresh campaign list to get updated status
-      const res = await axiosClient.get('/vaccination-campaign');
-      const campaigns = res.data.data || [];
-      setCampaignList(campaigns);
-      
-      enqueueSnackbar(successMessage, { variant: 'success' });
-      
-    } catch (error) {
-      console.error(`Error ${action} campaign:`, error);
-      enqueueSnackbar(`Lỗi khi thực hiện thao tác: ${error.response?.data?.message || error.message}`, { variant: 'error' });
-    } finally {
-      setLoadingActions(prev => ({ ...prev, [campaignId]: false }));
-    }
-  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -144,65 +92,14 @@ const VaccineCampaignManagement = () => {
     }
   };
 
-  // Get primary action button configuration
-  const getPrimaryActionConfig = (status, campaignId) => {
-    switch (status) {
-      case 'PREPARING':
-        return {
-          text: 'Đóng đơn',
-          action: 'close-register',
-          className: 'px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors duration-200 shadow-md hover:shadow-lg',
-          disabled: false
-        };
-      case 'UPCOMING':
-        return {
-          text: 'Bắt đầu chiến dịch',
-          action: 'start',
-          className: 'px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg',
-          disabled: false
-        };
-      case 'ONGOING':
-        return {
-          text: 'Hoàn thành chiến dịch',
-          action: 'complete',
-          className: 'px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors duration-200 shadow-md hover:shadow-lg',
-          disabled: false
-        };
-      case 'COMPLETED':
-        return {
-          text: 'Xem báo cáo',
-          action: 'view-report',
-          className: 'px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors duration-200 shadow-md hover:shadow-lg',
-          disabled: false,
-          onClick: () => navigate(`/admin/report/${campaignId}`)
-        };
-      case 'CANCELLED':
-        return {
-          text: 'Đã hủy',
-          action: null,
-          className: 'px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg cursor-not-allowed',
-          disabled: true
-        };
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="w-full mx-auto p-10 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-3">Quản lý Chiến dịch Tiêm chủng</h1>
-            <p className="text-gray-600 text-lg">Danh sách các chiến dịch tiêm chủng và thông tin chi tiết</p>
+            <h1 className="text-3xl font-bold text-gray-800 mb-3">Danh sách Chiến dịch Tiêm chủng</h1>
+            <p className="text-gray-600 text-lg">Xem thông tin chi tiết các chiến dịch tiêm chủng</p>
           </div>
-          <button
-            onClick={handleAddNewCampaign}
-            className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-          >
-            <Plus className="w-6 h-6" />
-            <span>Thêm mới kế hoạch y tế</span>
-          </button>
         </div>
 
         {/* Status Legend */}
@@ -228,9 +125,6 @@ const VaccineCampaignManagement = () => {
 
       <div className="space-y-4">
         {campaignList.map((campaign) => {
-          const primaryAction = getPrimaryActionConfig(campaign.status, campaign.campaign_id);
-          const isLoading = loadingActions[campaign.campaign_id];
-
           return (
             <div
               key={campaign.campaign_id}
@@ -297,52 +191,24 @@ const VaccineCampaignManagement = () => {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Action Buttons - Nurse only has view details and edit report for ongoing campaigns */}
                   <div className="mt-6 pt-6 border-t border-gray-200 flex flex-wrap gap-3">
                     <button 
-                      onClick={() => navigate(`/admin/vaccine-campaign/${campaign.campaign_id}`)}
+                      onClick={() => {navigate(`/nurse/vaccine-campaign/${campaign.campaign_id}`)}}
                       className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
                     >
                       Xem chi tiết
                     </button>
-                    {/* Primary Action Button */}
-                    {primaryAction && (
+                    
+                    {/* Only show "Chỉnh sửa báo cáo" button when campaign status is ONGOING */}
+                    {campaign.status === 'ONGOING' && (
                       <button 
-                        onClick={primaryAction.onClick || (() => {
-                          if (primaryAction.action) {
-                            handleCampaignAction(campaign.campaign_id, primaryAction.action);
-                          }
-                        })}
-                        disabled={primaryAction.disabled || isLoading}
-                        className={`${primaryAction.className} ${isLoading ? 'opacity-75 cursor-not-allowed' : ''} flex items-center space-x-2`}
+                        onClick={() => {navigate(`/nurse/report/${campaign.campaign_id}`)}}
+                        className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors duration-200 shadow-md hover:shadow-lg flex items-center space-x-2"
                       >
-                        {isLoading ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            <span>Đang xử lý...</span>
-                          </>
-                        ) : (
-                          <span>{primaryAction.text}</span>
-                        )}
-                      </button>
-                    )}
-                    {/* Cancel Button - Only show for campaigns that can be cancelled */}
-                    {(campaign.status === 'PREPARING' || campaign.status === 'UPCOMING') && (
-                      <button 
-                        onClick={() => handleCampaignAction(campaign.campaign_id, 'cancel')}
-                        disabled={isLoading}
-                        className={`px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors duration-200 shadow-md hover:shadow-lg ${isLoading ? 'opacity-75 cursor-not-allowed' : ''} flex items-center space-x-2`}
-                      >
-                        {isLoading ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            <span>Đang xử lý...</span>
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="w-4 h-4" />
-                            <span>Hủy chiến dịch</span>
-                          </>
-                        )}
+                        <FileText className="w-4 h-4" />
+                        <span>Chỉnh sửa báo cáo</span>
                       </button>
                     )}
                   </div>
@@ -360,13 +226,6 @@ const VaccineCampaignManagement = () => {
           </div>
           <p className="text-gray-500 text-2xl font-semibold mb-2">Chưa có chiến dịch tiêm chủng nào</p>
           <p className="text-gray-400 text-lg mb-8">Dữ liệu sẽ được hiển thị khi có chiến dịch mới</p>
-          <button
-            onClick={handleAddNewCampaign}
-            className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 mx-auto"
-          >
-            <Plus className="w-6 h-6" />
-            <span>Thêm mới kế hoạch y tế</span>
-          </button>
         </div>
       )}
 
@@ -375,4 +234,4 @@ const VaccineCampaignManagement = () => {
   );
 };
 
-export default VaccineCampaignManagement;
+export default VaccineCampaignReport;

@@ -38,7 +38,7 @@ const ParentDashboard = () => {
       title: "Gửi thuốc cho nhà trường",
       description: "Đăng ký và theo dõi thuốc tại trường",
       info: "1 đơn thuốc đang chờ xác nhận",
-      path: selectedChild ? `/parent/edit/${selectedChild.id}/send-drug` : "#",
+      path: selectedChild ? `/parent/edit/${selectedChild.id}/drug-table` : "#",
     },
     {
       icon: <Calendar className="w-8 h-8 text-orange-600" />,

@@ -72,7 +72,7 @@ const VaccineInfo = () => {
       case 'COMPLETED':
         return {
           status: "Đã hoàn thành",
-          className: "bg-gray-100 text-gray-800",
+          className: "bg-green-300 text-gray-800",
           icon: <Calendar className="w-4 h-4" />,
           canSurvey: false
         };

@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import axiosClient from "../../config/axiosClient"; // Ensure path matches src/config/axiosClient.js
-import { Plus, X, ChevronRight, Loader2, AlertCircle } from "lucide-react";
+import { Plus, X, ChevronRight, Loader2, AlertCircle, StepBackIcon } from "lucide-react";
+import { IoChevronBackOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 const NewVaccineCampaign = () => {
   const [campaignForm, setCampaignForm] = useState({
@@ -194,9 +196,16 @@ const NewVaccineCampaign = () => {
     [vaccineForm]
   );
 
-  return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+  const navigate = useNavigate();
 
+  return (
+    <div className="relative p-6 bg-gray-50 min-h-screen pt-20">
+      <div onClick={() => {
+        navigate('/admin/vaccine-campaign')
+      }} 
+      className="flex items-center justify-center absolute top-4 cursor-pointer">
+      <IoChevronBackOutline /> Back 
+      </div>
       {/* Header */}
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
         Thêm Kế Hoạch Hoạt Động Y Tế

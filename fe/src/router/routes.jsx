@@ -22,6 +22,9 @@ import VaccineCampaignDetails from "../pages/Admin/VaccineCampaignDetails";
 import VaccineCampaignManagement from "../pages/Admin/VaccineCampaignManagement";
 import VaccineStudentList from "../pages/Admin/VaccineStudentList";
 import Survey from "../pages/Parent/Survey";
+import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport";
+import VaccineReport from "../pages/Admin&Nurse/VaccineReport";
+import RegularCheckup from "../pages/Admin&Nurse/RegularCheckup";
 
 const routes = createBrowserRouter([
   {
@@ -81,7 +84,15 @@ const routes = createBrowserRouter([
           {
             path: "vaccine-campaign/student-list/:id",
             element: <VaccineStudentList/>
-          }
+          },
+          {
+            path: "regular-checkup",
+            element: <RegularCheckup/>
+          },
+          {
+            path: "report/:campaign_id",
+            element: <VaccineReport/>
+          },
         ],
       },
     ],
@@ -153,6 +164,17 @@ const routes = createBrowserRouter([
           {
             path: "add-record",
             element: <AddRecordPage/>
+          },{
+            path: "vaccine-campaign",
+            element: <VaccineCampaignReport/>
+          },
+          {
+            path: "report/:campaign_id",
+            element: <VaccineReport/>
+          },
+          {
+            path: "regular-checkup",
+            element: <RegularCheckup/>
           }
         ],
       },

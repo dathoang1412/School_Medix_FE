@@ -43,12 +43,12 @@
       },
       {
         title: "Quản lý bệnh",
-        path: "/disease",
+        path: "disease",
         icon: <MdOutlineMedicalInformation />,
       },
       {
-        title: "Hồ sơ sức khỏe",
-        path: "/health-record",
+        title: "Khám định kỳ",
+        path: "regular-checkup",
         icon: <BsTextIndentLeft />,
       },
       { title: "Kế hoạch tiêm chủng", path: "vaccine-campaign", icon: <LuSyringe /> },

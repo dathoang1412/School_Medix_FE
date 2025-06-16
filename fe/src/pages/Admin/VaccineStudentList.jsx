@@ -110,7 +110,7 @@ const VaccineStudentList = () => {
             <div className="mb-8 border-b border-gray-200 pb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Users className="w-6 h-6 text-blue-600" />
-                    Danh sách học sinh đủ điều kiện tiêm chủng
+                    Danh sách học sinh tiêm chủng
                 </h2>
                 
                 <div className="flex flex-wrap gap-4">
