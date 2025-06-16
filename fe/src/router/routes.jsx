@@ -26,6 +26,7 @@ import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport";
 import VaccineReport from "../pages/Admin&Nurse/VaccineReport";
 import RegularCheckup from "../pages/Admin&Nurse/RegularCheckup";
 import StudentRegularCheckup from "../pages/Parent/StudentRegularCheckup";
+import DiseaseRecordManagement from "../pages/Admin&Nurse/DiseaseRecordManagement";
 
 const routes = createBrowserRouter([
   {
@@ -94,6 +95,11 @@ const routes = createBrowserRouter([
             path: "report/:campaign_id",
             element: <VaccineReport/>
           },
+          
+          {
+            path: "disease",
+            element: <DiseaseRecordManagement/>
+          }
         ],
       },
     ],
