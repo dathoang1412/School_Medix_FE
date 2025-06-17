@@ -22,7 +22,6 @@ import VaccineCampaignDetails from "../pages/Admin/VaccineCampaignDetails";
 import VaccineCampaignManagement from "../pages/Admin/VaccineCampaignManagement";
 import VaccineStudentList from "../pages/Admin/VaccineStudentList";
 import Survey from "../pages/Parent/Survey";
-import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport";
 import VaccineReport from "../pages/Admin&Nurse/VaccineReport";
 import RegularCheckup from "../pages/Admin&Nurse/RegularCheckup";
 import StudentRegularCheckup from "../pages/Parent/StudentRegularCheckup";
@@ -177,7 +176,7 @@ const routes = createBrowserRouter([
             element: <AddRecordPage/>
           },{
             path: "vaccine-campaign",
-            element: <VaccineCampaignReport/>
+            element: <VaccineCampaignManagement/>
           },
           {
             path: "report/:campaign_id",

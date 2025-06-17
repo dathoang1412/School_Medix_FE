@@ -161,7 +161,7 @@ const VaccineReport = () => {
                           }`}
                           onChange={() =>
                             handleVaccinationUpdate(
-                              student.id,
+                              student.record_id,
                               student.student_profile?.name
                             )
                           }
