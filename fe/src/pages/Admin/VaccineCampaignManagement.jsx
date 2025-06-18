@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ChevronDown, ChevronUp, Calendar, MapPin, CheckCircle, Clock, AlertCircle, Plus, XCircle, PlayCircle, Activity, Users, FileText, Edit } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, MapPin, CheckCircle, Clock, AlertCircle, Plus, XCircle, FileText, Edit, Activity, Users } from 'lucide-react';
 import { getUserRole } from '../../service/authService';
 import axiosClient from '../../config/axiosClient';
+import { useNavigate } from 'react-router-dom';
+import { enqueueSnackbar } from 'notistack';
 
 const VaccineCampaignManagement = () => {
   const [campaignList, setCampaignList] = useState([]);
@@ -37,17 +39,27 @@ const VaccineCampaignManagement = () => {
     }));
   }, []);
 
+  const navigate = useNavigate();
+
   const handleAddNewCampaign = () => {
-    console.log('Navigate to campaign creation');
+    navigate('/admin/vaccine-campaign-creation');
   };
 
   const handleCampaignAction = async (campaignId, action) => {
     setLoadingActions(prev => ({ ...prev, [campaignId]: true }));
-    
-    setTimeout(() => {
+    try {
+      const response = await axiosClient.patch(`/vaccination-campaign/${campaignId}/${action}`);
+            // Refresh campaign list after successful action
+      console.log("RES: ", response)
+      const res = await axiosClient.get('/vaccination-campaign');
+      setCampaignList(res.data.data || []);
+      enqueueSnackbar(response?.data.message, {variant: "info"})
+    } catch (error) {
+      console.error(`Error performing ${action} on campaign ${campaignId}:`, error.response.data.message);
+      enqueueSnackbar(error.response.data.message, {variant: "error"})
+    } finally {
       setLoadingActions(prev => ({ ...prev, [campaignId]: false }));
-      console.log(`Action ${action} completed for campaign ${campaignId}`);
-    }, 2000);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -106,7 +118,6 @@ const VaccineCampaignManagement = () => {
   };
 
   const getPrimaryActionConfig = (status, campaignId) => {
-    // If user is nurse, only show report editing for ONGOING campaigns
     if (userRole === 'nurse') {
       if (status === 'ONGOING') {
         return {
@@ -114,16 +125,12 @@ const VaccineCampaignManagement = () => {
           action: 'edit-report',
           className: 'bg-indigo-700 hover:bg-indigo-800 text-white',
           disabled: false,
-          onClick: () => {
-            console.log('Navigate to /bao-cao');
-            // navigate('/bao-cao');
-          }
+          onClick: () => navigate('/bao-cao')
         };
       }
-      return null; // No action buttons for other statuses if user is nurse
+      return null;
     }
 
-    // Admin has full access to all actions
     switch (status) {
       case 'PREPARING':
         return {
@@ -152,7 +159,7 @@ const VaccineCampaignManagement = () => {
           action: 'view-report',
           className: 'bg-slate-700 hover:bg-slate-800 text-white',
           disabled: false,
-          onClick: () => console.log(`View report for campaign ${campaignId}`)
+          onClick: () => navigate(`/report/${campaignId}`)
         };
       case 'CANCELLED':
         return {
@@ -168,7 +175,6 @@ const VaccineCampaignManagement = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header Section */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
@@ -197,7 +203,6 @@ const VaccineCampaignManagement = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Statistics Overview */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           {[
             { status: 'COMPLETED', label: 'Hoàn thành', count: campaignList.filter(c => c.status === 'COMPLETED').length },
@@ -220,7 +225,6 @@ const VaccineCampaignManagement = () => {
           ))}
         </div>
 
-        {/* Campaign List */}
         <div className="space-y-4">
           {campaignList.map((campaign) => {
             const primaryAction = getPrimaryActionConfig(campaign.status, campaign.campaign_id);
@@ -305,6 +309,7 @@ const VaccineCampaignManagement = () => {
                     <div className="mt-6 pt-6 border-t border-slate-200 flex flex-wrap gap-3">
                       <button 
                         className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200"
+                        onClick={() => navigate(`/${getUserRole()}/vaccine-campaign/${campaign.campaign_id}`)}
                       >
                         <FileText className="w-4 h-4 inline mr-2" />
                         Xem chi tiết
