@@ -26,6 +26,7 @@ import VaccineReport from "../pages/Admin&Nurse/VaccineReport";
 import RegularCheckup from "../pages/Admin&Nurse/RegularCheckup";
 import StudentRegularCheckup from "../pages/Parent/StudentRegularCheckup";
 import DiseaseRecordManagement from "../pages/Admin&Nurse/DiseaseRecordManagement";
+import VaccineRecordsInfo from "../pages/Parent/VaccineRecordsInfo";
 
 const routes = createBrowserRouter([
   {
