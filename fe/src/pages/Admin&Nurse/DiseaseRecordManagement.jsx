@@ -35,12 +35,6 @@ const DiseaseRecordManagement = () => {
     };
     fetchRecords();
   }, [categoryFilter]);
-
-  const clearFilter = () => {
-    setSearchTerm('');
-    setCategoryFilter(null);
-  };
-
   const filteredRecords = records.filter(record =>
     (searchTerm === '' || record.student_id.toString().includes(searchTerm) ||
      record.disease_name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -73,12 +67,6 @@ const DiseaseRecordManagement = () => {
               className={`px-4 py-2 rounded ${categoryFilter === 'Bệnh mãn tính' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-600 hover:text-white`}
             >
               Bệnh Mãn Tính
-            </button>
-            <button
-              onClick={clearFilter}
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-            >
-              Xóa bộ lọc
             </button>
           </div>
         </div>
