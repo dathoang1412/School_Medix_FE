@@ -12,6 +12,7 @@ import {
   Shield,
 } from "lucide-react";
 import axiosClient from "../../config/axiosClient";
+import VaccineRecordsInfo from "./VaccineRecordInfo";
 
 const VaccineInfo = () => {
   const [campaignList, setCampaignList] = useState([]);
@@ -95,8 +96,12 @@ const VaccineInfo = () => {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-900">Đang tải dữ liệu...</p>
-          <p className="text-sm text-gray-700 mt-1">Vui lòng chờ trong giây lát</p>
+          <p className="text-lg font-medium text-gray-900">
+            Đang tải dữ liệu...
+          </p>
+          <p className="text-sm text-gray-700 mt-1">
+            Vui lòng chờ trong giây lát
+          </p>
         </div>
       </div>
     );
@@ -107,7 +112,9 @@ const VaccineInfo = () => {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div className="bg-white border border-red-300 rounded-xl p-8 max-w-lg w-full text-center shadow-lg">
           <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Lỗi tải dữ liệu</h3>
+          <h3 className="text-lg font-semibold text-red-800 mb-2">
+            Lỗi tải dữ liệu
+          </h3>
           <p className="text-red-700 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
@@ -171,13 +178,7 @@ const VaccineInfo = () => {
       <div className="max-w-[1400px] mx-auto px-8 py-8">
         {history ? (
           <div className="bg-white rounded-xl border border-gray-300 p-10 text-center shadow-md">
-            <History className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Lịch sử tiêm chủng
-            </h3>
-            <p className="text-gray-700">
-              Tính năng đang được phát triển. Vui lòng quay lại sau.
-            </p>
+            <VaccineRecordsInfo />
           </div>
         ) : (
           <>
@@ -188,7 +189,8 @@ const VaccineInfo = () => {
                   Chưa có chiến dịch tiêm chủng
                 </h3>
                 <p className="text-gray-700">
-                  Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay lại sau để cập nhật thông tin mới nhất.
+                  Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay
+                  lại sau để cập nhật thông tin mới nhất.
                 </p>
               </div>
             ) : (
@@ -231,9 +233,12 @@ const VaccineInfo = () => {
                         <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
                           <Calendar className="w-5 h-5 text-gray-700" />
                           <div>
-                            <p className="text-sm font-medium text-gray-900">Thời gian</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              Thời gian
+                            </p>
                             <p className="text-sm text-gray-700">
-                              {formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}
+                              {formatDate(campaign.start_date)} -{" "}
+                              {formatDate(campaign.end_date)}
                             </p>
                           </div>
                         </div>
@@ -242,8 +247,12 @@ const VaccineInfo = () => {
                           <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <MapPin className="w-5 h-5 text-gray-700" />
                             <div>
-                              <p className="text-sm font-medium text-gray-900">Địa điểm</p>
-                              <p className="text-sm text-gray-700">{campaign.location}</p>
+                              <p className="text-sm font-medium text-gray-900">
+                                Địa điểm
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                {campaign.location}
+                              </p>
                             </div>
                           </div>
                         )}
@@ -252,8 +261,12 @@ const VaccineInfo = () => {
                           <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <Users className="w-5 h-5 text-gray-700" />
                             <div>
-                              <p className="text-sm font-medium text-gray-900">Đối tượng</p>
-                              <p className="text-sm text-gray-700">{campaign.target_group}</p>
+                              <p className="text-sm font-medium text-gray-900">
+                                Đối tượng
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                {campaign.target_group}
+                              </p>
                             </div>
                           </div>
                         )}
@@ -262,7 +275,9 @@ const VaccineInfo = () => {
                       {/* Description */}
                       {campaign.description && (
                         <div className="mb-6">
-                          <h4 className="text-sm font-medium text-gray-900 mb-2">Mô tả</h4>
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">
+                            Mô tả
+                          </h4>
                           <p className="text-gray-800 leading-relaxed">
                             {campaign.description}
                           </p>
