@@ -45,8 +45,9 @@ const VaccineRecordInfo = () => {
     if (!details[diseaseId]) {
       try {
         setLoadingDetails(prev => ({ ...prev, [diseaseId]: true }));
-        const res = await axiosClient.get(`/student/${currChild.id}/vaccination-record?disease_id=${diseaseId}`);
-        const allRecords = res.data.data || [];
+        // Cập nhật endpoint mới
+        const res = await axiosClient.get(`/student/${currChild.id}/disease/${diseaseId}/vaccination-record`);
+        const allRecords = res.data || [];
         setDetails(prev => ({ ...prev, [diseaseId]: allRecords }));
       } catch (error) {
         console.error("Error fetching vaccination details:", error);
@@ -144,7 +145,8 @@ const VaccineRecordInfo = () => {
                       <td className="px-4 py-4 text-center text-sm text-gray-600">{record.completed_doses}</td>
                       <td className="px-4 py-4 text-center text-sm text-gray-600">{record.dose_quantity}</td>
                       <td className="px-4 py-4 text-center text-sm">
-                        {record.completed_doses == 0 ? (<span className="text-red-600 font-medium">Chưa tiêm</span>
+                        {record.completed_doses == 0 ? (
+                          <span className="text-red-600 font-medium">Chưa tiêm</span>
                         ) : record.completed_doses == record.dose_quantity ? (
                           <span className="text-green-600 font-medium">Đã tiêm đủ</span>
                         ) : (

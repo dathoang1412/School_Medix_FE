@@ -38,7 +38,6 @@ const VaccineInfo = () => {
         const campaignRes = await axiosClient.get("/vaccination-campaign");
         const campaigns = campaignRes.data.data || [];
         setCampaignList(campaigns);
-
         const registrationPromises = campaigns.map(campaign =>
           axiosClient.get(`/student/${child.id}/vaccination-campaign/${campaign.campaign_id}/register`)
             .then(res => ({
@@ -115,12 +114,6 @@ const VaccineInfo = () => {
       case "CANCELLED":
         return {
           status: "Đã hủy",
-          className: "bg-red-100 text-red-900 border-red-400",
-          canSurvey: false,
-        };
-      case "Đã đủ mũi tiêm":
-        return {
-          status: "Đã Đủ mũi tiêm",
           className: "bg-red-100 text-red-900 border-red-400",
           canSurvey: false,
         };
