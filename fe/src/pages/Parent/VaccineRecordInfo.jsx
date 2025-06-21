@@ -127,7 +127,7 @@ const VaccineRecordInfo = () => {
                 <tr className="bg-gray-100 border-b border-gray-200 text-center">
                   <th className="w-1/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">STT</th>
                   <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Mã học sinh</th>
-                  <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Loại Vaccine</th>
+                  <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Loại bệnh</th>
                   <th className="w-3/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Số mũi đã tiêm</th>
                   <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Số mũi cần tiêm</th>
                   <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Trạng thái</th>

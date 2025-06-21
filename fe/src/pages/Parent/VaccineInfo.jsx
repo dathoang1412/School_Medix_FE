@@ -16,6 +16,7 @@ import VaccineRecordsInfo from "./VaccineRecordInfo";
 
 const VaccineInfo = () => {
   const [campaignList, setCampaignList] = useState([]);
+  const [registrationStatus, setRegistrationStatus] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState(null);
@@ -23,22 +24,48 @@ const VaccineInfo = () => {
   const [history, setHistory] = useState(false);
 
   useEffect(() => {
-    const child = JSON.parse(localStorage.getItem("selectedChild"));
-    if (child) setCurrChild(child);
-    const fetchCam = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await axiosClient.get("/vaccination-campaign");
-        const campaigns = res.data.data || [];
+        const child = JSON.parse(localStorage.getItem("selectedChild"));
+        if (!child) {
+          setError("Không tìm thấy thông tin học sinh");
+          setLoading(false);
+          return;
+        }
+        setCurrChild(child);
+
+        const campaignRes = await axiosClient.get("/vaccination-campaign");
+        const campaigns = campaignRes.data.data || [];
         setCampaignList(campaigns);
+
+        const registrationPromises = campaigns.map(campaign =>
+          axiosClient.get(`/student/${child.id}/vaccination-campaign/${campaign.campaign_id}/register`)
+            .then(res => ({
+              campaign_id: campaign.campaign_id,
+              register: res.data.data[0] || null,
+            }))
+            .catch(err => ({
+              campaign_id: campaign.campaign_id,
+              register: null,
+              error: err,
+            }))
+        );
+        const registrationResults = await Promise.all(registrationPromises);
+        const regStatus = registrationResults.reduce((acc, item) => {
+          acc[item.campaign_id] = item.register;
+          return acc;
+        }, {});
+        setRegistrationStatus(regStatus);
         setError(null);
       } catch (error) {
-       {error && setError("Không thể tải danh sách chiến dịch tiêm chủng");}
+        setError('Failed to fetch data');
+        console.error(error);
       } finally {
         setLoading(false);
       }
     };
-    fetchCam();
+    fetchData();
   }, []);
 
   const handleSurvey = (campaignId) => {
@@ -54,8 +81,17 @@ const VaccineInfo = () => {
     }
   };
 
-  const getCampaignStatus = (campaign) => {
+  const getCampaignStatus = (campaign, hasRegistration) => {
     const status = campaign.status?.toUpperCase();
+
+    // Chỉ áp dụng "Đã đủ mũi tiêm" khi status là "PREPARING" và không có đăng ký
+    if (status === "PREPARING" && !hasRegistration) {
+      return {
+        status: "Đã đủ mũi tiêm",
+        className: "bg-green-100 text-green-900 border-green-400",
+        canSurvey: false,
+      };
+    }
 
     switch (status) {
       case "PREPARING":
@@ -79,6 +115,12 @@ const VaccineInfo = () => {
       case "CANCELLED":
         return {
           status: "Đã hủy",
+          className: "bg-red-100 text-red-900 border-red-400",
+          canSurvey: false,
+        };
+      case "Đã đủ mũi tiêm":
+        return {
+          status: "Đã Đủ mũi tiêm",
           className: "bg-red-100 text-red-900 border-red-400",
           canSurvey: false,
         };
@@ -196,7 +238,9 @@ const VaccineInfo = () => {
             ) : (
               <div className="grid gap-6">
                 {campaignList.map((campaign) => {
-                  const statusInfo = getCampaignStatus(campaign);
+                  const register = registrationStatus[campaign.campaign_id];
+                  const hasRegistration = !!register;
+                  const statusInfo = getCampaignStatus(campaign, hasRegistration);
 
                   return (
                     <div
@@ -297,10 +341,10 @@ const VaccineInfo = () => {
                         ) : (
                           <button
                             disabled
-                            className="inline-flex items-center gap-2 bg-gray-200 text-gray-600 px-6 py-3 rounded-lg font-medium cursor-not-allowed"
+                            className={`inline-flex items-center gap-2 ${statusInfo.className === 'bg-green-100 text-green-900 border-green-400' ? 'bg-green-100 text-green-900 border-green-400' : 'bg-gray-200 text-gray-600'} px-6 py-3 rounded-lg font-medium cursor-not-allowed`}
                           >
                             <ClipboardList className="w-4 h-4" />
-                            Không khả dụng
+                            {statusInfo.status}
                           </button>
                         )}
                       </div>
