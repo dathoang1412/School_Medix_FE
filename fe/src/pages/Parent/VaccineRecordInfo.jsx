@@ -37,27 +37,25 @@ const VaccineRecordsInfo = () => {
     fetchRecords();
   }, [currChild?.id]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Chưa xác định";
-    try {
-      return new Date(dateString).toLocaleDateString('vi-VN');
-    } catch {
-      return "Chưa xác định";
+  // Group records by vaccine_id and count completed vaccines
+  const groupedRecords = records.reduce((acc, record) => {
+    const vaccineId = record.vaccine_id || "Unknown";
+    if (!acc[vaccineId]) {
+      acc[vaccineId] = {
+        vaccine_id: vaccineId,
+        vaccine_name: record.name,
+        student_id: record.student_id || "Chưa xác định",
+        description: record.description || "Không có mô tả",
+        completedCount: 0,
+      };
     }
-  };
+    if (record.status?.toUpperCase() === 'COMPLETED') {
+      acc[vaccineId].completedCount += 1;
+    }
+    return acc;
+  }, {});
 
-  const getStatusDisplay = (status) => {
-    switch (status?.toUpperCase()) {
-      case 'COMPLETED':
-        return <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Hoàn thành</span>;
-      case 'PENDING':
-        return <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Đang chờ</span>;
-      case 'CANCELLED':
-        return <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Đã hủy</span>;
-      default:
-        return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">Chưa xác định</span>;
-    }
-  };
+  const vaccineSummary = Object.values(groupedRecords);
 
   if (loading) {
     return (
@@ -100,7 +98,7 @@ const VaccineRecordsInfo = () => {
         </p>
       </div>
 
-      {records.length === 0 ? (
+      {vaccineSummary.length === 0 ? (
         <div className="text-center py-12">
           <Syringe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -115,27 +113,21 @@ const VaccineRecordsInfo = () => {
           <table className="w-full max-w-none table-fixed bg-white border border-gray-200 rounded-lg shadow-md">
             <thead>
               <tr className="bg-gray-100 border-b border-gray-200 text-center">
-                <th className="w-1/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">STT</th>
-                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Mã học sinh</th>
-                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Mã vaccine</th>
-                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Tên vaccine</th>
-                <th className="w-3/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Mô tả</th>
-                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Ngày tiêm</th>
-                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Địa điểm</th>
-                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Trạng thái</th>
+                <th className="w-1/10 px-4 py-4 text-xs font-bold text-blue-600 uppercase tracking-wider">STT</th>
+                <th className="w-2/10 px-4 py-4 text-xs font-bold text-blue-600 uppercase tracking-wider">Mã học sinh</th>
+                <th className="w-2/10 px-4 py-4 text-xs font-bold text-blue-600 uppercase tracking-wider">Loại Vaccine</th>
+                <th className="w-3/10 px-4 py-4 text-xs font-bold text-blue-600 uppercase tracking-wider">Mô tả</th>
+                <th className="w-2/10 px-4 py-4 text-xs font-bold text-blue-600 uppercase tracking-wider">Số mũi đã tiêm</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {records.map((record, index) => (
-                <tr key={record.id} className="hover:bg-gray-50">
+              {vaccineSummary.map((summary, index) => (
+                <tr key={summary.vaccine_id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 text-center text-sm text-gray-600">{index + 1}</td>
-                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.student_id || "Chưa xác định"}</td>
-                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.vaccine_id || "Chưa xác định"}</td>
-                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.name || "Vaccine"}</td>
-                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.description || "Không có mô tả"}</td>
-                  <td className="px-4 py-2 text-center whitespace-nowrap text-sm text-gray-600">{formatDate(record.vaccination_date)}</td>
-                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.location || "Chưa xác định"}</td>
-                  <td className="px-4 py-2 text-center whitespace-nowrap text-sm">{getStatusDisplay(record.status)}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{summary.student_id}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{summary.vaccine_name}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{summary.description}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{summary.completedCount}</td>
                 </tr>
               ))}
             </tbody>
