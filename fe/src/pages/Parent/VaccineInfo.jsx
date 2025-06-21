@@ -33,7 +33,7 @@ const VaccineInfo = () => {
         setCampaignList(campaigns);
         setError(null);
       } catch (error) {
-        setError("Không thể tải danh sách chiến dịch tiêm chủng");
+       {error && setError("Không thể tải danh sách chiến dịch tiêm chủng");}
       } finally {
         setLoading(false);
       }
@@ -175,9 +175,9 @@ const VaccineInfo = () => {
       </div>
 
       {/* Content Section */}
-      <div className="max-w-[1400px] mx-auto px-8 py-8">
+      <div className="max-w-full mx-auto pt-10">
         {history ? (
-          <div className="bg-white rounded-xl border border-gray-300 p-10 text-center shadow-md">
+          <div className="bg-white rounded-xl border border-gray-300 py-10 text-center shadow-md">
             <VaccineRecordsInfo />
           </div>
         ) : (

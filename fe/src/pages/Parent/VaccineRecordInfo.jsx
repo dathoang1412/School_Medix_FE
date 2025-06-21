@@ -9,10 +9,9 @@ const VaccineRecordsInfo = () => {
   const [currChild, setCurrChild] = useState({});
 
   useEffect(() => {
-
     const child = JSON.parse(localStorage.getItem('selectedChild'));
     if (child) {
-        setCurrChild(child);
+      setCurrChild(child);
     }
 
     if (!currChild?.id) {
@@ -37,7 +36,6 @@ const VaccineRecordsInfo = () => {
     };
     fetchRecords();
   }, [currChild?.id]);
-
 
   const formatDate = (dateString) => {
     if (!dateString) return "Chưa xác định";
@@ -91,13 +89,13 @@ const VaccineRecordsInfo = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+        <h1 className="pl-10 text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
           <Syringe className="w-8 h-8 text-blue-600" />
           Lịch sử tiêm chủng
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 py-2">
           Thông tin lịch sử tiêm chủng của {currChild?.name || "học sinh"}
         </p>
       </div>
@@ -113,31 +111,31 @@ const VaccineRecordsInfo = () => {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full bg-white border border-gray-200 rounded-lg shadow-md">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full max-w-none table-fixed bg-white border border-gray-200 rounded-lg shadow-md">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200 text-center">
-                <th className="px-3 py-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT</th>
-                <th className="px-3 py-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Mã học sinh</th>
-                <th className="px-3 py-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Mã vaccine</th>
-                <th className="px-3 py-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tên vaccine</th>
-                <th className="px-3 py-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Mô tả</th>
-                <th className="px-3 py-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tiêm</th>
-                <th className="px-3 py-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Địa điểm</th>
-                <th className="px-3 py-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+              <tr className="bg-gray-100 border-b border-gray-200 text-center">
+                <th className="w-1/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">STT</th>
+                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Mã học sinh</th>
+                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Mã vaccine</th>
+                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Tên vaccine</th>
+                <th className="w-3/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Mô tả</th>
+                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Ngày tiêm</th>
+                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Địa điểm</th>
+                <th className="w-2/16 px-4 py-2 text-xs font-bold text-blue-600 uppercase tracking-wider">Trạng thái</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {records.map((record, index) => (
                 <tr key={record.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-6 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                  <td className="px-3 py-6 whitespace-nowrap text-sm text-gray-600">{record.student_id || "Chưa xác định"}</td>
-                  <td className="px-3 py-6 whitespace-nowrap text-sm text-gray-600">{record.vaccine_id || "Chưa xác định"}</td>
-                  <td className="px-3 py-6 text-sm text-gray-600">{record.name || "Vaccine"}</td>
-                  <td className="px-3 py-6 text-sm text-gray-600">{record.description || "Không có mô tả"}</td>
-                  <td className="px-3 py-6 whitespace-nowrap text-sm text-gray-600">{formatDate(record.vaccination_date)}</td>
-                  <td className="px-3 py-6 text-sm text-gray-600">{record.location || "Chưa xác định"}</td>
-                  <td className="px-3 py-6 whitespace-nowrap text-sm">{getStatusDisplay(record.status)}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{index + 1}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.student_id || "Chưa xác định"}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.vaccine_id || "Chưa xác định"}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.name || "Vaccine"}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.description || "Không có mô tả"}</td>
+                  <td className="px-4 py-2 text-center whitespace-nowrap text-sm text-gray-600">{formatDate(record.vaccination_date)}</td>
+                  <td className="px-4 py-2 text-center text-sm text-gray-600">{record.location || "Chưa xác định"}</td>
+                  <td className="px-4 py-2 text-center whitespace-nowrap text-sm">{getStatusDisplay(record.status)}</td>
                 </tr>
               ))}
             </tbody>
