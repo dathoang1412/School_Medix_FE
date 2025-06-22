@@ -29,6 +29,7 @@ import DiseaseRecordManagement from "../pages/Admin&Nurse/DiseaseRecordManagemen
 import RegularCheckupDetails from "../pages/Admin&Nurse/RegularCheckupDetails";
 import AddRegularCheckupCampaign from "../pages/Admin&Nurse/AddRegularCheckupCampaign";
 import RegularCheckupRegisterList from "../pages/Admin&Nurse/RegularCheckupRegisterList";
+import RegularCheckupSurvey from "../pages/Parent/RegularCheckupSurvey";
 
 const routes = createBrowserRouter([
   {
@@ -161,7 +162,11 @@ const routes = createBrowserRouter([
           {
             path: "regular-checkup",
             element: <StudentRegularCheckup/>
-          }
+          },
+          {
+            path: "surveyCheckup/:checkup_id",
+            element: <RegularCheckupSurvey/>
+          },
         ],
       },
     ],
