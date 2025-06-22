@@ -4,6 +4,7 @@ import { loginWithEmailAndPassword } from "../../config/Supabase";
 import { saveUser } from "../../service/authService";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
+import axiosClient from '../../config/axiosClient';
 
 
 const Login = () => {
@@ -35,8 +36,16 @@ const Login = () => {
     if (error) {
       enqueueSnackbar(`Login failed: ${error.message}`, { variant: "error" });
     } else {
+      /// 
+      const role = data.user.app_metadata?.role;
+      const supabase_uid = data.user.id;
+      console.log("Role: " + role);
+      console.log("supabase_uid: " , supabase_uid);
+      const res = await axiosClient(`/user/${supabase_uid}/role/${role}/profile`);
+      console.log(res.data);
+      ///
       enqueueSnackbar("Login successful!", { variant: "success" });
-      saveUser(data.user);
+      saveUser(res.data.data);
       navigate("/"); 
     }
     setIsLoading(false);
