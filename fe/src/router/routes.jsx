@@ -26,6 +26,9 @@ import VaccineReport from "../pages/Admin&Nurse/VaccineReport";
 import RegularCheckup from "../pages/Admin&Nurse/RegularCheckup";
 import StudentRegularCheckup from "../pages/Parent/StudentRegularCheckup";
 import DiseaseRecordManagement from "../pages/Admin&Nurse/DiseaseRecordManagement";
+import RegularCheckupDetails from "../pages/Admin&Nurse/RegularCheckupDetails";
+import AddRegularCheckupCampaign from "../pages/Admin&Nurse/AddRegularCheckupCampaign";
+import RegularCheckupRegisterList from "../pages/Admin&Nurse/RegularCheckupRegisterList";
 
 const routes = createBrowserRouter([
   {
@@ -98,6 +101,18 @@ const routes = createBrowserRouter([
           {
             path: "disease",
             element: <DiseaseRecordManagement/>
+          },
+          {
+            path: "checkup-campaign/:checkup_id",
+            element: <RegularCheckupDetails/>
+          },
+          {
+            path: "checkup-campaign-creation",
+            element: <AddRegularCheckupCampaign/>
+          },
+          {
+            path: "checkup-campaign/:checkup-id/register-list",
+            element: <RegularCheckupRegisterList/>
           }
         ],
       },
