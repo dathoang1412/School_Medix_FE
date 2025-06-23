@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion"; // Thêm import motion
+import { AnimatePresence } from "framer-motion"; // Thêm import motion
 import {
   Search,
   Filter,
@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import axiosClient from "../../config/axiosClient";
 import { getUser } from "../../service/authService";
-import { getChildClass } from "../../service/childenService";
 import { Link, useNavigate } from "react-router-dom";
 
 const DrugTable = () => {
