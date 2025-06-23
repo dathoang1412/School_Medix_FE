@@ -164,7 +164,7 @@ const routes = createBrowserRouter([
             element: <StudentRegularCheckup/>
           },
           {
-            path: "surveyCheckup/:checkup_id",
+            path: "surveyCheckup/:campaign_id",
             element: <RegularCheckupSurvey/>
           },
         ],
