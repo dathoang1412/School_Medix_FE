@@ -223,9 +223,6 @@ const Sidebar = () => {
               {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </div>
           )}
-          {(isActive || (!isChild && hasActiveChild)) && (
-            <div className="absolute right-2 w-2 h-2 bg-blue-600 rounded-full opacity-75 animate-pulse" />
-          )}
         </button>
         
         {/* Dropdown items */}
