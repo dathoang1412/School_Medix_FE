@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Users, FileText, Plus, Check, ArrowLeft } from 'lucide-react';
 import axiosClient from '../../config/axiosClient';
 
-const AddRegularCheckupCampaign = () => {
+const RegularCheckupCampaignAdd = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -358,4 +358,4 @@ const AddRegularCheckupCampaign = () => {
   );
 };
 
-export default AddRegularCheckupCampaign;
+export default RegularCheckupCampaignAdd;

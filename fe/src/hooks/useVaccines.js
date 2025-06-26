@@ -11,7 +11,7 @@ const useVaccines = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axiosClient.get("/Vaccines");
+      const response = await axiosClient.get("/vaccine");
       const allVaccines = response.data.data || [];
       // Filter by searchTerm locally
       const filteredVaccines = allVaccines.filter(vaccine =>
