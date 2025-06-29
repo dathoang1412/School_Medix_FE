@@ -38,7 +38,8 @@ const Survey = () => {
     if (!register?.id) return;
     try {
       setProcessing(true);
-      await axiosClient.patch(`/vaccination-register/${campaign_id}/accept`);
+      await axiosClient.patch(`/vaccination-register/${register?.id}/accept`);
+      // console.log("ACCEPTING: ", register.id)
       enqueueSnackbar('Accept registration successfully', { variant: 'success' });
       navigate(-1);
     } catch (err) {

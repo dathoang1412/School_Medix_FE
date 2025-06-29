@@ -13,7 +13,8 @@ import {
   Upload,
   Shield,
   Users,
-  GraduationCap
+  GraduationCap,
+  Stethoscope
 } from 'lucide-react';
 import axiosClient from '../../config/axiosClient';
 import DeleteConfirmModal from '../../components/DeleteConfirmModal';
@@ -84,7 +85,7 @@ const UserManagement = () => {
 
   const tabs = [
     { key: 'admin', label: 'Quản trị viên', icon: Shield, count: state.users.admin.length },
-    { key: 'nurse', label: 'Y tá', icon: null, count: state.users.nurse.length },
+    { key: 'nurse', label: 'Y tá', icon: Stethoscope, count: state.users.nurse.length },
     { key: 'parent', label: 'Phụ huynh', icon: Users, count: state.users.parent.length },
     { key: 'student', label: 'Học sinh', icon: GraduationCap, count: state.users.student.length },
   ];

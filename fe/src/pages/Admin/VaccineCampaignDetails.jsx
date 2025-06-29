@@ -39,10 +39,12 @@ const VaccineCampaignDetails = () => {
     const fetchDetails = async () => {
       try {
         setLoading(true);
-        const res = await axiosClient("/vaccination-campaign/" + id);
-        console.log("Campaign details: ", res.data.data);
+        const res = await axiosClient("/vaccination-campaign/");
+        // console.log("Campaign details: ", res.data.data);
 
-        setDetails(res.data.data);
+        const aa = [...res.data.data].filter(el => el.campaign_id == id);
+        console.log("Details: ", aa);
+        setDetails(aa[0]);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching campaign details:", error);
