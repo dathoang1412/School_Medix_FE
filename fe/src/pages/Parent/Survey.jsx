@@ -7,7 +7,7 @@ const Survey = () => {
   const { student_id, campaign_id } = useParams();
   const navigate = useNavigate();
  
-  const [register, setRegister] = useState(null);
+  const [ register, setRegister] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
@@ -23,6 +23,7 @@ const Survey = () => {
         );
         console.log("REGISTER DETAILS: ", res.data.data);
         setRegister(res.data.data[0]);
+        console.log("respose register: ",register)
       } catch (err) {
         setError('Failed to fetch registration details');
         console.error(err);
@@ -37,7 +38,7 @@ const Survey = () => {
     if (!register?.id) return;
     try {
       setProcessing(true);
-      await axiosClient.patch(`/vaccination-register/${register.id}/accept`);
+      await axiosClient.patch(`/vaccination-register/${campaign_id}/accept`);
       enqueueSnackbar('Accept registration successfully', { variant: 'success' });
       navigate(-1);
     } catch (err) {
@@ -64,7 +65,7 @@ const Survey = () => {
 
     try {
       setProcessing(true);
-      await axiosClient.patch(`/vaccination-register/${register.id}/refuse`, {
+      await axiosClient.patch(`/vaccination-register/${campaign_id}/refuse`, {
         reason: refuseReason
       });
       enqueueSnackbar('Registration refused successfully', { variant: 'success' });
@@ -146,11 +147,11 @@ const Survey = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-1">
                 <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Student ID</p>
-                <p className="text-lg font-semibold text-gray-900">{register.student_id}</p>
+                <p className="text-lg font-semibold text-gray-900">{student_id}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Campaign ID</p>
-                <p className="text-lg font-semibold text-gray-900">{register.campaign_id}</p>
+                <p className="text-lg font-semibold text-gray-900">{campaign_id}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Status</p>
