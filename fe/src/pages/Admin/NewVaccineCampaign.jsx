@@ -63,9 +63,12 @@ const NewVaccineCampaign = () => {
 
   const handleCampaignChange = useCallback((e) => {
     const { name, value } = e.target;
-    setCampaignForm((prev) => ({ ...prev, [name]: value }));
+    setCampaignForm((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "vaccine_id" ? { disease_id: "" } : {}),
+    }));
   }, []);
-
   const handleVaccineChange = useCallback((e) => {
     const { name, value } = e.target;
     setVaccineForm((prev) => ({ ...prev, [name]: value }));
@@ -190,6 +193,25 @@ const NewVaccineCampaign = () => {
     },
     [vaccineForm]
   );
+
+  useEffect(() => {
+    const fetchDiseases = async () => {
+      if (!campaignForm.vaccine_id) return;
+      setIsLoadingDiseases(true);
+      setDiseases([]);
+      try {
+        const res = await axiosClient.get(`/vaccines/${campaignForm.vaccine_id}/diseases`);
+        setDiseases(res.data.data || []);
+      } catch (err) {
+        console.error("Fetch diseases error:", err);
+        setError("Không thể tải danh sách bệnh. Vui lòng kiểm tra lại.");
+      } finally {
+        setIsLoadingDiseases(false);
+      }
+    };
+    fetchDiseases();
+  }, [campaignForm.vaccine_id]);
+  
 
   const navigate = useNavigate();
 
