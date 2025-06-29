@@ -1,18 +1,13 @@
-import { useState, useCallback, useEffect } from "react";
-import { Heart, Calendar, Activity, Pill, Syringe, BarChart3 } from "lucide-react";
+import { useContext } from "react";
+import { Heart, Calendar, Activity, Pill, Syringe } from "lucide-react";
 import { Services } from "../../components/Services";
-import axiosClient from "../../config/axiosClient";
-import { getUser } from "../../service/authService";
+import { ChildContext } from "../../layouts/ParentLayout";
 import Header from "../../components/Header";
+import { useLocation } from "react-router-dom";
 
 const ParentDashboard = () => {
-  const [selectedChild, setSelectedChild] = useState(() => {
-    const savedChild = localStorage.getItem("selectedChild");
-    return savedChild ? JSON.parse(savedChild) : null;
-  });
-  const [children, setChildren] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { children, selectedChild, isLoading, error } = useContext(ChildContext);
+  const path = useLocation().pathname;
 
   const services = [
     {
@@ -46,43 +41,7 @@ const ParentDashboard = () => {
       description: "Xem tổng quan sức khỏe và lịch sử",
       path: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
     },
-    // {
-    //   icon: <BarChart3 className="w-8 h-8 text-cyan-600" />,
-    //   title: "Báo cáo sức khỏe",
-    //   description: "Xem báo cáo tổng quan sức khỏe",
-    //   path: selectedChild ? `/parent/edit/${selectedChild.id}/health-check` : "#",
-    // },
   ];
-
-  useEffect(() => {
-    const fetchChildren = async () => {
-      const user = getUser();
-      if (!user?.id) {
-        setError("Vui lòng đăng nhập để xem thông tin");
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        const res = await axiosClient.get(`/parent/${user?.id}`);
-        console.log("Children data: ", res.data.data?.children);
-        setChildren(res.data.data?.children || []);
-      } catch (error) {
-        console.error("Error at Parent Dashboard:", error);
-        setError("Không thể tải thông tin học sinh. Vui lòng thử lại sau.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchChildren();
-  }, []);
-
-  const handleSelectChild = useCallback((index) => {
-    const child = children[index];
-    setSelectedChild(child);
-    localStorage.setItem("selectedChild", JSON.stringify(child));
-  }, [children]);
 
   const getInitials = (name) => {
     return name?.charAt(0)?.toUpperCase() || "?";
@@ -90,6 +49,7 @@ const ParentDashboard = () => {
 
   return (
     <div>
+      {path && <></> }
       <Header />
       <div className="min-h-screen bg-gray-50 p-6">
         {/* Children List */}
@@ -108,10 +68,10 @@ const ParentDashboard = () => {
             </div>
           ) : children.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {children.map((child, index) => (
+              {children.map((child) => (
                 <div
-                  key={child.id || index}
-                  onClick={() => handleSelectChild(index)}
+                  key={child.id}
+                  onClick={() => handleSelectChild(child)}
                   className={`
                     bg-white p-4 rounded-lg shadow-sm border-2 cursor-pointer
                     hover:shadow-md transition-all duration-200
