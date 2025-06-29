@@ -145,6 +145,10 @@ const routes = createBrowserRouter([
           {
             path: "create/:role",
             element: <CreateUserPage/>
+          },
+          {
+            path: "regular-report/:checkup_id",
+            element: <CheckupCampaignReport />,
           }
         ],
       },
