@@ -293,7 +293,7 @@ const RegularCheckup = () => {
         </div>
 
         <div className="space-y-4">
-          {campaignList.map((campaign) => {
+          {campaignList.map((campaign, index) => {
             const primaryAction = getPrimaryActionConfig(campaign.status, campaign.id);
             const isLoading = loadingActions[campaign.id];
 
@@ -377,7 +377,7 @@ const RegularCheckup = () => {
                     <div className="mt-6 pt-6 border-t border-slate-200 flex flex-wrap gap-3">
                       <button
                         className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200"
-                        onClick={() => navigate(`/${getUserRole()}/checkup-campaign/${campaign.id}`)}
+                        onClick={() => navigate(`/${getUserRole()}/checkup-campaign/${index}`)}
                       >
                         <FileText className="w-4 h-4 inline mr-2" />
                         Xem chi tiết
