@@ -10,7 +10,7 @@ const VaccineRecordInfo = ({ records, currChild }) => {
 
   useEffect(() => {
     if (!currChild?.id) {
-      setError("Không tìm thấy thông tin học sinh");
+      console.log("Không tìm thấy thông tin học sinh");
       return;
     }
   }, [currChild?.id]);

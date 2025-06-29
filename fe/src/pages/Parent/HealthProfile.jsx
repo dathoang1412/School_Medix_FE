@@ -1,36 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { User, MapPin, Phone, Mail, Calendar, Users, GraduationCap, CheckCircle } from 'lucide-react';
+import axiosClient from '../../config/axiosClient';
 
 const HealthProfile = () => {
-  const [childData, setChildData] = useState(null); // Initialize as null for clearer loading state
-  const [isLoading, setIsLoading] = useState(true); // Track loading state
+  const [childData, setChildData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const selectedChild = JSON.parse(localStorage.getItem("selectedChild"));
-    setChildData(selectedChild);
-    setIsLoading(false);
-    console.log("CHILD DATA: ", selectedChild);
+    const fetchStudentProfile = async () => {
+      try {
+        const student = localStorage.getItem("selectedChild");
+        const studentId = student ? JSON.parse(student).id : null;
+        console.log(studentId);
+
+        if (!studentId) {
+          throw new Error("No student ID found");
+        }
+
+        const response = await axiosClient.get(`/student/${studentId}`);
+        setChildData(response.data.data);
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Error fetching student profile:", err);
+        setError(err.message || "Failed to fetch student profile");
+        setIsLoading(false);
+      }
+    };
+
+    fetchStudentProfile();
   }, []);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
-    const [day, month, year] = dateStr.split('/');
-    return `${day}/${month}/${year}`;
-  };
-
-  const calculateAge = (dob) => {
-    if (!dob) return "-";
-    const [day, month, year] = dob.split('/');
-    const birthDate = new Date(year, month - 1, day);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    return age;
+    const date = new Date(dateStr);
+    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
   };
 
   if (isLoading) {
@@ -43,21 +47,24 @@ const HealthProfile = () => {
     );
   }
 
-  if (!childData) {
+  if (error || !childData) {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">Không tìm thấy thông tin học sinh</p>
+          <p className="text-red-800">{error || "Không tìm thấy thông tin học sinh"}</p>
         </div>
       </div>
     );
   }
 
-  const InfoRow = ({ label, value, status }) => (
+  const InfoRow = ({ label, value, status, icon: Icon }) => (
     <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-      <span className="text-sm text-gray-600 font-medium">{label}:</span>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-900 font-medium">{value || "-"}</span>
+        {Icon && <Icon className="w-4 h-4 text-gray-600" />}
+        <span className="text-sm text-gray-600 font-medium">{label}:</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-900 font-medium">{value || ""}</span>
         {status && (
           <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
             {status}
@@ -79,7 +86,7 @@ const HealthProfile = () => {
                   {childData.name?.charAt(0).toUpperCase() || "-"}
                 </span>
               </div>
-              {childData.email_verified && (
+              {childData.email_confirmed && (
                 <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
                   <CheckCircle className="w-3 h-3 text-white" />
                 </div>
@@ -99,19 +106,32 @@ const HealthProfile = () => {
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-4">Thông tin chung</h2>
               <div className="bg-gray-50 rounded-lg p-4 space-y-1">
-                <InfoRow label="Ngày sinh" value={formatDate(childData.dob)} />
-                <InfoRow label="Giới tính" value={childData.gender} />
-                <InfoRow label="Nơi sinh" value="-" />
-                <InfoRow label="Quốc tịch" value="-" />
-                <InfoRow label="Dân tộc" value="-" />
-                <InfoRow label="Email" value="-" />
+                <InfoRow label="Ngày sinh" value={formatDate(childData.dob)} icon={Calendar} />
+                <InfoRow label="Giới tính" value={childData.isMale ? "Nam" : "Nữ"} icon={User} />
+                <InfoRow label="Nơi sinh" value={childData.address || "-"} icon={MapPin} />
+                <InfoRow label="Quốc tịch" value="Việt Nam" icon={Users} />
+                <InfoRow label="Dân tộc" value="-" icon={Users} />
               </div>
 
               <h2 className="text-lg font-bold text-gray-900 mb-4 mt-6">Thông tin gia đình</h2>
               <div className="bg-gray-50 rounded-lg p-4 space-y-1">
-                <InfoRow label="Họ và tên mẹ" value="Đỗ Thị Thanh Hương" />
-                <InfoRow label="Ngày sinh" value="24/07/1990" />
-                <InfoRow label="Nghề nghiệp" value="-" />
+                {childData.mom_profile && (
+                  <>
+                    <InfoRow label="Họ và tên mẹ" value={childData.mom_profile.name || "-"} icon={User} />
+                    <InfoRow label="Ngày sinh" value={formatDate(childData.mom_profile.dob)} icon={Calendar} />
+                    <InfoRow label="Nghề nghiệp" value="-" icon={GraduationCap} />
+                  </>
+                )}
+                {childData.dad_profile && (
+                  <>
+                    <InfoRow label="Họ và tên bố" value={childData.dad_profile.name || "-"} icon={User} />
+                    <InfoRow label="Ngày sinh" value={formatDate(childData.dad_profile.dob)} icon={Calendar} />
+                    <InfoRow label="Nghề nghiệp" value="-" icon={GraduationCap} />
+                  </>
+                )}
+                {!childData.mom_profile && !childData.dad_profile && (
+                  <InfoRow label="Thông tin phụ huynh" value="Không có thông tin" icon={Users} />
+                )}
               </div>
             </div>
 
@@ -119,24 +139,26 @@ const HealthProfile = () => {
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-4">Thông tin học tập</h2>
               <div className="bg-gray-50 rounded-lg p-4 space-y-1">
-                <InfoRow label="Mã học sinh" value={`sn${childData.id}`} />
-                <InfoRow label="Khối" value={childData.grade_name} />
-                <InfoRow label="Lớp" value={childData.class_name} />
-                <InfoRow label="Trạng thái" value="Đang học" status="Đang học" />
-                <InfoRow label="Địa chỉ cư trú" value="-" />
-                <InfoRow label="Địa chỉ tạm trú" value="-" />
-                <InfoRow label="Nhóm máu" value="-" />
+                <InfoRow label="Mã học sinh" value={`${childData.id}`} icon={User} />
+                <InfoRow label="Lớp" value={childData.class_name || "-"} icon={GraduationCap} />
+                <InfoRow label="Trạng thái" value="" status="Đang học" icon={CheckCircle} />
+                <InfoRow label="Địa chỉ cư trú" value={childData.address || "-"} icon={MapPin} />
+                <InfoRow label="Email" value={childData.email || "-"} icon={Mail} />
               </div>
 
-              <h2 className="text-lg font-bold text-gray-900 mb-4 mt-6">Địa chỉ liên hệ</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4 mt-6">Địa chỉ liên hệ </h2>
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-sm text-gray-900 leading-relaxed">{childData.address || "-"}</p>
               </div>
 
               <h2 className="text-lg font-bold text-gray-900 mb-4 mt-6">Liên hệ khẩn cấp</h2>
               <div className="bg-gray-50 rounded-lg p-4 space-y-1">
-                <InfoRow label="Số điện thoại" value={childData.phone_number} />
-                <InfoRow label="Email phụ huynh" value="-" />
+                <InfoRow label="Số điện thoại" value={childData.phone_number || "-"} icon={Phone} />
+                <InfoRow 
+                  label="Email phụ huynh" 
+                  value={childData.mom_profile?.email || childData.dad_profile?.email || "-"} 
+                  icon={Mail}
+                />
               </div>
             </div>
           </div>

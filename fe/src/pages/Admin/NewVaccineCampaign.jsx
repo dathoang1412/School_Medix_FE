@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import axiosClient from "../../config/axiosClient"; // Ensure path matches src/config/axiosClient.js
 import { Plus, X, ChevronRight, Loader2, AlertCircle, StepBackIcon } from "lucide-react";
@@ -28,8 +27,8 @@ const NewVaccineCampaign = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const vaccineResponse = await axiosClient.get("/vaccine");
-        console.log("Vaccines response:", vaccineResponse.data);
+        const vaccineResponse = await axiosClient.get("/vaccines");
+        console.log("Vaccines response:", vaccineResponse.data.data);
         if (vaccineResponse.data.error) {
           setError(vaccineResponse.data.message);
         } else {
@@ -48,14 +47,14 @@ const NewVaccineCampaign = () => {
     fetchData();
   }, []);
 
-  // Set default vaccine_id
+  // Set default vaccine_id or handle empty vaccine list
   useEffect(() => {
     if (vaccines.length > 0 && !campaignForm.vaccine_id) {
       setCampaignForm((prev) => ({
         ...prev,
         vaccine_id: vaccines[0].id.toString(),
       }));
-    }
+    } 
   }, [vaccines]);
 
   const handleCampaignChange = useCallback((e) => {
@@ -114,10 +113,16 @@ const NewVaccineCampaign = () => {
         });
       } catch (err) {
         console.error("Campaign submit error:", err);
-        setError(
-          err.response?.data?.message ||
-            "Lỗi hệ thống khi tạo chiến dịch. Vui lòng kiểm tra server."
-        );
+        const errorMessage = err.response?.data?.message;
+        const errorMap = {
+          "Missing required fields": "Vui lòng điền đầy đủ các trường bắt buộc",
+          "Vaccine not found or no associated disease": "Vaccine không tồn tại hoặc không liên kết với bệnh nào",
+          "End date must be after start date": "Ngày kết thúc phải sau ngày bắt đầu",
+          "Invalid vaccine_id": "Vaccine được chọn không hợp lệ",
+          "Failed to create registration request": "Không thể tạo yêu cầu đăng ký",
+          "Internal server error": "Lỗi hệ thống. Vui lòng thử lại sau",
+        };
+        setError(errorMap[errorMessage] || errorMessage || "Lỗi hệ thống khi tạo chiến dịch");
       } finally {
         setIsLoading(false);
       }
@@ -166,7 +171,7 @@ const NewVaccineCampaign = () => {
         setVaccineForm({ name: "", description: "" });
         setShowVaccineModal(false);
         // Refresh vaccine list
-        const vaccineResponse = await axiosClient.get("/vaccine");
+        const vaccineResponse = await axiosClient.get("/vaccines");
         console.log("Refreshed vaccines:", vaccineResponse.data);
         if (!vaccineResponse.data.error) {
           setVaccines(vaccineResponse.data.data || []);
@@ -343,7 +348,7 @@ const NewVaccineCampaign = () => {
       {showVaccineModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-starched mb-4">
               <h3 className="text-lg font-semibold">Thêm Vaccine Mới</h3>
               <button onClick={() => setShowVaccineModal(false)} disabled={isLoading}>
                 <X size={20} />
