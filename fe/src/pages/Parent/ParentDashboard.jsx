@@ -1,15 +1,13 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useContext } from "react";
 import { Heart, Calendar, Activity, Pill, Syringe, BarChart3 } from "lucide-react";
 import { Services } from "../../components/Services";
 import axiosClient from "../../config/axiosClient";
 import { getUser } from "../../service/authService";
 import Header from "../../components/Header";
+import { ChildContext } from "../../context/ChildContext"; // Import từ file mới
 
 const ParentDashboard = () => {
-  const [selectedChild, setSelectedChild] = useState(() => {
-    const savedChild = localStorage.getItem("selectedChild");
-    return savedChild ? JSON.parse(savedChild) : null;
-  });
+  const { selectedChild, setSelectedChild } = useContext(ChildContext);
   const [children, setChildren] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -46,15 +44,11 @@ const ParentDashboard = () => {
       description: "Xem tổng quan sức khỏe và lịch sử",
       path: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
     },
-    // {
-    //   icon: <BarChart3 className="w-8 h-8 text-cyan-600" />,
-    //   title: "Báo cáo sức khỏe",
-    //   description: "Xem báo cáo tổng quan sức khỏe",
-    //   path: selectedChild ? `/parent/edit/${selectedChild.id}/health-check` : "#",
-    // },
   ];
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchChildren = async () => {
       const user = getUser();
       if (!user?.id) {
@@ -64,25 +58,44 @@ const ParentDashboard = () => {
 
       setIsLoading(true);
       try {
-        const res = await axiosClient.get(`/parent/${user?.id}`);
-        console.log("Children data: ", res.data.data?.children);
-        setChildren(res.data.data?.children || []);
+        const res = await axiosClient.get(`/parent/${user.id}`);
+        const childrenData = res.data.data?.children || [];
+        if (isMounted) {
+          setChildren(childrenData);
+
+          const savedChild = localStorage.getItem("selectedChild");
+          const parsedChild = savedChild ? JSON.parse(savedChild) : null;
+          if (parsedChild && childrenData.some(child => child.id === parsedChild.id)) {
+            setSelectedChild(parsedChild);
+          } else if (childrenData.length > 0) {
+            setSelectedChild(childrenData[0]);
+          }
+        }
       } catch (error) {
         console.error("Error at Parent Dashboard:", error);
-        setError("Không thể tải thông tin học sinh. Vui lòng thử lại sau.");
+        if (isMounted) {
+          setError("Không thể tải thông tin học sinh. Vui lòng thử lại sau.");
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchChildren();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [setSelectedChild]);
 
   const handleSelectChild = useCallback((index) => {
     const child = children[index];
     setSelectedChild(child);
     localStorage.setItem("selectedChild", JSON.stringify(child));
-  }, [children]);
+    console.log("Selected child updated in Dashboard:", child.id, index); // Debug
+  }, [children, setSelectedChild]);
 
   const getInitials = (name) => {
     return name?.charAt(0)?.toUpperCase() || "?";
