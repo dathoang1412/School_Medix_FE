@@ -1,50 +1,57 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  FileText,
-  Calendar,
-  MapPin,
-  Users,
-  Loader2,
-  AlertCircle,
-  ClipboardList,
-  History,
-  Shield,
-} from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { FileText, Calendar, MapPin, Users, Loader2, AlertCircle, ClipboardList, History, Shield } from "lucide-react";
 import axiosClient from "../../config/axiosClient";
 import VaccineRecordsInfo from "./VaccineRecordInfo";
+import { useContext } from "react";
+import { ChildContext } from "../../layouts/ParentLayout";
 
 const VaccineInfo = () => {
+  const { childId } = useParams();
+  const { handleSelectChild, children } = useContext(ChildContext);
   const [campaignList, setCampaignList] = useState([]);
   const [completedDoses, setCompletedDoses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState(null);
-  const navigate = useNavigate();
   const [history, setHistory] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const child = JSON.parse(localStorage.getItem("selectedChild"));
+        const child = children.find((c) => c.id === childId) || JSON.parse(localStorage.getItem("selectedChild"));
         if (!child) {
           setError("Không tìm thấy thông tin học sinh");
           setLoading(false);
           return;
         }
         setCurrChild(child);
+        handleSelectChild(child);
 
         // Fetch danh sách chiến dịch
         const campaignRes = await axiosClient.get("/vaccination-campaign");
-        const campaigns = campaignRes.data.data || [];
-        setCampaignList(campaigns);
+        let campaigns = campaignRes.data.data || [];
 
         // Fetch thông tin liều đã tiêm
         const dosesRes = await axiosClient.get(`/student/${child.id}/completed-doses`);
         const dosesData = dosesRes.data.diseases || [];
         setCompletedDoses(dosesData);
 
+        // Sort campaigns: canSurvey first, then by start_date (most recent first)
+        campaigns = campaigns.map((c) => ({
+          ...c,
+          canSurvey: getCampaignStatus(c, dosesData).canSurvey,
+        }));
+        campaigns.sort((a, b) => {
+          if (a.canSurvey !== b.canSurvey) {
+            return a.canSurvey ? -1 : 1;
+          }
+          return new Date(b.start_date || 0) - new Date(a.start_date || 0);
+        });
+
+        setCampaignList(campaigns);
         setError(null);
       } catch (error) {
         setError("Failed to fetch data");
@@ -54,7 +61,7 @@ const VaccineInfo = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [childId, children, handleSelectChild]);
 
   const handleSurvey = (campaignId) => {
     navigate(`/parent/edit/${currChild.id}/survey/${campaignId}`);
@@ -69,10 +76,8 @@ const VaccineInfo = () => {
     }
   };
 
-  const getCampaignStatus = (campaign) => {
-    const status = campaign.status?.toUpperCase();
-    const doseInfo = completedDoses.find((dose) => dose.disease_id === campaign.disease_id);
-    // Kiểm tra nếu disease_id khớp và completed_doses = dose_quantity
+  const getCampaignStatus = (campaign, dosesData = completedDoses) => {
+    const doseInfo = dosesData.find((dose) => dose.disease_id === campaign.disease_id);
     if (doseInfo && doseInfo.completed_doses === doseInfo.dose_quantity) {
       return {
         status: "Đã đủ mũi tiêm",
@@ -81,6 +86,7 @@ const VaccineInfo = () => {
       };
     }
 
+    const status = campaign.status?.toUpperCase();
     switch (status) {
       case "PREPARING":
         return {
@@ -120,12 +126,8 @@ const VaccineInfo = () => {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-900">
-            Đang tải dữ liệu...
-          </p>
-          <p className="text-sm text-gray-700 mt-1">
-            Vui lòng chờ trong giây lát
-          </p>
+          <p className="text-lg font-medium text-gray-900">Đang tải dữ liệu...</p>
+          <p className="text-sm text-gray-700 mt-1">Vui lòng chờ trong giây lát</p>
         </div>
       </div>
     );
@@ -136,9 +138,7 @@ const VaccineInfo = () => {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div className="bg-white border border-red-300 rounded-xl p-8 max-w-lg w-full text-center shadow-lg">
           <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-800 mb-2">
-            Lỗi tải dữ liệu
-          </h3>
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Lỗi tải dữ liệu</h3>
           <p className="text-red-700 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
@@ -161,12 +161,8 @@ const VaccineInfo = () => {
               <Shield className="w-8 h-8 text-blue-700" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Hệ thống quản lý tiêm chủng
-              </h1>
-              <p className="text-gray-700 mt-1">
-                Theo dõi và đăng ký tham gia các chiến dịch tiêm chủng
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">Hệ thống quản lý tiêm chủng</h1>
+              <p className="text-gray-700 mt-1">Theo dõi và đăng ký tham gia các chiến dịch tiêm chủng</p>
             </div>
           </div>
 
@@ -199,7 +195,7 @@ const VaccineInfo = () => {
       </div>
 
       {/* Content Section */}
-      <div className="max-w-full mx-auto pt-10">
+      <div className="max-w-[1400px] mx-auto px-8 pt-10">
         {history ? (
           <div className="bg-white rounded-xl border border-gray-300 py-10 text-center shadow-md">
             <VaccineRecordsInfo records={completedDoses} currChild={currChild} />
@@ -209,13 +205,8 @@ const VaccineInfo = () => {
             {campaignList.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-300 p-6 text-center shadow-md">
                 <FileText className="w-12 h-12 text-gray-500 mx-auto mb-3" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                  Chưa có chiến dịch tiêm chủng
-                </h3>
-                <p className="text-gray-700 text-sm">
-                  Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay
-                  lại sau để cập nhật thông tin mới nhất.
-                </p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Chưa có chiến dịch tiêm chủng</h3>
+                <p className="text-gray-700 text-sm">Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay lại sau để cập nhật thông tin mới nhất.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -236,18 +227,13 @@ const VaccineInfo = () => {
                             </div>
                             <div>
                               <h3 className="text-base font-semibold text-gray-900">
-                                {campaign.vaccine_name ||
-                                  `Chiến dịch #${campaign.campaign_id}`}
+                                {campaign.vaccine_name || `Chiến dịch #${campaign.campaign_id}`}
                               </h3>
-                              <p className="text-xs text-gray-600 font-mono">
-                                Mã: {campaign.campaign_id}
-                              </p>
+                              <p className="text-xs text-gray-600 font-mono">Mã: {campaign.campaign_id}</p>
                             </div>
                           </div>
                         </div>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium border ${statusInfo.className}`}
-                        >
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${statusInfo.className}`}>
                           {statusInfo.status}
                         </span>
                       </div>
@@ -289,9 +275,7 @@ const VaccineInfo = () => {
                       {campaign.description && (
                         <div className="mb-3">
                           <h4 className="text-xs font-medium text-gray-900 mb-1">Mô tả</h4>
-                          <p className="text-gray-800 text-xs leading-tight">
-                            {campaign.description}
-                          </p>
+                          <p className="text-gray-800 text-xs leading-tight">{campaign.description}</p>
                         </div>
                       )}
 
@@ -308,7 +292,7 @@ const VaccineInfo = () => {
                         ) : (
                           <button
                             disabled
-                            className={`inline-flex items-center gap-1 ${statusInfo.className === 'bg-green-100 text-green-900 border-green-400' ? 'bg-green-100 text-green-900 border-green-400' : 'bg-gray-200 text-gray-600'} px-3 py-1.5 rounded-md text-xs font-medium cursor-not-allowed`}
+                            className="inline-flex items-center gap-1 bg-gray-200 text-gray-600 px-3 py-1.5 rounded-md text-xs font-medium cursor-not-allowed"
                           >
                             <ClipboardList className="w-3 h-3" />
                             {statusInfo.status}
