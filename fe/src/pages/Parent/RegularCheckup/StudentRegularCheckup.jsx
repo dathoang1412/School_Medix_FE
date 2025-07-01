@@ -248,7 +248,7 @@ const StudentRegularCheckup = () => {
                       {campaign.description && (
                         <div className="mb-3">
                           <h4 className="text-xs font-medium text-gray-900 mb-1">Mô tả</h4>
-                          <p className="text-gray-800 text-xs leading-tight">{campaign.description}</p>
+                          <p className="text-gray-800 text-xs leading-tight">{"_ " + campaign.description}</p>
                         </div>
                       )}
 

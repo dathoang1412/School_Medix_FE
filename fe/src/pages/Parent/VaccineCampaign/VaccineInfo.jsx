@@ -91,8 +91,11 @@ const VaccineInfo = () => {
     }
   };
 
-  const getCampaignStatus = (campaign, dosesData = completedDoses, register = null) => {
+  const getCampaignStatus = (campaign, dosesData = completedDoses) => {
     const doseInfo = dosesData.find((dose) => dose.disease_id === campaign.disease_id);
+    const currentDate = new Date();
+    const status = campaign.status?.toUpperCase();
+
     if (doseInfo && doseInfo.completed_doses === doseInfo.dose_quantity) {
       return {
         status: "Đã đủ mũi tiêm",
@@ -100,38 +103,48 @@ const VaccineInfo = () => {
         canSurvey: false,
       };
     }
-
-    const status = campaign.status?.toUpperCase();
-    const isRegistered = register?.is_registered || false;
+    if(new Date(campaign.end_date) < currentDate && status !== "COMPLETED") {
+      return {
+        status: "Đã hết hạn đăng ký ",
+        className: "bg-gray-100 text-gray-900 border-gray-400",
+        canSurvey: false,
+      };
+    }
     switch (status) {
       case "PREPARING":
         return {
           status: "Chuẩn bị",
-          className: "bg-orange-100 text-orange-900 border-orange-400",
+          className: "bg-orange-100 text-orange-900 border-orange-400 text-lg font-semibold",
           canSurvey: true,
         };
-      case "ACTIVE":
+      case "ONGOING":
         return {
           status: "Đang diễn ra",
-          className: "bg-green-100 text-green-900 border-green-400",
-          canSurvey: !isRegistered,
+          className: "bg-blue-100 text-blue-900 border-blue-400 text-lg font-semibold",
+          canSurvey: false,
+        };
+      case "UPCOMING":
+        return {
+          status: "Đã đóng đơn",
+          className: "bg-purple-100 text-purple-900 border-purple-400 text-lg font-semibold",
+          canSurvey: false,
         };
       case "COMPLETED":
         return {
           status: "Hoàn thành",
-          className: "bg-gray-100 text-gray-900 border-gray-400",
+          className: "bg-green-100 text-green-900 border-gray-400 text-lg font-semibold",
           canSurvey: false,
         };
       case "CANCELLED":
         return {
           status: "Đã hủy",
-          className: "bg-red-100 text-red-900 border-red-400",
+          className: "bg-red-100 text-red-900 border-red-400 text-lg font-semibold",
           canSurvey: false,
         };
       default:
         return {
           status: "Chưa xác định",
-          className: "bg-gray-100 text-gray-900 border-gray-400",
+          className: "bg-gray-100 text-gray-900 border-gray-400 text-lg font-semibold",
           canSurvey: false,
         };
     }

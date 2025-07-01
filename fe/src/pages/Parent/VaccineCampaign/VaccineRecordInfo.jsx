@@ -49,7 +49,7 @@ const VaccineRecordInfo = ({ records, currChild }) => {
       case "notEnough":
         return records.filter((record) => record.completed_doses > 0 && record.completed_doses < record.dose_quantity);
       case "enough":
-        return records.filter((record) => record.completed_doses === record.dose_quantity);
+        return records.filter((record) => +record.completed_doses === record.dose_quantity);
       default:
         return records;
     }
@@ -115,10 +115,10 @@ const VaccineRecordInfo = ({ records, currChild }) => {
                   <th className="w-1/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">STT</th>
                   <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Mã học sinh</th>
                   <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Loại bệnh</th>
-                  <th className="w-3/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Số mũi đã tiêm</th>
+                  <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Số mũi đã tiêm</th>
                   <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Số mũi cần tiêm</th>
                   <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Trạng thái</th>
-                  <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Chi tiết</th>
+                  <th className="w-3/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Chi tiết</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -133,7 +133,7 @@ const VaccineRecordInfo = ({ records, currChild }) => {
                       <td className="px-4 py-4 text-center text-sm">
                         {record.completed_doses === 0 ? (
                           <span className="text-red-600 font-medium">Chưa tiêm</span>
-                        ) : record.completed_doses == record.dose_quantity ? (
+                        ) : +record.completed_doses === record.dose_quantity ? (
                           <span className="text-green-600 font-medium">Đã tiêm đủ</span>
                         ) : (
                           <span className="text-yellow-600 font-medium">Chưa tiêm đủ</span>

@@ -44,7 +44,7 @@ const VaccineDetailsDropdown = ({ diseaseId, details, loading }) => {
                   </td>
                   <td className="px-4 py-2 text-sm text-gray-600">
                     <Calendar className="w-4 h-4 text-blue-500" />
-                    {detail.vaccination_date ? new Date(detail.vaccination_date).toLocaleDateString('vi-VN') : "Chưa xác định"}
+                    {detail.vaccination_date ? new Date(detail.vaccination_date).toLocaleDateString("vi-VN") : "Chưa xác định"}
                   </td>
                   <td className="px-4 py-2 text-sm text-gray-600">
                     <MapPin className="w-4 h-4 text-green-500" />
