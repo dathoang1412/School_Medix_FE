@@ -118,7 +118,6 @@ const RegularCheckup = () => {
   };
 
   const getPrimaryActionConfig = (status, campaignId) => {
-    // Common action for both admin and nurse when campaign is ONGOING
     if (status === "ONGOING") {
       return {
         text: "Chỉnh sửa báo cáo",
