@@ -11,25 +11,29 @@ const TabHeader = () => {
     () =>
       [
         {
-          label: "Hồ sơ sức khỏe",
+          label: "Hồ sơ",
           to: selectedChild ? `/parent/edit/${selectedChild.id}/health-profile` : "#",
         },
         {
-          label: "Thông tin tiêm chủng",
+          label: "Tiêm chủng",
           to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-info` : "#",
         },
         {
-          label: "Khám sức khỏe định kỳ",
+          label: "Sức khỏe định kỳ",
           to: selectedChild ? `/parent/edit/${selectedChild.id}/regular-checkup` : "#",
         },
         {
-          label: "Gửi thuốc cho nhà trường",
+          label: "Gửi thuốc",
           to: selectedChild ? `/parent/edit/${selectedChild.id}/drug-table` : "#",
         },
         {
           label: "Sức khỏe hằng ngày",
           to: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
         },
+        // {
+        //   label: "Khai báo bệnh",
+        //   to: selectedChild ? `/parent/edit/${selectedChild.id}/declare-disease` : "#",
+        // }
       ],
     [selectedChild]
   );
