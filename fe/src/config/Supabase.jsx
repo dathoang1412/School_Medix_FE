@@ -1,3 +1,4 @@
+// supabase.js
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -7,6 +8,7 @@ console.log("supabase url: ", supabaseUrl);
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Login with email and password
 export const loginWithEmailAndPassword = async (email, password) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -35,6 +37,7 @@ export const signOut = async () => {
 };
 
 
+// Send OTP to email
 export const sendOtp = async (email) => {
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
@@ -49,6 +52,7 @@ export const sendOtp = async (email) => {
   }
 };
 
+// Verify OTP
 export const verifyOtp = async (email, token) => {
   const { data, error } = await supabase.auth.verifyOtp({
     email,
@@ -65,4 +69,44 @@ export const verifyOtp = async (email, token) => {
     console.log("✅ OTP verified, user signed in:", data);
     return { data };
   }
+};
+
+// Upload file to Supabase Storage
+export const uploadFileToSupabaseStorage = async (file, bucket, path) => {
+  const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
+    contentType: file.type,
+    upsert: true,
+  });
+
+  if (error) {
+    console.error("❌ Error uploading file to Supabase Storage:", error.message);
+    return { error };
+  } else {
+    const { publicUrl } = supabase.storage.from(bucket).getPublicUrl(path).data;
+    console.log("✅ File uploaded to Supabase Storage:", publicUrl);
+    return { data: { publicUrl } };
+  }
+};
+
+// Retrieve file from Supabase Storage
+export const retrieveFileFromSupabaseStorage = async (bucket, path) => {
+  const { data, error } = await supabase.storage.from(bucket).download(path);
+
+  if (error) {
+    console.error("❌ Error retrieving file from Supabase Storage:", error.message);
+    return { error };
+  } else {
+    console.log("✅ File retrieved from Supabase Storage:", path);
+    return { data };
+  }
+};
+
+// Get current session
+export const getSession = async () => {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error("❌ Error fetching session:", error.message);
+    return { error };
+  }
+  return { data };
 };
