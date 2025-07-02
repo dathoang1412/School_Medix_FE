@@ -39,16 +39,18 @@ const Login = () => {
       // get role from object retrieved from supabase auth user
       const role = data.user.app_metadata?.role;
       const supabase_uid = data.user.id;
-      console.log("Role: " + role);
-      console.log("supabase_uid: ", supabase_uid);
       // get the supabase_uid and retrieve profile basing on each role
       const res = await axiosClient(`/user/${supabase_uid}/role/${role}/profile`);
       enqueueSnackbar("Login successful!", { variant: "success" });
       //then save the profile to user object in localStorage
       const user = res.data.data;
       saveUser(user);
+      console.log(user);
       // also confirm email to set that email is being used and signed in successfully
-      await axiosClient.patch(`/role/${role}/user/${user.id}/confirm-email`);
+      if(user?.email_confirmed === false) {
+        console.log("EMAIL CONFIRMED FOR: ", email);
+        await axiosClient.patch(`/role/${role}/user/${user.id}/confirm-email`);
+      }
 
       navigate("/");
     }

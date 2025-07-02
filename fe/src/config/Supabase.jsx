@@ -22,6 +22,19 @@ export const loginWithEmailAndPassword = async (email, password) => {
   }
 };
 
+export const signOut = async () => {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.error("❌ Sign-out failed:", error.message);
+    return { error };
+  } else {
+    console.log("✅ Signed out successfully");
+    return { success: true };
+  }
+};
+
+
 export const sendOtp = async (email) => {
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
