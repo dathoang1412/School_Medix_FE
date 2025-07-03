@@ -36,7 +36,6 @@ export const signOut = async () => {
   }
 };
 
-
 // Send OTP to email
 export const sendOtp = async (email) => {
   const { data, error } = await supabase.auth.signInWithOtp({
@@ -73,13 +72,18 @@ export const verifyOtp = async (email, token) => {
 
 // Upload file to Supabase Storage
 export const uploadFileToSupabaseStorage = async (file, bucket, path) => {
-  const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
-    contentType: file.type,
-    upsert: true,
-  });
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .upload(path, file, {
+      contentType: file.type,
+      upsert: true,
+    });
 
   if (error) {
-    console.error("❌ Error uploading file to Supabase Storage:", error.message);
+    console.error(
+      "❌ Error uploading file to Supabase Storage:",
+      error.message
+    );
     return { error };
   } else {
     const { publicUrl } = supabase.storage.from(bucket).getPublicUrl(path).data;
@@ -93,7 +97,10 @@ export const retrieveFileFromSupabaseStorage = async (bucket, path) => {
   const { data, error } = await supabase.storage.from(bucket).download(path);
 
   if (error) {
-    console.error("❌ Error retrieving file from Supabase Storage:", error.message);
+    console.error(
+      "❌ Error retrieving file from Supabase Storage:",
+      error.message
+    );
     return { error };
   } else {
     console.log("✅ File retrieved from Supabase Storage:", path);

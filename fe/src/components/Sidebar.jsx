@@ -20,13 +20,14 @@ import { FaStethoscope, FaVial } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getUser, getUserRole, removeUser } from "../service/authService";
 import { enqueueSnackbar } from "notistack";
+import { signOut } from "../config/Supabase";
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("Trang chủ");
   const [isMobile, setIsMobile] = useState(false);
   const [expandedDropdowns, setExpandedDropdowns] = useState({});
-  
+
   const [commonItems, setCommonItems] = useState([
     { title: "Trang chủ", path: "/", icon: <RiHome9Line /> },
     {
@@ -103,8 +104,8 @@ const Sidebar = () => {
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
@@ -127,24 +128,28 @@ const Sidebar = () => {
   }, [localStorage.getItem("user")]);
 
   const bottomItems = [
-    { title: getUserRole().toString().toUpperCase(), action: "", icon: <User2 /> },
+    {
+      title: getUserRole().toString().toUpperCase(),
+      action: "",
+      icon: <User2 />,
+    },
     { title: "Đăng xuất", action: "logout", icon: <LogOut /> },
   ];
 
   const handleNavigation = (path, title, parentTitle = null) => {
     setActiveItem(title);
-    
+
     // If it's a child item, also expand its parent dropdown
     if (parentTitle) {
-      setExpandedDropdowns(prev => ({
+      setExpandedDropdowns((prev) => ({
         ...prev,
-        [parentTitle]: true
+        [parentTitle]: true,
       }));
     }
-    
+
     console.log(`Navigating to: ${path}`);
     navigate(path);
-    
+
     // Auto collapse on mobile after navigation
     if (isMobile) {
       setIsCollapsed(true);
@@ -165,10 +170,10 @@ const Sidebar = () => {
 
   const toggleDropdown = (itemTitle) => {
     if (isCollapsed) return;
-    
-    setExpandedDropdowns(prev => ({
+
+    setExpandedDropdowns((prev) => ({
       ...prev,
-      [itemTitle]: !prev[itemTitle]
+      [itemTitle]: !prev[itemTitle],
     }));
   };
 
@@ -176,9 +181,11 @@ const Sidebar = () => {
     const isActive = activeItem === item.title;
     const hasDropdown = item.hasDropdown && !isCollapsed;
     const isExpanded = expandedDropdowns[item.title];
-    
+
     // Check if any child is active (for parent highlighting)
-    const hasActiveChild = item.children && item.children.some(child => activeItem === child.title);
+    const hasActiveChild =
+      item.children &&
+      item.children.some((child) => activeItem === child.title);
     const shouldHighlightParent = isActive || hasActiveChild;
 
     return (
@@ -195,42 +202,56 @@ const Sidebar = () => {
             w-full flex items-center gap-3 p-3 rounded-xl text-left 
             transition-all duration-300 ease-out group relative
             transform hover:scale-[1.02] active:scale-[0.98]
-            ${isChild 
-              ? 'ml-4 pl-8 bg-gray-50/70 hover:bg-gray-100/80 border-l-2 border-gray-200' 
-              : ''
+            ${
+              isChild
+                ? "ml-4 pl-8 bg-gray-50/70 hover:bg-gray-100/80 border-l-2 border-gray-200"
+                : ""
             }
-            ${isActive || (!isChild && hasActiveChild)
-              ? isChild
-                ? "bg-gradient-to-r from-blue-50/80 to-blue-100/80 text-blue-700 shadow-sm scale-[1.02] border-l-blue-300"
-                : "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm scale-[1.02]"
-              : isChild
+            ${
+              isActive || (!isChild && hasActiveChild)
+                ? isChild
+                  ? "bg-gradient-to-r from-blue-50/80 to-blue-100/80 text-blue-700 shadow-sm scale-[1.02] border-l-blue-300"
+                  : "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm scale-[1.02]"
+                : isChild
                 ? "text-gray-500 hover:text-gray-700"
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
             }
           `}
-          title={isCollapsed ? item.title : ''}
+          title={isCollapsed ? item.title : ""}
         >
-          <div className={`text-lg flex-shrink-0 transition-all duration-300 ease-out group-hover:scale-125 group-hover:rotate-3 ${isChild ? 'text-base' : ''}`}>
+          <div
+            className={`text-lg flex-shrink-0 transition-all duration-300 ease-out group-hover:scale-125 group-hover:rotate-3 ${
+              isChild ? "text-base" : ""
+            }`}
+          >
             {item.icon}
           </div>
           {!isCollapsed && (
-            <span className={`font-medium leading-tight truncate flex-1 ${isChild ? 'text-xs' : 'text-sm'}`}>
+            <span
+              className={`font-medium leading-tight truncate flex-1 ${
+                isChild ? "text-xs" : "text-sm"
+              }`}
+            >
               {item.title}
             </span>
           )}
           {hasDropdown && !isCollapsed && (
             <div className="text-sm">
-              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              {isExpanded ? (
+                <ChevronDown size={16} />
+              ) : (
+                <ChevronRight size={16} />
+              )}
             </div>
           )}
         </button>
-        
+
         {/* Dropdown items */}
         {hasDropdown && item.children && (
-          <div 
+          <div
             className={`
               overflow-hidden transition-all duration-300 ease-in-out
-              ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+              ${isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}
             `}
           >
             <div className="mt-1 space-y-1 pb-1 bg-gray-50/30 rounded-lg mx-2 px-1 py-2">
@@ -239,13 +260,14 @@ const Sidebar = () => {
                   key={child.title}
                   className={`
                     transform transition-all duration-300 ease-out
-                    ${isExpanded 
-                      ? 'translate-x-0 opacity-100' 
-                      : '-translate-x-4 opacity-0'
+                    ${
+                      isExpanded
+                        ? "translate-x-0 opacity-100"
+                        : "-translate-x-4 opacity-0"
                     }
                   `}
                   style={{
-                    transitionDelay: isExpanded ? `${index * 50}ms` : '0ms'
+                    transitionDelay: isExpanded ? `${index * 50}ms` : "0ms",
                   }}
                 >
                   {renderMenuItem(child, true, item.title)}
@@ -262,31 +284,35 @@ const Sidebar = () => {
     <>
       {/* Overlay for mobile */}
       {isMobile && !isCollapsed && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           onClick={() => setIsCollapsed(true)}
         />
       )}
-      
+
       <div
         className={`
-          ${isMobile ? 'fixed' : 'relative'} 
-          ${isMobile ? 'z-50' : 'z-10'}
+          ${isMobile ? "fixed" : "relative"} 
+          ${isMobile ? "z-50" : "z-10"}
           h-screen bg-white shadow-lg border-r border-gray-200 
           flex flex-col transition-all duration-300 ease-in-out
-          ${isCollapsed ? 'w-16' : 'w-64'}
-          ${isMobile && isCollapsed ? '-translate-x-full' : 'translate-x-0'}
+          ${isCollapsed ? "w-16" : "w-64"}
+          ${isMobile && isCollapsed ? "-translate-x-full" : "translate-x-0"}
         `}
       >
         {/* Header */}
-        <div className={`p-3 border-b border-gray-200 flex items-center justify-between 
-                        min-h-[60px] ${isCollapsed ? "flex-col" : "flex-row"}`}>
+        <div
+          className={`p-3 border-b border-gray-200 flex items-center justify-between 
+                        min-h-[60px] ${isCollapsed ? "flex-col" : "flex-row"}`}
+        >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
               <MdOutlineSchool className="text-white text-lg" />
             </div>
             {!isCollapsed && (
-              <span className="font-bold text-gray-900 text-lg">SchoolMedix</span>
+              <span className="font-bold text-gray-900 text-lg">
+                SchoolMedix
+              </span>
             )}
           </div>
           <button
@@ -313,7 +339,7 @@ const Sidebar = () => {
           <div className="space-y-1">
             {adminItems.map((item) => renderMenuItem(item))}
           </div>
-        </div> 
+        </div>
 
         {/* Bottom Actions */}
         <div className="p-2 border-t border-gray-100 bg-gray-50/50">
@@ -321,16 +347,19 @@ const Sidebar = () => {
             {bottomItems.map((item, index) => (
               <button
                 key={item.title}
-                onClick={() => {
+                onClick={async () => {
                   handleAction(item.action);
                   if (index === 1) {
                     removeUser();
-                    enqueueSnackbar("Đăng xuất thành công", { variant: "success" });
+                    await signOut();
+                    enqueueSnackbar("Đăng xuất thành công", {
+                      variant: "success",
+                    });
                     navigate("/");
                   }
                 }}
                 className="w-full flex items-center gap-3 p-3 rounded-xl text-left text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-300 ease-out group transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-sm"
-                title={isCollapsed ? item.title : ''}
+                title={isCollapsed ? item.title : ""}
               >
                 <div className="text-lg flex-shrink-0 transition-all duration-300 ease-out group-hover:scale-125 group-hover:rotate-3">
                   {item.icon}
