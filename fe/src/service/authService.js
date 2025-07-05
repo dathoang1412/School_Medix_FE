@@ -4,6 +4,7 @@ export const saveUser = (user) => {
 
 export const removeUser = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("selectedChild");
 }
 
 export const getUser = () => {

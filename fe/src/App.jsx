@@ -6,7 +6,13 @@ import Sidebar from "./components/Sidebar";
 const App = () => {
   return (
     <div>
-      <SnackbarProvider maxSnack = {3}>
+      <SnackbarProvider
+        maxSnack={3}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
         <RouterProvider router={routes} />
       </SnackbarProvider>
     </div>

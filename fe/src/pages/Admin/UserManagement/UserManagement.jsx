@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -6,8 +6,6 @@ import {
   Edit2,
   Trash2,
   Eye,
-  UserCheck,
-  UserX,
   Filter,
   Download,
   Upload,
@@ -15,15 +13,17 @@ import {
   Users,
   GraduationCap,
   Stethoscope,
+  Loader2,
+  Send,
 } from "lucide-react";
+import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import DeleteConfirmModal from "../../../components/DeleteConfirmModal";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
 import { getUserRole } from "../../../service/authService";
-import axios from "axios";
 
-// Thành phần hiển thị thông tin người dùng (tái sử dụng)
+// UserInfo component remains unchanged
 const UserInfo = ({ user, role, isDetailModal = false }) => (
   <div className="space-y-2 text-sm">
     {user.profile_img_url && (
@@ -99,18 +99,21 @@ const UserInfo = ({ user, role, isDetailModal = false }) => (
 
 const UserManagement = () => {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
   const [state, setState] = useState({
     activeTab: "admin",
     searchTerm: "",
     emailConfirmedFilter: "",
     users: { admin: [], nurse: [], parent: [], student: [] },
     loading: false,
+    isRefreshing: false,
     showDeleteModal: false,
     showDetailModal: false,
     selectedUserDetail: null,
+    selectedUsers: [],
+    isSendingInvites: false,
   });
 
-  // Hàm tiện ích để cập nhật trạng thái
   const updateState = (updates) =>
     setState((prev) => ({ ...prev, ...updates }));
 
@@ -141,34 +144,37 @@ const UserManagement = () => {
     },
   ];
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      updateState({ loading: true });
-      try {
-        const [adminRes, nurseRes, parentRes, studentRes] = await Promise.all([
-          axiosClient.get("/admin"),
-          axiosClient.get("/nurse"),
-          axiosClient.get("/parent"),
-          axiosClient.get("/student"),
-        ]);
-        updateState({
-          users: {
-            admin: adminRes.data.data,
-            nurse: nurseRes.data.data,
-            parent: parentRes.data.data,
-            student: studentRes.data.data,
-          },
-        });
-      } catch (error) {
-        alert(
-          "Lỗi tải dữ liệu: " + (error.response?.data?.message || error.message)
-        );
-      } finally {
-        updateState({ loading: false });
-      }
-    };
-    fetchUsers();
+  const fetchUsers = useCallback(async () => {
+    updateState({ loading: true, isRefreshing: true });
+    try {
+      const [adminRes, nurseRes, parentRes, studentRes] = await Promise.all([
+        axiosClient.get("/admin"),
+        axiosClient.get("/nurse"),
+        axiosClient.get("/parent"),
+        axiosClient.get("/student"),
+      ]);
+      updateState({
+        users: {
+          admin: adminRes.data.data,
+          nurse: nurseRes.data.data,
+          parent: parentRes.data.data,
+          student: studentRes.data.data,
+        },
+        selectedUsers: [],
+      });
+    } catch (error) {
+      enqueueSnackbar(
+        `Lỗi tải dữ liệu: ${error.response?.data?.message || error.message}`,
+        { variant: "error" }
+      );
+    } finally {
+      updateState({ loading: false, isRefreshing: false });
+    }
   }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const applyFilters = (users) =>
     users.filter((user) => {
@@ -184,30 +190,39 @@ const UserManagement = () => {
 
   const filteredUsers = applyFilters(state.users[state.activeTab] || []);
 
-  console.log("Filtered Users: ", filteredUsers);
+  const handleCheckboxChange = (user) => {
+    updateState({
+      selectedUsers: state.selectedUsers.some((u) => u.id === user.id)
+        ? state.selectedUsers.filter((u) => u.id !== user.id)
+        : [...state.selectedUsers, { ...user, role: state.activeTab }],
+    });
+  };
 
-  const handleStatusToggle = async (userId, currentStatus) => {
+  const handleSendInvites = async () => {
+    if (state.selectedUsers.length === 0) return;
+    const selected_users = state.selectedUsers.map(
+      ({ id, name, email, role }) => ({
+        id,
+        name,
+        email,
+        role,
+      })
+    );
+    updateState({ isSendingInvites: true });
     try {
-      const endpoint = currentStatus
-        ? `/role/${state.activeTab}/user/${userId}/unconfirm-email`
-        : `/role/${state.activeTab}/user/${userId}/confirm-email`;
-      await axiosClient.patch(endpoint);
-      updateState({
-        users: {
-          ...state.users,
-          [state.activeTab]: state.users[state.activeTab].map((user) =>
-            user.id === userId
-              ? { ...user, email_confirmed: !currentStatus }
-              : user
-          ),
-        },
+      const response = await axiosClient.post("/send-invites", {
+        users: selected_users,
       });
-      alert(`Đã ${currentStatus ? "hủy xác thực" : "xác thực"} email`);
+      enqueueSnackbar(response.data.message || "Đã gửi lời mời!", {
+        variant: "success",
+      });
+      updateState({ selectedUsers: [], isSendingInvites: false });
     } catch (error) {
-      alert(
-        "Lỗi cập nhật trạng thái: " +
-          (error.response?.data?.message || error.message)
+      enqueueSnackbar(
+        `Lỗi khi gửi lời mời: ${error.response?.data?.message || error.message}`,
+        { variant: "error" }
       );
+      updateState({ isSendingInvites: false });
     }
   };
 
@@ -221,8 +236,9 @@ const UserManagement = () => {
         });
       }
     } catch (error) {
-      alert(
-        "Lỗi lấy chi tiết: " + (error.response?.data?.message || error.message)
+      enqueueSnackbar(
+        `Lỗi lấy chi tiết: ${error.response?.data?.message || error.message}`,
+        { variant: "error" }
       );
     }
   };
@@ -237,7 +253,6 @@ const UserManagement = () => {
           async (id) => await axiosClient.delete(`/${state.activeTab}/${id}`)
         )
       );
-
       updateState({
         users: {
           ...state.users,
@@ -245,11 +260,15 @@ const UserManagement = () => {
             (user) => !deletedUserIds.includes(user.id)
           ),
         },
+        selectedUsers: state.selectedUsers.filter(
+          (user) => !deletedUserIds.includes(user.id)
+        ),
         showDeleteModal: false,
       });
+      enqueueSnackbar("Xóa người dùng thành công!", { variant: "success" });
     } catch (error) {
       console.error("❌ Xóa người dùng thất bại:", error.message);
-      alert("Lỗi khi xóa người dùng!");
+      enqueueSnackbar("Lỗi khi xóa người dùng!", { variant: "error" });
     }
   };
 
@@ -273,7 +292,9 @@ const UserManagement = () => {
       new Blob([csv], { type: "text/csv;charset=utf-8;" }),
       `${state.activeTab}_users.csv`
     );
+    enqueueSnackbar("Xuất CSV thành công!", { variant: "success" });
   };
+
   const handleImportCSV = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -295,10 +316,13 @@ const UserManagement = () => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        responseType: "blob", // 👈 important
+        responseType: "blob",
       });
 
-      // Trigger download
+      enqueueSnackbar("Tải file lên và xử lý thành công!", {
+        variant: "success",
+      });
+
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -309,23 +333,24 @@ const UserManagement = () => {
       a.download = `${state.activeTab}_upload_result.xlsx`;
       a.click();
       window.URL.revokeObjectURL(url);
-
-      alert("Tải file lên và xử lý thành công! Đang tải xuống file log...");
     } catch (error) {
-      alert(
-        "Lỗi khi tải file lên: " +
-          (error.response?.data?.message || error.message)
+      console.error("Error uploading file:", error);
+      enqueueSnackbar(
+        `Lỗi khi tải file lên: ${error.response?.data?.message || error.message}`,
+        { variant: "error" }
       );
     }
   };
 
   const handleGetImportSample = async () => {
     try {
-      const res = await axiosClient.get(`/${state.activeTab}-import-sample`, {
-        responseType: "blob", // để nhận về file Excel
+      const response = await axiosClient.get(`/${state.activeTab}-import-sample`, {
+        responseType: "blob",
       });
 
-      const blob = new Blob([res.data], {
+      enqueueSnackbar("Tải file mẫu thành công!", { variant: "success" });
+
+      const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
@@ -339,113 +364,117 @@ const UserManagement = () => {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("❌ Lỗi tải file mẫu:", err.message);
-      throw err;
+      enqueueSnackbar(
+        `Lỗi tải file mẫu: ${err.response?.data?.message || err.message}`,
+        { variant: "error" }
+      );
     }
   };
 
-  const renderUserCard = (user) => (
-    <div
+  const handleRefresh = () => {
+    fetchUsers();
+  };
+
+  const renderTableHeader = () => {
+    const headers = [
+      { label: "", width: "w-12" }, // Checkbox
+      { label: "ID", width: "w-16" },
+      { label: "Họ tên", width: "w-1/3" },
+      { label: "Email", width: "w-1/3" },
+      { label: "SĐT", width: "w-20" },
+      ...(state.activeTab === "parent"
+        ? [{ label: "Số con", width: "w-20" }]
+        : state.activeTab === "student"
+        ? [
+            { label: "Mã HS", width: "w-20" },
+            { label: "Lớp", width: "w-28" },
+          ]
+        : []),
+      { label: "Trạng thái", width: "w-28" },
+      { label: "Hành động", width: "w-1/5" },
+    ];
+
+    return (
+      <thead>
+        <tr className="bg-gray-100 text-gray-700 text-sm font-medium">
+          {headers.map((header) => (
+            <th
+              key={header.label}
+              className={`${header.width} p-2 text-left whitespace-nowrap`}
+            >
+              {header.label}
+            </th>
+          ))}
+        </tr>
+      </thead>
+    );
+  };
+
+  const renderTableRow = (user) => (
+    <tr
       key={user.id}
-      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+      className="border-b border-gray-200 hover:bg-gray-50 text-sm"
     >
-      <div className="flex items-start gap-4">
-        <div className="relative">
-          <img
-            src={user.profile_img_url}
-            alt={user.name}
-            className="w-12 h-12 rounded-full object-cover border border-gray-200"
-          />
-          <span
-            className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-              user.email_confirmed ? "bg-green-500" : "bg-red-500"
-            }`}
-          />
+      <td className="p-2">
+        <input
+          type="checkbox"
+          checked={state.selectedUsers.some((u) => u.id === user.id)}
+          onChange={() => handleCheckboxChange(user)}
+          className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+        />
+      </td>
+      <td className="p-2 whitespace-nowrap">{user.id}</td>
+      <td className="p-2 whitespace-nowrap">{user.name}</td>
+      <td className="p-2 whitespace-nowrap">{user.email || "Không có"}</td>
+      <td className="p-2 whitespace-nowrap">
+        {user.phone_number || "Không có"}
+      </td>
+      {state.activeTab === "parent" && (
+        <td className="p-2 whitespace-nowrap">{user.students?.length || 0}</td>
+      )}
+      {state.activeTab === "student" && (
+        <>
+          <td className="p-2 whitespace-nowrap">{user.id}</td>
+          <td className="p-2 whitespace-nowrap">{user.class_name}</td>
+        </>
+      )}
+      <td className="p-2 whitespace-nowrap">
+        <span
+          className={`inline-block px-2 py-1 rounded-full text-xs ${
+            user.email_confirmed
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {user.email_confirmed ? "Đã xác thực" : "Chưa xác thực"}
+        </span>
+      </td>
+      <td className="p-2 whitespace-nowrap">
+        <div className="flex gap-1">
+          <button
+            onClick={() => handleViewDetail(state.activeTab, user.id)}
+            className="p-1 text-gray-500 hover:text-blue-600 rounded"
+            title="Xem chi tiết"
+          >
+            <Eye size={14} />
+          </button>
+          <button
+            onClick={() => handleEditUser(user)}
+            className="p-1 text-gray-500 hover:text-green-600 rounded"
+            title="Chỉnh sửa"
+          >
+            <Edit2 size={14} />
+          </button>
+          <button
+            onClick={() => updateState({ showDeleteModal: [user] })}
+            className="p-1 text-gray-500 hover:text-red-600 rounded"
+            title="Xóa"
+          >
+            <Trash2 size={14} />
+          </button>
         </div>
-        <div className="flex-1">
-          <div className="flex justify-between">
-            <div>
-              <h3 className="text-base font-medium text-gray-800">
-                {user.name}
-              </h3>
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${
-                  user.email_confirmed
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                {user.email_confirmed ? "Xác thực" : "Chưa xác thực"}
-              </span>
-            </div>
-            <div className="flex gap-1">
-              <button
-                onClick={() => handleViewDetail(state.activeTab, user.id)}
-                className="p-1 text-gray-500 hover:text-blue-600 rounded"
-              >
-                <Eye size={16} />
-              </button>
-              <button
-                onClick={() => handleEditUser(user)}
-                className="p-1 text-gray-500 hover:text-green-600 rounded"
-              >
-                <Edit2 size={16} />
-              </button>
-              <button
-                onClick={() =>
-                  handleStatusToggle(user.id, user.email_confirmed)
-                }
-                className="p-1 text-gray-500 hover:text-blue-600 rounded"
-              >
-                {user.email_confirmed ? (
-                  <UserX size={16} />
-                ) : (
-                  <UserCheck size={16} />
-                )}
-              </button>
-              <button
-                onClick={() => updateState({ showDeleteModal: [user] })}
-                className="p-1 text-gray-500 hover:text-red-600 rounded"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-sm mt-2">
-            <div>
-              <p className="text-gray-600">
-                <span className="font-medium">ID:</span> {user.id}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-medium">Email:</span>{" "}
-                {user.email || "Không có"}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-medium">SĐT:</span>{" "}
-                {user.phone_number || "Không có"}
-              </p>
-            </div>
-            <div>
-              {state.activeTab === "parent" && (
-                <p className="text-gray-600">
-                  <span className="font-medium">Số con:</span>{" "}
-                  {user.students?.length || 0}
-                </p>
-              )}
-              {state.activeTab === "student" && (
-                <>
-                  <p className="text-gray-600">
-                    <span className="font-medium">Mã HS:</span> {user.id}
-                  </p>
-                  <p className="text-gray-600">
-                    <span className="font-medium">Lớp:</span> {user.class_name}
-                  </p>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 
   const activeTabData = tabs.find((tab) => tab.key === state.activeTab);
@@ -465,12 +494,12 @@ const UserManagement = () => {
         <div className="flex justify-end gap-2 mb-6">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm"
           >
-            <Download size={16} /> Xuất CSV
+            <Download size={14} /> Xuất CSV
           </button>
-          <label className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer">
-            <Upload size={16} /> Nhập CSV
+          <label className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer text-sm">
+            <Upload size={14} /> Nhập CSV
             <input
               type="file"
               accept=".csv"
@@ -480,32 +509,64 @@ const UserManagement = () => {
           </label>
           <button
             onClick={handleGetImportSample}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm"
           >
-            <Download size={16} /> File nhập mẫu
+            <Download size={14} /> File nhập mẫu
+          </button>
+          <button
+            onClick={handleRefresh}
+            disabled={state.isRefreshing}
+            className={`flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm ${
+              state.isRefreshing ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            {state.isRefreshing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Làm mới</span>
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                <span>Làm mới</span>
+              </>
+            )}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => updateState({ activeTab: tab.key })}
-              className={`p-4 bg-white border rounded-lg text-left ${
+              className={`p-3 bg-white border rounded-lg text-left ${
                 state.activeTab === tab.key
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200"
               }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <div className="text-gray-600">
-                  {tab.icon && <tab.icon size={20} />}
+                  {tab.icon && <tab.icon size={16} />}
                 </div>
                 <div>
-                  <h3 className="text-base font-medium text-gray-800">
+                  <h3 className="text-sm font-medium text-gray-800">
                     {tab.label}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500">
                     {tab.count} người dùng
                   </p>
                 </div>
@@ -514,16 +575,16 @@ const UserManagement = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
             <p className="text-sm text-gray-600">Tổng số</p>
-            <p className="text-xl font-semibold text-gray-800">
+            <p className="text-lg font-semibold text-gray-800">
               {filteredUsers.length}
             </p>
           </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
             <p className="text-sm text-gray-600">Đã xác thực</p>
-            <p className="text-xl font-semibold text-gray-800">
+            <p className="text-lg font-semibold text-gray-800">
               {filteredUsers.filter((user) => user.email_confirmed).length}
             </p>
           </div>
@@ -531,42 +592,63 @@ const UserManagement = () => {
 
         <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-2.5 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
             <input
               type="text"
               placeholder={`Tìm kiếm ${activeTabData.label.toLowerCase()}...`}
               value={state.searchTerm}
               onChange={(e) => updateState({ searchTerm: e.target.value })}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-1.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
           </div>
           <div className="flex gap-4 w-full sm:w-auto">
             <div className="relative w-full sm:w-48">
-              <Filter className="absolute left-3 top-2.5 text-gray-400 w-5 h-5" />
+              <Filter className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
               <select
                 value={state.emailConfirmedFilter}
                 onChange={(e) =>
                   updateState({ emailConfirmedFilter: e.target.value })
                 }
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-1.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
                 <option value="">Tất cả trạng thái</option>
                 <option value="true">Đã xác thực</option>
                 <option value="false">Chưa xác thực</option>
               </select>
             </div>
+            {state.selectedUsers.length > 0 && (
+              <button
+                onClick={handleSendInvites}
+                disabled={state.isSendingInvites}
+                className={`flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm ${
+                  state.isSendingInvites ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {state.isSendingInvites ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang gửi...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={14} />
+                    <span>Gửi lời mời</span>
+                  </>
+                )}
+              </button>
+            )}
             <button
               onClick={() =>
                 navigate(`/${getUserRole()}/create/${state.activeTab}`)
               }
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
             >
-              <Plus size={16} /> Thêm {activeTabData.label}
+              <Plus size={14} /> Thêm {activeTabData.label}
             </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
           {state.loading ? (
             <div className="text-center py-12 text-gray-500">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-blue-600"></div>
@@ -583,15 +665,16 @@ const UserManagement = () => {
                 onClick={() =>
                   navigate(`/${getUserRole()}/create/${state.activeTab}`)
                 }
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="mt-4 px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
               >
                 Thêm {activeTabData.label}
               </button>
             </div>
           ) : (
-            <div className="space-y-4 p-4">
-              {filteredUsers.map(renderUserCard)}
-            </div>
+            <table className="w-full min-w-[800px] table-auto">
+              {renderTableHeader()}
+              <tbody>{filteredUsers.map(renderTableRow)}</tbody>
+            </table>
           )}
         </div>
 
@@ -617,7 +700,7 @@ const UserManagement = () => {
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => updateState({ showDetailModal: false })}
-                  className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+                  className="px-4 py-1.5 bg-gray-200 rounded-md hover:bg-gray-300 text-sm"
                 >
                   Đóng
                 </button>

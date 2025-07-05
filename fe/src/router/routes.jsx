@@ -38,6 +38,7 @@ import SendDrugManagement from "../pages/Admin&Nurse/SendDrugManagement/SendDrug
 import NurseDashboard from "../pages/Nurse/NurseDashboard/NurseDashboard";
 import RegularCheckupReport from "../pages/Nurse/RegularCheckupReport/RegularCheckupReport";
 import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport/VaccineCampaignReport";
+import AuthFlow from "../pages/Auth/ResetPassword/AuthFlow";
 
 const routes = createBrowserRouter([
   {
@@ -55,6 +56,10 @@ const routes = createBrowserRouter([
       {
         path: "setup-password",
         element: <SetupPassword/>,
+      },
+      {
+        path: "forgot-password",
+        element: <AuthFlow/>
       }
     ],
   },
