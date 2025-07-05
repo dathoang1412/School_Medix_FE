@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 // import axiosClient from '../../../config/axiosClient';
+import { Loader2 } from 'lucide-react';
+
 
 const EnterEmail = ({ onNext }) => {
     const [email, setEmail] = useState('');
@@ -54,10 +56,11 @@ const EnterEmail = ({ onNext }) => {
           
           <button
             onClick={handleSendOTP}
-            className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium"
+            className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium flex items-center justify-center space-x-2"
             disabled={loading}
           >
-            {loading ? 'Đang gửi...' : 'Gửi OTP'}
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            <span>{loading ? 'Đang gửi...' : 'Gửi OTP'}</span>
           </button>
         </div>
       </div>

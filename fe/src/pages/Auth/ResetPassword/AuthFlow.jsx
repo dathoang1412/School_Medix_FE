@@ -3,7 +3,7 @@ import EnterEmail from './EnterEmail';
 import EnterOTP from './EnterOTP';
 import ChangePassword from './ChangePassword';
 // import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Mail, Shield, Lock, Check } from 'lucide-react';
+import { ChevronLeft, Mail, Shield, Lock, Check, Loader2 } from 'lucide-react';
 
 const AuthFlow = () => {
   const [step, setStep] = useState(1);

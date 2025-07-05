@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 // import axiosClient from '../../../config/axiosClient';
+import { Loader2 } from 'lucide-react';
+
 
 const EnterOTP = ({ email, onNext, onResend }) => {
     const [otp, setOtp] = useState('');
@@ -64,10 +66,11 @@ const EnterOTP = ({ email, onNext, onResend }) => {
           
           <button
             onClick={handleVerifyOTP}
-            className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium mb-4"
+            className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium mb-4 flex items-center justify-center space-x-2"
             disabled={loading}
           >
-            {loading ? 'Đang xác thực...' : 'Xác thực OTP'}
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            <span>{loading ? 'Đang xác thực...' : 'Xác thực OTP'}</span>
           </button>
           
           <div className="text-center">
@@ -75,9 +78,10 @@ const EnterOTP = ({ email, onNext, onResend }) => {
             <button
               onClick={handleResendOTP}
               disabled={resendLoading}
-              className="text-blue-500 hover:text-blue-600 font-medium text-sm disabled:text-gray-400"
+              className="text-blue-500 hover:text-blue-600 font-medium text-sm disabled:text-gray-400 inline-flex items-center space-x-1"
             >
-              {resendLoading ? 'Đang gửi...' : 'Gửi lại'}
+              {resendLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+              <span>{resendLoading ? 'Đang gửi...' : 'Gửi lại'}</span>
             </button>
           </div>
         </div>
