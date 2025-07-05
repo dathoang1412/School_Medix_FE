@@ -6,6 +6,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useRef } from "react";
 import { useEffect } from "react";
+import {signOut} from "../config/Supabase"
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -38,7 +39,8 @@ const Header = () => {
     },
   ];
 
-  function handleLogout() {
+  async function handleLogout() {
+    await signOut();
     removeUser();
     navigate("/");
     enqueueSnackbar("Đăng xuất thành công", { variant: "success" });

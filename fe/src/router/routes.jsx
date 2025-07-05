@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import HomePage from "../pages/HomePage";
 import Login from "../pages/Auth/Login";
+import SetupPassword from "../pages/Auth/SetupPassword";
 import PrivateRoute from "./PrivateRoute";
 import AdminLayout from "../layouts/AdminLayout";
 import ParentDashboard from "../pages/Parent/ParentDashboard/ParentDashboard";
@@ -51,6 +52,10 @@ const routes = createBrowserRouter([
         path: "login",
         element: <Login />,
       },
+      {
+        path: "setup-password",
+        element: <SetupPassword/>,
+      }
     ],
   },
   {
