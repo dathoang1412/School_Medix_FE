@@ -211,7 +211,7 @@ const RegularCheckupSurvey = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="mx-auto px-4 py-6">
         <div className="bg-white rounded-lg shadow-lg">
           {/* Campaign Info */}
           <div className="p-6 border-b">

@@ -1,31 +1,35 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { FileText, Calendar, MapPin, Users, Loader2, AlertCircle, ClipboardList, History, Shield } from "lucide-react";
+import { useEffect, useState, useContext } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { Calendar, MapPin, Loader2, AlertCircle, ClipboardList, History, Shield, FileText, CheckCircle, Clock, XCircle } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import VaccineRecordsInfo from "./VaccineRecordInfo";
+import { ChildContext } from "../../../layouts/ParentLayout";
 
 const VaccineInfo = () => {
   const { student_id } = useParams();
+  const { handleSelectChild, children } = useContext(ChildContext);
   const [campaignList, setCampaignList] = useState([]);
   const [completedDoses, setCompletedDoses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState(null);
-  const [history, setHistory] = useState(false);
+  const [historyView, setHistoryView] = useState(false);
   const [registerMap, setRegisterMap] = useState({});
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const child = JSON.parse(localStorage.getItem("selectedChild"));
+        const child = children.find((c) => c.id === student_id) || JSON.parse(localStorage.getItem("selectedChild"));
         if (!child || child.id !== student_id) {
           setError("Không tìm thấy thông tin học sinh");
           setLoading(false);
           return;
         }
         setCurrChild(child);
+        handleSelectChild(child);
 
         const campaignRes = await axiosClient.get("/vaccination-campaign");
         let campaigns = campaignRes.data.data || [];
@@ -35,24 +39,37 @@ const VaccineInfo = () => {
         setCompletedDoses(dosesData);
 
         const registerPromises = campaigns.map(async (campaign) => {
-          const res = await axiosClient.get(
-            `/student/${child.id}/vaccination-campaign/${campaign.campaign_id}/register`
-          );
-          return { campaign_id: campaign.campaign_id, register: res.data.data[0] || null };
+          try {
+            const res = await axiosClient.get(
+              `/student/${child.id}/vaccination-campaign/${campaign.campaign_id}/register`
+            );
+            return { campaign_id: campaign.campaign_id, isSurveyed: res.data.data[0]?.is_registered || false };
+          } catch (error) {
+            console.error(`Error fetching survey status for campaign ${campaign.campaign_id}:`, error);
+            return { campaign_id: campaign.campaign_id, isSurveyed: false };
+          }
         });
         const registerResults = await Promise.all(registerPromises);
-        const newRegisterMap = registerResults.reduce((acc, { campaign_id, register }) => {
-          acc[campaign_id] = register;
+        const newRegisterMap = registerResults.reduce((acc, { campaign_id, isSurveyed }) => {
+          acc[campaign_id] = { isSurveyed };
           return acc;
         }, {});
         setRegisterMap(newRegisterMap);
 
         campaigns = campaigns.map((c) => ({
           ...c,
+          campaign_id: c.campaign_id || c.id,
+          status: c.status || "DRAFTED",
           canSurvey: getCampaignStatus(c, dosesData, newRegisterMap[c.campaign_id]).canSurvey,
+          isSurveyed: newRegisterMap[c.campaign_id]?.isSurveyed || false,
         }));
+
         campaigns.sort((a, b) => {
-          if (a.canSurvey !== b.canSurvey) return a.canSurvey ? -1 : 1;
+          const aCanSurveyNotSurveyed = a.canSurvey && !a.isSurveyed;
+          const bCanSurveyNotSurveyed = b.canSurvey && !b.isSurveyed;
+          if (aCanSurveyNotSurveyed !== bCanSurveyNotSurveyed) {
+            return aCanSurveyNotSurveyed ? -1 : 1;
+          }
           return new Date(b.start_date || 0) - new Date(a.start_date || 0);
         });
 
@@ -68,18 +85,24 @@ const VaccineInfo = () => {
 
     fetchData();
 
-    // Lắng nghe sự kiện quay lại để làm mới dữ liệu
     const handlePopState = () => {
-      fetchData(); // Gọi lại fetchData khi quay lại từ Survey
+      fetchData();
     };
     window.addEventListener("popstate", handlePopState);
 
-    // Cleanup event listener
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [student_id]);
+  }, [student_id, children, handleSelectChild]);
 
   const handleSurvey = (campaignId) => {
-    navigate(`/parent/edit/${currChild.id}/vaccine-campaign-survey/${campaignId}`);
+    navigate(`/parent/edit/${currChild.id}/vaccine-campaign-survey/${campaignId}`, {
+      state: { from: location.pathname, childId: currChild.id },
+    });
+  };
+
+  const handleViewDetails = (campaignId) => {
+    navigate(`/parent/vaccination-campaign/${campaignId}`, {
+      state: { from: location.pathname, childId: currChild.id },
+    });
   };
 
   const formatDate = (dateString) => {
@@ -91,7 +114,7 @@ const VaccineInfo = () => {
     }
   };
 
-  const getCampaignStatus = (campaign, dosesData = completedDoses) => {
+  const getCampaignStatus = (campaign, dosesData = completedDoses, register = registerMap[campaign.campaign_id]) => {
     const doseInfo = dosesData.find((dose) => dose.disease_id === campaign.disease_id);
     const currentDate = new Date();
     const status = campaign.status?.toUpperCase();
@@ -99,52 +122,60 @@ const VaccineInfo = () => {
     if (doseInfo && doseInfo.completed_doses === doseInfo.dose_quantity) {
       return {
         status: "Đã đủ mũi tiêm",
-        className: "bg-green-100 text-green-900 border-green-400",
+        className: "bg-green-50 text-green-700 border-green-200",
+        icon: CheckCircle,
         canSurvey: false,
       };
     }
-    if(new Date(campaign.end_date) < currentDate && status !== "COMPLETED") {
+    if (new Date(campaign.end_date) < currentDate && status !== "COMPLETED") {
       return {
-        status: "Đã hết hạn đăng ký ",
-        className: "bg-gray-100 text-gray-900 border-gray-400",
+        status: "Đã hết hạn đăng ký",
+        className: "bg-gray-50 text-gray-700 border-gray-200",
+        icon: XCircle,
         canSurvey: false,
       };
     }
     switch (status) {
       case "PREPARING":
         return {
-          status: "Chuẩn bị",
-          className: "bg-orange-100 text-orange-900 border-orange-400 text-lg font-semibold",
+          status: "Đang chuẩn bị",
+          className: "bg-amber-50 text-amber-700 border-amber-200",
+          icon: Clock,
           canSurvey: true,
         };
       case "ONGOING":
         return {
           status: "Đang diễn ra",
-          className: "bg-blue-100 text-blue-900 border-blue-400 text-lg font-semibold",
+          className: "bg-green-50 text-green-700 border-green-200",
+          icon: CheckCircle,
           canSurvey: false,
         };
       case "UPCOMING":
         return {
           status: "Đã đóng đơn",
-          className: "bg-purple-100 text-purple-900 border-purple-400 text-lg font-semibold",
+          className: "bg-purple-50 text-purple-700 border-purple-200",
+          icon: Clock,
           canSurvey: false,
         };
       case "COMPLETED":
         return {
           status: "Hoàn thành",
-          className: "bg-green-100 text-green-900 border-gray-400 text-lg font-semibold",
+          className: "bg-blue-50 text-blue-700 border-blue-200",
+          icon: CheckCircle,
           canSurvey: false,
         };
       case "CANCELLED":
         return {
           status: "Đã hủy",
-          className: "bg-red-100 text-red-900 border-red-400 text-lg font-semibold",
+          className: "bg-red-50 text-red-700 border-red-200",
+          icon: XCircle,
           canSurvey: false,
         };
       default:
         return {
-          status: "Chưa xác định",
-          className: "bg-gray-100 text-gray-900 border-gray-400 text-lg font-semibold",
+          status: "Nháp",
+          className: "bg-gray-50 text-gray-700 border-gray-200",
+          icon: Clock,
           canSurvey: false,
         };
     }
@@ -152,11 +183,10 @@ const VaccineInfo = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-900">Đang tải dữ liệu...</p>
-          <p className="text-sm text-gray-700 mt-1">Vui lòng chờ trong giây lát</p>
+          <p className="text-gray-600">Đang tải dữ liệu...</p>
         </div>
       </div>
     );
@@ -164,14 +194,14 @@ const VaccineInfo = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="bg-white border border-red-300 rounded-xl p-8 max-w-lg w-full text-center shadow-lg">
-          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-red-800 mb-2">Lỗi tải dữ liệu</h3>
           <p className="text-red-700 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
+            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
           >
             Thử lại
           </button>
@@ -181,39 +211,39 @@ const VaccineInfo = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header Section */}
-      <div className="bg-white border-b border-gray-300 shadow-md">
-        <div className="max-w-[1400px] mx-auto px-8 py-6">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
-              <Shield className="w-8 h-8 text-blue-700" />
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <Shield className="w-8 h-8 text-blue-600" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Hệ thống quản lý tiêm chủng</h1>
-              <p className="text-gray-700 mt-1">Theo dõi và đăng ký tham gia các chiến dịch tiêm chủng</p>
+              <p className="text-gray-600">Theo dõi và đăng ký tham gia các chiến dịch tiêm chủng</p>
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex space-x-1 bg-gray-200 p-1 rounded-lg w-fit">
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
             <button
-              onClick={() => setHistory(false)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-all ${
-                !history
-                  ? "bg-white text-blue-700 shadow-sm border border-blue-200"
-                  : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+              onClick={() => setHistoryView(false)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                !historyView
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              <FileText className="w-4 h-4" />
+              <Calendar className="w-4 h-4" />
               Kế hoạch tiêm chủng
             </button>
             <button
-              onClick={() => setHistory(true)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-all ${
-                history
-                  ? "bg-white text-blue-700 shadow-sm border border-blue-200"
-                  : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+              onClick={() => setHistoryView(true)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                historyView
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
               <History className="w-4 h-4" />
@@ -223,121 +253,105 @@ const VaccineInfo = () => {
         </div>
       </div>
 
-      {/* Content Section */}
-      <div className="max-w-[1400px] mx-auto px-8 pt-10">
-        {history ? (
-          <div className="bg-white rounded-xl border border-gray-300 py-10 text-center shadow-md">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {historyView ? (
+          <div className="bg-white rounded-lg shadow-sm">
             <VaccineRecordsInfo records={completedDoses} currChild={currChild} />
           </div>
         ) : (
           <>
             {campaignList.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-300 p-6 text-center shadow-md">
-                <FileText className="w-12 h-12 text-gray-500 mx-auto mb-3" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">Chưa có chiến dịch tiêm chủng</h3>
-                <p className="text-gray-700 text-sm">Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay lại sau để cập nhật thông tin mới nhất.</p>
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Chưa có chiến dịch tiêm chủng</h3>
+                <p className="text-gray-600">Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay lại sau để cập nhật thông tin mới nhất.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-4">
                 {campaignList.map((campaign) => {
                   const statusInfo = getCampaignStatus(campaign);
-                  const register = registerMap[campaign.campaign_id];
+                  const StatusIcon = statusInfo.icon;
 
                   return (
                     <div
                       key={campaign.campaign_id}
-                      className="bg-white border border-gray-300 rounded-lg p-4 hover:border-gray-400 hover:shadow-md transition-all duration-200 h-full"
+                      className={`bg-white border rounded-lg p-6 hover:shadow-md transition-all duration-200 ${
+                        !campaign.isSurveyed && statusInfo.canSurvey 
+                          ? 'border-blue-200 ring-1 ring-blue-100' 
+                          : 'border-gray-200'
+                      }`}
                     >
-                      {/* Campaign Header */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="p-1 bg-blue-50 rounded-md border border-blue-200">
-                              <Shield className="w-4 h-4 text-blue-700" />
+                      <div className="flex items-center justify-between">
+                        {/* Left Section - Campaign Info */}
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-50 rounded-lg">
+                              <Shield className="w-6 h-6 text-blue-600" />
                             </div>
                             <div>
-                              <h3 className="text-base font-semibold text-gray-900">
-                                {campaign.vaccine_name || `Chiến dịch #${campaign.campaign_id}`}
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {campaign.vaccine_name || `Chiến dịch tiêm chủng #${campaign.campaign_id}`}
                               </h3>
-                              <p className="text-xs text-gray-600 font-mono">Mã: {campaign.campaign_id}</p>
+                              <p className="text-sm text-gray-500">Mã chiến dịch: {campaign.campaign_id}</p>
                             </div>
                           </div>
-                        </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${statusInfo.className}`}>
-                          {statusInfo.status}
-                        </span>
-                      </div>
 
-                      {/* Campaign Details Grid */}
-                      <div className="grid grid-cols-1 gap-2 mb-3">
-                        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md border border-gray-200">
-                          <Calendar className="w-4 h-4 text-gray-700" />
-                          <div>
-                            <p className="text-xs font-medium text-gray-900">Thời gian</p>
-                            <p className="text-xs text-gray-700">
-                              {formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {campaign.location && (
-                          <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md border border-gray-200">
-                            <MapPin className="w-4 h-4 text-gray-700" />
-                            <div>
-                              <p className="text-xs font-medium text-gray-900">Địa điểm</p>
-                              <p className="text-xs text-gray-700">{campaign.location}</p>
+                          {/* Campaign Details */}
+                          <div className="flex items-center gap-6 ml-4">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-gray-400" />
+                              <span className="text-sm text-gray-600">
+                                {formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}
+                              </span>
                             </div>
+                            
+                            {campaign.location && (
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-gray-400" />
+                                <span className="text-sm text-gray-600">{campaign.location}</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-
-                        {campaign.target_group && (
-                          <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md border border-gray-200">
-                            <Users className="w-4 h-4 text-gray-700" />
-                            <div>
-                              <p className="text-xs font-medium text-gray-900">Đối tượng</p>
-                              <p className="text-xs text-gray-700">{campaign.target_group}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Description */}
-                      {campaign.description && (
-                        <div className="mb-3">
-                          <h4 className="text-xs font-medium text-gray-900 mb-1">Mô tả</h4>
-                          <p className="text-gray-800 text-xs leading-tight">{campaign.description}</p>
                         </div>
-                      )}
 
-                      {/* Action Buttons */}
-                      <div className="flex justify-end pt-2 border-t border-gray-200">
-                        {statusInfo.canSurvey ? (
-                          register?.is_registered ? (
+                        {/* Right Section - Status and Actions */}
+                        <div className="flex items-center gap-4">
+                          {/* Survey Status */}
+                          {campaign.isSurveyed && (
+                            <div className="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm">
+                              <CheckCircle className="w-4 h-4" />
+                              <span>Đã khảo sát</span>
+                            </div>
+                          )}
+
+                          {/* Campaign Status */}
+                          <div className={`flex items-center gap-2 px-3 py-1 border rounded-full text-sm ${statusInfo.className}`}>
+                            <StatusIcon className="w-4 h-4" />
+                            <span>{statusInfo.status}</span>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-2">
                             <button
-                              onClick={() => handleSurvey(campaign.campaign_id)}
-                              className="inline-flex items-center gap-1 bg-yellow-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-yellow-700 transition-colors shadow-sm"
+                              onClick={() => handleViewDetails(campaign.campaign_id)}
+                              className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                             >
-                              <ClipboardList className="w-3 h-3" />
-                              Đã khảo sát
+                              <FileText className="w-4 h-4" />
+                              Chi tiết
                             </button>
-                          ) : (
-                            <button
-                              onClick={() => handleSurvey(campaign.campaign_id)}
-                              className="inline-flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-blue-700 transition-colors shadow-sm"
-                            >
-                              <ClipboardList className="w-3 h-3" />
-                              Tham gia khảo sát
-                            </button>
-                          )
-                        ) : (
-                          <button
-                            disabled
-                            className="inline-flex items-center gap-1 bg-gray-200 text-gray-600 px-3 py-1.5 rounded-md text-xs font-medium cursor-not-allowed"
-                          >
-                            <ClipboardList className="w-3 h-3" />
-                            {statusInfo.status}
-                          </button>
-                        )}
+                            
+                            {statusInfo.canSurvey && !campaign.isSurveyed && (
+                              <button
+                                onClick={() => handleSurvey(campaign.campaign_id)}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                              >
+                                <ClipboardList className="w-4 h-4" />
+                                Tham gia khảo sát
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
