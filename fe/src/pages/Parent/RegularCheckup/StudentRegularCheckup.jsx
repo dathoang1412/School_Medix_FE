@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Calendar, MapPin, Loader2, AlertCircle, ClipboardList, History, Shield } from "lucide-react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { Calendar, MapPin, Loader2, AlertCircle, ClipboardList, History, Shield, FileText } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import CheckupHistoryInfo from "./CheckupHistoryInfo";
 import { useContext } from "react";
@@ -15,6 +15,7 @@ const StudentRegularCheckup = () => {
   const [currChild, setCurrChild] = useState(null);
   const [historyView, setHistoryView] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,10 +33,10 @@ const StudentRegularCheckup = () => {
         const campaignRes = await axiosClient.get("/checkup-campaign");
         let campaigns = campaignRes.data.data || [];
 
-        // Sort campaigns: canSurvey first, then by start_date (most recent first)
         campaigns = campaigns.map((c) => ({
           ...c,
-          status: c.status || "Chưa xác định",
+          campaign_id: c.campaign_id || c.id,
+          status: c.status || "DRAFTED",
           canSurvey: getCampaignStatus(c).canSurvey,
         }));
         campaigns.sort((a, b) => {
@@ -58,7 +59,15 @@ const StudentRegularCheckup = () => {
   }, [childId, children, handleSelectChild]);
 
   const handleSurvey = (campaignId) => {
-    navigate(`/parent/edit/${currChild.id}/surveyCheckup/${campaignId}`);
+    navigate(`/parent/edit/${currChild.id}/surveyCheckup/${campaignId}`, {
+      state: { from: location.pathname, childId: currChild.id },
+    });
+  };
+
+  const handleViewDetails = (campaignId) => {
+    navigate(`/parent/checkup-campaign/${campaignId}`, {
+      state: { from: location.pathname, childId: currChild.id },
+    });
   };
 
   const formatDate = (dateString) => {
@@ -76,32 +85,32 @@ const StudentRegularCheckup = () => {
     switch (status) {
       case "PREPARING":
         return {
-          status: "Chuẩn bị",
-          className: "bg-orange-100 text-orange-900 border-orange-400",
+          status: "Đang chuẩn bị",
+          className: "bg-amber-100 text-amber-700 border-amber-200",
           canSurvey: true,
         };
-      case "ACTIVE":
+      case "ONGOING":
         return {
           status: "Đang diễn ra",
-          className: "bg-green-100 text-green-900 border-green-400",
+          className: "bg-green-100 text-green-700 border-green-200",
           canSurvey: false,
         };
-      case "COMPLETED":
+      case "DONE":
         return {
           status: "Hoàn thành",
-          className: "bg-gray-100 text-gray-900 border-gray-400",
+          className: "bg-gray-100 text-gray-700 border-gray-200",
           canSurvey: false,
         };
       case "CANCELLED":
         return {
           status: "Đã hủy",
-          className: "bg-red-100 text-red-900 border-red-400",
+          className: "bg-red-100 text-red-700 border-red-200",
           canSurvey: false,
         };
       default:
         return {
-          status: "Chưa xác định",
-          className: "bg-gray-100 text-gray-900 border-gray-400",
+          status: "Nháp",
+          className: "bg-gray-100 text-gray-700 border-gray-200",
           canSurvey: false,
         };
     }
@@ -198,7 +207,7 @@ const StudentRegularCheckup = () => {
 
                   return (
                     <div
-                      key={campaign.id}
+                      key={campaign.campaign_id}
                       className="bg-white border border-gray-300 rounded-lg p-4 hover:border-gray-400 hover:shadow-md transition-all duration-200 h-full"
                     >
                       {/* Campaign Header */}
@@ -210,9 +219,9 @@ const StudentRegularCheckup = () => {
                             </div>
                             <div>
                               <h3 className="text-base font-semibold text-gray-900">
-                                {campaign.name || `Kiểm tra sức khỏe #${campaign.id}`}
+                                {campaign.name || `Kiểm tra sức khỏe #${campaign.campaign_id}`}
                               </h3>
-                              <p className="text-xs text-gray-600 font-mono">Mã: {campaign.id}</p>
+                              <p className="text-xs text-gray-600 font-mono">Mã: {campaign.campaign_id}</p>
                             </div>
                           </div>
                         </div>
@@ -253,22 +262,21 @@ const StudentRegularCheckup = () => {
                       )}
 
                       {/* Action Buttons */}
-                      <div className="flex justify-end pt-2 border-t border-gray-200">
-                        {statusInfo.canSurvey ? (
+                      <div className="flex justify-end gap-2 pt-2 border-t border-gray-200">
+                        <button
+                          onClick={() => handleViewDetails(campaign.campaign_id)}
+                          className="inline-flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                        >
+                          <FileText className="w-3 h-3" />
+                          Xem chi tiết
+                        </button>
+                        {statusInfo.canSurvey && (
                           <button
-                            onClick={() => handleSurvey(campaign.id)}
+                            onClick={() => handleSurvey(campaign.campaign_id)}
                             className="inline-flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-blue-700 transition-colors shadow-sm"
                           >
                             <ClipboardList className="w-3 h-3" />
                             Tham gia khảo sát
-                          </button>
-                        ) : (
-                          <button
-                            disabled
-                            className="inline-flex items-center gap-1 bg-gray-200 text-gray-600 px-3 py-1.5 rounded-md text-xs font-medium cursor-not-allowed"
-                          >
-                            <ClipboardList className="w-3 h-3" />
-                            {statusInfo.status}
                           </button>
                         )}
                       </div>

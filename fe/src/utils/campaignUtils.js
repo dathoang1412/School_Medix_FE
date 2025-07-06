@@ -1,6 +1,6 @@
 export const getCardBorderColor = (status) => {
   switch (status) {
-    case "COMPLETED":
+    case "DONE":
       return "border-l-green-500";
     case "ONGOING":
       return "border-l-blue-500";
@@ -10,6 +10,8 @@ export const getCardBorderColor = (status) => {
       return "border-l-red-500";
     case "UPCOMING":
       return "border-l-purple-500";
+    case "DRAFTED":
+      return "border-l-gray-500";
     default:
       return "border-l-gray-500";
   }
@@ -37,7 +39,7 @@ export const formatDate = (dateString) => {
 
 export const getStatusColor = (status) => {
   switch (status) {
-    case "COMPLETED":
+    case "DONE":
       return "text-green-700 bg-green-100 border-green-200";
     case "ONGOING":
       return "text-blue-700 bg-blue-100 border-blue-200";
@@ -47,6 +49,8 @@ export const getStatusColor = (status) => {
       return "text-red-700 bg-red-100 border-red-200";
     case "UPCOMING":
       return "text-purple-700 bg-purple-100 border-purple-200";
+    case "DRAFTED":
+      return "text-gray-700 bg-gray-100 border-gray-200";
     default:
       return "text-gray-700 bg-gray-100 border-gray-200";
   }
@@ -54,8 +58,6 @@ export const getStatusColor = (status) => {
 
 export const getStatusText = (status) => {
   switch (status) {
-    case "COMPLETED":
-      return "Đã hoàn thành";
     case "DONE":
       return "Đã hoàn thành";
     case "ONGOING":
@@ -66,6 +68,8 @@ export const getStatusText = (status) => {
       return "Đã hủy";
     case "UPCOMING":
       return "Sắp diễn ra";
+    case "DRAFTED":
+      return "Nháp";
     default:
       return "Không xác định";
   }
