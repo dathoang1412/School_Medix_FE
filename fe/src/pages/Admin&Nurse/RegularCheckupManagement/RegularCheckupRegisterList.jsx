@@ -9,16 +9,16 @@ const RegularCheckupRegisterList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { checkup_id } = useParams();
+  const { campaign_id } = useParams();
   const navigate = useNavigate();
 
-  console.log("ID: ", checkup_id);
+  console.log("ID: ", campaign_id);
 
   const fetchList = useCallback(async () => {
     try {
       setLoading(true);
       setIsRefreshing(true);
-      const res = await axiosClient.get("/checkup-register/" + checkup_id);
+      const res = await axiosClient.get("/checkup-register/" + campaign_id);
       console.log("LIST: ", res.data.data);
       setList(res.data.data || []);
       setError(null);
@@ -30,7 +30,7 @@ const RegularCheckupRegisterList = () => {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, [checkup_id]);
+  }, [campaign_id]);
 
   useEffect(() => {
     fetchList();

@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
-import { supabase, getSession } from "../../../config/Supabase";
-import { ArrowLeft, Check, Upload, Download, FileText } from "lucide-react";
-import PDFViewer from "../../../components/PDFViewer";
+import { getSession } from "../../../config/Supabase";
+import { ArrowLeft, Edit, X, ChevronDown } from "lucide-react";
 
 const RegularCheckupReport = () => {
   const [generalHealthList, setGeneralHealthList] = useState([]);
@@ -15,19 +14,43 @@ const RegularCheckupReport = () => {
     general: false,
     specialist: false,
     tabs: false,
-    upload: false,
-    download: {}, // Object to track download loading state for each record
-    templateDownload: false, // Loading state for template download
+    update: {},
   });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showPDFModal, setShowPDFModal] = useState(false); // New state for PDF modal
-  const [selectedPDFUrl, setSelectedPDFUrl] = useState(null); // New state for selected PDF URL
-  const { checkup_id } = useParams();
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [formData, setFormData] = useState({
+    height: "",
+    weight: "",
+    blood_pressure: "",
+    left_eye: "",
+    right_eye: "",
+    ear: "",
+    nose: "",
+    throat: "",
+    teeth: "",
+    gums: "",
+    skin_condition: "",
+    heart: "",
+    lungs: "",
+    spine: "",
+    posture: "",
+    final_diagnosis: "",
+  });
+
+  const { campaign_id } = useParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const fileInputRef = useRef(null);
 
-  // Check authentication status
+  // Danh sách lựa chọn cho các trường khám
+  const dropdownOptions = [
+    { value: "Bình thường", label: "Bình thường" },
+    { value: "Bất thường", label: "Bất thường" },
+    { value: "Cần theo dõi", label: "Cần theo dõi" },
+    { value: "other", label: "Khác (nhập tùy chỉnh)" },
+  ];
+
+  // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
     const checkAuth = async () => {
       const { data, error } = await getSession();
@@ -43,17 +66,17 @@ const RegularCheckupReport = () => {
     checkAuth();
   }, [navigate, enqueueSnackbar]);
 
-  // Fetch tabs for specialist exams
+  // Lấy danh sách các tab chuyên khoa
   const fetchTabs = async () => {
     setLoading((prev) => ({ ...prev, tabs: true }));
     try {
       const response = await axiosClient.get(
-        `/campaign/${checkup_id}/specialist-exam/record`
+        `/campaign/${campaign_id}/specialist-exam/record`
       );
       const specialistTabs = response.data.data.map((el) => el.name);
       setTabs(["Khám tổng quát", ...specialistTabs]);
     } catch (error) {
-      console.error("Error fetching tabs:", error);
+      console.error("Lỗi khi lấy danh sách tab:", error);
       enqueueSnackbar("Không thể tải danh sách tab chuyên khoa!", {
         variant: "error",
       });
@@ -62,17 +85,16 @@ const RegularCheckupReport = () => {
     }
   };
 
-  // Fetch general health records
+  // Lấy danh sách khám tổng quát
   const fetchGeneralList = async () => {
     setLoading((prev) => ({ ...prev, general: true }));
     try {
       const res = await axiosClient.get(
-        `/health-record/campaign/${checkup_id}`
+        `/health-record/campaign/${campaign_id}`
       );
-      console.log("General List: ", res.data.data);
       setGeneralHealthList(res.data.data);
     } catch (error) {
-      console.error("Error fetching general health data:", error);
+      console.error("Lỗi khi lấy dữ liệu khám tổng quát:", error);
       enqueueSnackbar("Không thể tải danh sách khám tổng quát!", {
         variant: "error",
       });
@@ -81,17 +103,16 @@ const RegularCheckupReport = () => {
     }
   };
 
-  // Fetch specialist exam records
+  // Lấy danh sách khám chuyên khoa
   const fetchSpecialistList = async () => {
     setLoading((prev) => ({ ...prev, specialist: true }));
     try {
       const res = await axiosClient.get(
-        `/campaign/${checkup_id}/specialist-exam/record`
+        `/campaign/${campaign_id}/specialist-exam/record`
       );
-      console.log("Specialist List: ", res.data.data);
       setSpecialistList(res.data.data);
     } catch (error) {
-      console.error("Error fetching specialist data:", error);
+      console.error("Lỗi khi lấy dữ liệu chuyên khoa:", error);
       enqueueSnackbar("Không thể tải danh sách khám chuyên khoa!", {
         variant: "error",
       });
@@ -100,152 +121,130 @@ const RegularCheckupReport = () => {
     }
   };
 
-  // Handle file upload
-  const handleFileUpload = async (event) => {
+  // Xử lý thay đổi input
+  const handleInputChange = (e, field) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: e.target.value,
+    }));
+  };
+
+  // Xử lý thay đổi trường khám (select hoặc input)
+  const handleExamFieldChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Mở modal cập nhật
+  const openUpdateModal = (record) => {
+    setSelectedRecord(record);
+    setFormData({
+      height: record.height || "",
+      weight: record.weight || "",
+      blood_pressure: record.blood_pressure || "",
+      left_eye: record.left_eye || "",
+      right_eye: record.right_eye || "",
+      ear: record.ear || "",
+      nose: record.nose || "",
+      throat: record.throat || "",
+      teeth: record.teeth || "",
+      gums: record.gums || "",
+      skin_condition: record.skin_condition || "",
+      heart: record.heart || "",
+      lungs: record.lungs || "",
+      spine: record.spine || "",
+      posture: record.posture || "",
+      final_diagnosis: record.final_diagnosis || "",
+    });
+    setShowUpdateModal(true);
+  };
+
+  // Xử lý gửi form
+  const handleFormSubmit = async () => {
     if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để tải file lên!", {
-        variant: "error",
-      });
+      enqueueSnackbar("Vui lòng đăng nhập để cập nhật!", { variant: "error" });
       navigate("/login");
       return;
     }
 
-    const file = event.target.files[0];
-    if (!file) {
-      enqueueSnackbar("Vui lòng chọn một file Excel!", { variant: "warning" });
-      return;
-    }
+    const { register_id } = selectedRecord;
+    const payload = {
+      height: formData.height,
+      weight: formData.weight,
+      blood_pressure: formData.blood_pressure,
+      left_eye: formData.left_eye,
+      right_eye: formData.right_eye,
+      ear: formData.ear,
+      nose: formData.nose,
+      throat: formData.throat,
+      teeth: formData.teeth,
+      gums: formData.gums,
+      skin_condition: formData.skin_condition,
+      heart: formData.heart,
+      lungs: formData.lungs,
+      spine: formData.spine,
+      posture: formData.posture,
+      final_diagnosis: formData.final_diagnosis,
+    };
 
-    const formData = new FormData();
-    formData.append("file", file);
+    // Validate các trường bắt buộc
+    const mandatoryFields = [
+      { field: "height", label: "Chiều cao" },
+      { field: "weight", label: "Cân nặng" },
+      { field: "blood_pressure", label: "Huyết áp" },
+      { field: "left_eye", label: "Thị lực mắt trái" },
+      { field: "right_eye", label: "Thị lực mắt phải" },
+    ];
 
-    setLoading((prev) => ({ ...prev, upload: true }));
-    try {
-      const response = await axiosClient.post(
-        `/campaign/${checkup_id}/upload-health-record-result`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      enqueueSnackbar(response.data.message || "Tải file thành công!", {
-        variant: "success",
-      });
-      await fetchGeneralList(); // Refresh general health list
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (error) {
-      console.error("Error uploading file:", error);
+    const missingFields = mandatoryFields.filter(
+      ({ field }) => !payload[field] || payload[field].toString().trim() === ""
+    );
+
+    if (missingFields.length > 0) {
       enqueueSnackbar(
-        error.response?.data?.message || "Lỗi khi tải file lên!",
-        { variant: "error" }
+        `Vui lòng điền đầy đủ các chỉ số bắt buộc: ${missingFields
+          .map(({ label }) => label)
+          .join(", ")}`,
+        { variant: "warning" }
       );
-    } finally {
-      setLoading((prev) => ({ ...prev, upload: false }));
-    }
-  };
-
-  // Handle template file download
-  const handleFileDownload = async () => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để tải file!", { variant: "error" });
-      navigate("/login");
-      return;
-    }
-
-    setLoading((prev) => ({ ...prev, templateDownload: true }));
-    try {
-      const response = await axiosClient.get(
-        `/campaign/${checkup_id}/import-health-record-form`,
-        {
-          responseType: "blob",
-        }
-      );
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `health-records-${checkup_id}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      enqueueSnackbar("Tải file thành công!", { variant: "success" });
-    } catch (error) {
-      console.error("Error downloading file:", error);
-      enqueueSnackbar(error.response?.data?.message || "Không thể tải file!", {
-        variant: "error",
-      });
-    } finally {
-      setLoading((prev) => ({ ...prev, templateDownload: false }));
-    }
-  };
-
-  // Handle PDF download for a specific record
-  const handleRecordDownload = async (recordUrl, registerId) => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để tải file!", { variant: "error" });
-      navigate("/login");
-      return;
-    }
-
-    if (!recordUrl) {
-      enqueueSnackbar("Không có file kết quả cho hồ sơ này!", {
-        variant: "warning",
-      });
       return;
     }
 
     setLoading((prev) => ({
       ...prev,
-      download: { ...prev.download, [registerId]: true },
+      update: { ...prev.update, [register_id]: true },
     }));
     try {
-      const response = await fetch(recordUrl);
-      if (!response.ok) throw new Error("Không thể tải file PDF");
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `record-${registerId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      enqueueSnackbar("Tải file PDF thành công!", { variant: "success" });
+      await axiosClient.patch(`/health-record/${register_id}/done`, payload);
+      setGeneralHealthList((prev) =>
+        prev.map((item) =>
+          item.register_id === register_id
+            ? { ...item, status: "DONE", ...payload }
+            : item
+        )
+      );
+      enqueueSnackbar("Cập nhật hồ sơ sức khỏe thành công!", {
+        variant: "success",
+      });
+      setShowUpdateModal(false);
+      setSelectedRecord(null);
     } catch (error) {
-      console.error("Error downloading PDF:", error);
-      enqueueSnackbar("Không thể tải file PDF!", { variant: "error" });
+      console.error("Lỗi khi cập nhật hồ sơ sức khỏe:", error);
+      enqueueSnackbar(
+        error.response?.data?.message || "Lỗi khi cập nhật hồ sơ!",
+        { variant: "error" }
+      );
     } finally {
       setLoading((prev) => ({
         ...prev,
-        download: { ...prev.download, [registerId]: false },
+        update: { ...prev.update, [register_id]: false },
       }));
     }
   };
 
-  // Handle PDF preview
-  const handleViewPDF = (recordUrl) => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để xem file!", { variant: "error" });
-      navigate("/login");
-      return;
-    }
-
-    if (!recordUrl) {
-      enqueueSnackbar("Không có file kết quả để xem!", { variant: "warning" });
-      return;
-    }
-
-    setSelectedPDFUrl(recordUrl);
-    setShowPDFModal(true);
-  };
-
-  // Fetch all data concurrently
+  // Lấy tất cả dữ liệu khi component mount
   useEffect(() => {
     if (!isAuthenticated) return;
     const fetchAllData = async () => {
@@ -256,69 +255,13 @@ const RegularCheckupReport = () => {
           fetchSpecialistList(),
         ]);
       } catch (error) {
-        console.error("Error fetching all data:", error);
+        console.error("Lỗi khi lấy dữ liệu:", error);
       }
     };
     fetchAllData();
   }, [isAuthenticated]);
 
-  // Handle status update for general or specialist exams
-  const handleStatusUpdate = async (
-    speId,
-    registerId,
-    currentStatus,
-    type = "general"
-  ) => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để cập nhật trạng thái!", {
-        variant: "error",
-      });
-      navigate("/login");
-      return;
-    }
-
-    if (currentStatus === "DONE") return;
-
-    setLoading((prev) => ({ ...prev, [type]: true }));
-    try {
-      if (type === "general") {
-        await axiosClient.patch(`/health-record/${registerId}/done`);
-        setGeneralHealthList((prev) =>
-          prev.map((item) =>
-            item.register_id === registerId ? { ...item, status: "DONE" } : item
-          )
-        );
-      } else {
-        await axiosClient.patch(
-          `/checkup-register/${registerId}/specialist-exam/${speId}/done`
-        );
-        setSpecialistList((prev) =>
-          prev.map((specialist) => ({
-            ...specialist,
-            records: specialist.records.map((item) =>
-              item.register_id === registerId && item.spe_exam_id === speId
-                ? { ...item, status: "DONE" }
-                : item
-            ),
-          }))
-        );
-      }
-      enqueueSnackbar("Cập nhật trạng thái thành công!", {
-        variant: "success",
-      });
-    } catch (error) {
-      console.error("Error updating status:", error);
-      enqueueSnackbar(
-        error.response?.data?.message ||
-          "Có lỗi xảy ra khi cập nhật trạng thái!",
-        { variant: "error" }
-      );
-    } finally {
-      setLoading((prev) => ({ ...prev, [type]: false }));
-    }
-  };
-
-  // Render status badge
+  // Hiển thị badge trạng thái
   const getStatusBadge = (status) => {
     return status === "WAITING" ? (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -331,12 +274,34 @@ const RegularCheckupReport = () => {
     );
   };
 
-  // Render table for health records
+  // Render bảng dữ liệu
   const renderHealthTable = (records, type) => (
     <div className="overflow-x-auto">
       {loading[type] ? (
         <div className="text-center py-8">
-          <p className="text-gray-500">Đang tải dữ liệu...</p>
+          <div className="inline-flex items-center">
+            <svg
+              className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <span className="text-gray-600">Đang tải dữ liệu...</span>
+          </div>
         </div>
       ) : records.length === 0 ? (
         <div className="text-center py-8">
@@ -359,18 +324,8 @@ const RegularCheckupReport = () => {
                 Trạng thái
               </th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hoàn thành
+                Thao tác
               </th>
-              {type === "general" && (
-                <>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tải kết quả
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Xem chi tiết
-                  </th>
-                </>
-              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -390,122 +345,42 @@ const RegularCheckupReport = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
                   <button
-                    onClick={() =>
-                      handleStatusUpdate(
-                        item.spe_exam_id,
-                        item.register_id,
-                        item.status,
-                        type
-                      )
-                    }
-                    disabled={item.status === "DONE" || loading[type]}
+                    onClick={() => openUpdateModal(item)}
+                    disabled={loading.update[item.register_id] || loading[type]}
                     className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                      item.status === "DONE"
-                        ? "bg-green-100 text-green-600 cursor-not-allowed"
-                        : "bg-gray-100 text-gray-400 hover:bg-blue-100 hover:text-blue-600"
-                    } ${loading[type] ? "opacity-50 cursor-not-allowed" : ""}`}
-                    title={
-                      item.status === "DONE"
-                        ? "Đã hoàn thành"
-                        : "Đánh dấu hoàn thành"
-                    }
-                    aria-label={
-                      item.status === "DONE"
-                        ? "Đã hoàn thành"
-                        : "Đánh dấu hoàn thành"
-                    }
+                      loading.update[item.register_id] || loading[type]
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700"
+                    }`}
+                    title="Cập nhật hồ sơ sức khỏe"
+                    aria-label="Cập nhật hồ sơ sức khỏe"
                   >
-                    <Check className="h-4 w-4" />
+                    {loading.update[item.register_id] ? (
+                      <svg
+                        className="animate-spin h-4 w-4 text-gray-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <Edit className="h-4 w-4" />
+                    )}
                   </button>
                 </td>
-                {type === "general" && (
-                  <>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <button
-                        onClick={() =>
-                          handleRecordDownload(
-                            item.record_url,
-                            item.register_id
-                          )
-                        }
-                        disabled={
-                          !item.record_url ||
-                          loading.download[item.register_id] ||
-                          loading[type]
-                        }
-                        className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                          !item.record_url || loading.download[item.register_id]
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700"
-                        } ${
-                          loading[type] ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
-                        title={
-                          loading.download[item.register_id]
-                            ? "Đang tải..."
-                            : item.record_url
-                            ? "Tải kết quả PDF"
-                            : "Không có file kết quả"
-                        }
-                        aria-label={
-                          loading.download[item.register_id]
-                            ? "Đang tải..."
-                            : item.record_url
-                            ? "Tải kết quả PDF"
-                            : "Không có file kết quả"
-                        }
-                      >
-                        {loading.download[item.register_id] ? (
-                          <svg
-                            className="animate-spin h-4 w-4 text-gray-600"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                        ) : (
-                          <Download className="h-4 w-4" />
-                        )}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => handleViewPDF(item.record_url)}
-                        disabled={!item.record_url || loading[type]}
-                        className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                          !item.record_url || loading[type]
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700"
-                        }`}
-                        title={
-                          item.record_url
-                            ? "Xem chi tiết PDF"
-                            : "Không có file kết quả"
-                        }
-                        aria-label={
-                          item.record_url
-                            ? "Xem chi tiết PDF"
-                            : "Không có file kết quả"
-                        }
-                      >
-                        <FileText className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </>
-                )}
               </tr>
             ))}
           </tbody>
@@ -514,7 +389,7 @@ const RegularCheckupReport = () => {
     </div>
   );
 
-  // Memoized tab data
+  // Lấy dữ liệu cho tab hiện tại
   const tabData = useMemo(() => {
     if (activeTab === "Khám tổng quát") {
       return { records: generalHealthList, type: "general" };
@@ -546,85 +421,6 @@ const RegularCheckupReport = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Quay lại
         </button>
-        <div className="flex space-x-4">
-          <label
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              loading.upload
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer"
-            }`}
-          >
-            {loading.upload ? (
-              <svg
-                className="animate-spin h-4 w-4 mr-2 text-gray-600"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-            ) : (
-              <Upload className="h-4 w-4 mr-2" />
-            )}
-            {loading.upload ? "Đang tải lên..." : "Tải lên kết quả"}
-            <input
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleFileUpload}
-              disabled={loading.upload}
-              ref={fileInputRef}
-              className="hidden"
-            />
-          </label>
-          <button
-            onClick={handleFileDownload}
-            disabled={loading.templateDownload}
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              loading.templateDownload
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-green-100 text-green-700 hover:bg-green-200"
-            }`}
-            aria-label="Tải xuống mẫu kết quả"
-          >
-            {loading.templateDownload ? (
-              <svg
-                className="animate-spin h-4 w-4 mr-2 text-gray-600"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-            ) : (
-              <Download className="h-4 w-4 mr-2" />
-            )}
-            {loading.templateDownload ? "Đang tải..." : "Tải xuống mẫu"}
-          </button>
-        </div>
       </div>
 
       {/* Tab Header */}
@@ -661,25 +457,253 @@ const RegularCheckupReport = () => {
         {renderHealthTable(tabData.records, tabData.type)}
       </div>
 
-      {/* PDF Preview Modal */}
-      {showPDFModal && selectedPDFUrl && (
-        <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
-          <div className="bg-white border border-gray-300 w-full max-w-5xl h-[85vh] mx-4">
-            <div className="h-full flex flex-col">
-              <div className="flex-1 p-1">
-                <PDFViewer record_url={selectedPDFUrl} />
+      {/* Modal cập nhật hồ sơ sức khỏe */}
+      {showUpdateModal && selectedRecord && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Cập nhật kết quả khám sức khỏe
+              </h3>
+              <button
+                onClick={() => {
+                  setShowUpdateModal(false);
+                  setSelectedRecord(null);
+                }}
+                className="text-gray-400 hover:text-gray-500"
+                aria-label="Đóng"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 p-3 rounded-md">
+                <h4 className="text-sm font-medium text-blue-800">
+                  Học sinh: {selectedRecord.student_name}
+                </h4>
+                <p className="text-xs text-blue-700 mt-1">
+                  Lớp: {selectedRecord.class_name} | Mã đăng ký: #{selectedRecord.register_id}
+                </p>
               </div>
-              <div className="border-t border-gray-300 p-3 bg-gray-50">
-                <button
-                  onClick={() => {
-                    setShowPDFModal(false);
-                    setSelectedPDFUrl(null);
-                  }}
-                  className="px-6 py-2 bg-white border border-gray-400 text-gray-700 font-medium hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-400"
-                >
-                  Đóng
-                </button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Thông số cơ bản */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-gray-700 border-b pb-2">
+                    Thông số cơ bản <span className="text-red-500">*</span>
+                  </h4>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Chiều cao (cm)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.height}
+                      onChange={(e) => handleInputChange(e, "height")}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      placeholder="Nhập chiều cao"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cân nặng (kg)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.weight}
+                      onChange={(e) => handleInputChange(e, "weight")}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      placeholder="Nhập cân nặng"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Huyết áp (mmHg)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.blood_pressure}
+                      onChange={(e) => handleInputChange(e, "blood_pressure")}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      placeholder="Ví dụ: 120/80"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Thị lực */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-gray-700 border-b pb-2">
+                    Thị lực <span className="text-red-500">*</span>
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mắt trái (/10)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="10"
+                        value={formData.left_eye}
+                        onChange={(e) => handleInputChange(e, "left_eye")}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mắt phải (/10)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="10"
+                        value={formData.right_eye}
+                        onChange={(e) => handleInputChange(e, "right_eye")}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Khám các bộ phận */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-gray-700 border-b pb-2">
+                  Khám các bộ phận
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { field: "ear", label: "Tai" },
+                    { field: "nose", label: "Mũi" },
+                    { field: "throat", label: "Họng" },
+                    { field: "teeth", label: "Răng" },
+                    { field: "gums", label: "Lợi" },
+                    { field: "skin_condition", label: "Da" },
+                    { field: "heart", label: "Tim" },
+                    { field: "lungs", label: "Phổi" },
+                    { field: "spine", label: "Cột sống" },
+                    { field: "posture", label: "Tư thế" },
+                  ].map(({ field, label }) => {
+                    const isCustomValue = !dropdownOptions.some(
+                      (opt) => opt.value === formData[field] && opt.value !== "other"
+                    );
+
+                    return (
+                      <div key={field} className="relative">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {label}
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={
+                              isCustomValue ? "other" : formData[field] || ""
+                            }
+                            onChange={(e) => {
+                              if (e.target.value === "other") {
+                                handleExamFieldChange(field, "");
+                              } else {
+                                handleExamFieldChange(field, e.target.value);
+                              }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm appearance-none"
+                          >
+                            <option value="">Chọn trạng thái</option>
+                            {dropdownOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="h-4 w-4 absolute right-3 top-2.5 text-gray-400 pointer-events-none" />
+                        </div>
+                        {isCustomValue && (
+                          <input
+                            type="text"
+                            value={formData[field] || ""}
+                            onChange={(e) =>
+                              handleExamFieldChange(field, e.target.value)
+                            }
+                            className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            placeholder={`Nhập tình trạng ${label.toLowerCase()}`}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Chẩn đoán cuối cùng */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Chẩn đoán cuối cùng
+                </label>
+                <textarea
+                  value={formData.final_diagnosis}
+                  onChange={(e) => handleInputChange(e, "final_diagnosis")}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  rows="3"
+                  placeholder="Nhập chẩn đoán (nếu có)"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowUpdateModal(false);
+                  setSelectedRecord(null);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={handleFormSubmit}
+                disabled={loading.update[selectedRecord?.register_id]}
+                className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                  loading.update[selectedRecord?.register_id]
+                    ? "opacity-70 cursor-not-allowed"
+                    : ""
+                }`}
+              >
+                {loading.update[selectedRecord?.register_id] ? (
+                  <span className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Đang lưu...
+                  </span>
+                ) : (
+                  "Lưu kết quả"
+                )}
+              </button>
             </div>
           </div>
         </div>
