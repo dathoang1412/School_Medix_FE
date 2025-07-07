@@ -35,20 +35,6 @@ const RegularCheckupDetails = () => {
   const fetchCampaign = async () => {
     try {
       setLoading(true);
-      // Fetch status from /checkup-campaign
-      let status = "DRAFTED"; // Default status
-      try {
-        const campaignListRes = await axiosClient.get("/checkup-campaign");
-        const campaigns = campaignListRes.data.data || [];
-        const campaign = campaigns.find((c) => c.campaign_id === parseInt(campaign_id));
-        if (campaign && campaign.status) {
-          status = campaign.status;
-        }
-      } catch (err) {
-        console.warn("Failed to fetch status from /checkup-campaign:", err);
-      }
-
-      // Fetch details from /checkup-campaign-detail/:campaign_id
       const res = await axiosClient.get(`/checkup-campaign-detail/${campaign_id}`);
       const campaign = res.data.data;
 
@@ -61,7 +47,7 @@ const RegularCheckupDetails = () => {
           start_date: campaign.start_date,
           end_date: campaign.end_date,
           specialist_exams: campaign.specialist_exams,
-          status: campaign.status || status,
+          status: campaign.status || "DRAFTED",
         });
       } else {
         setError("Không tìm thấy thông tin chiến dịch khám sức khỏe");
@@ -79,19 +65,6 @@ const RegularCheckupDetails = () => {
     fetchCampaign();
   }, [campaign_id]);
 
-  const fetchUpdatedStatus = async () => {
-    try {
-      const campaignListRes = await axiosClient.get("/checkup-campaign");
-      const campaigns = campaignListRes.data.data || [];
-      const campaign = campaigns.find((c) => c.campaign_id === parseInt(campaign_id));
-      if (campaign && campaign.status) {
-        setDetails((prev) => ({ ...prev, status: campaign.status }));
-      }
-    } catch (err) {
-      console.warn("Failed to fetch updated status from /checkup-campaign:", err);
-    }
-  };
-
   const handleCampaignAction = async (action) => {
     setLoadingAction(true);
     try {
@@ -106,7 +79,6 @@ const RegularCheckupDetails = () => {
         status: action === "send-register" ? "PREPARING" : "CANCELLED",
       }));
       enqueueSnackbar(response?.data.message || "Thành công!", { variant: "info" });
-      await fetchUpdatedStatus();
     } catch (error) {
       console.error(`Error performing ${action} on campaign ${campaign_id}:`, error);
       enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", { variant: "error" });
@@ -137,10 +109,8 @@ const RegularCheckupDetails = () => {
   const handleBack = () => {
     const { from, childId } = location.state || {};
     if (from) {
-      // Navigate back to the exact previous route with childId if available
       navigate(from, { state: { childId } });
     } else {
-      // Fallback to role-specific routes
       const backRoutes = {
         admin: "/admin/regular-checkup",
         nurse: "/nurse/regular-checkup",
@@ -185,7 +155,6 @@ const RegularCheckupDetails = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8">
           <button
             onClick={handleBack}
@@ -279,9 +248,7 @@ const RegularCheckupDetails = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Information */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Description */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center mb-4">
                 <FileText className="w-6 h-6 text-gray-700 mr-3" />
@@ -292,7 +259,6 @@ const RegularCheckupDetails = () => {
               </p>
             </div>
 
-            {/* Specialist Exams */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center mb-6">
                 <Stethoscope className="w-6 h-6 text-gray-700 mr-3" />
@@ -328,9 +294,7 @@ const RegularCheckupDetails = () => {
             </div>
           </div>
 
-          {/* Sidebar Information */}
           <div className="space-y-6">
-            {/* Schedule Information */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Calendar className="w-5 h-5 mr-2 text-gray-700" />
@@ -367,7 +331,6 @@ const RegularCheckupDetails = () => {
               </div>
             </div>
 
-            {/* Quick Stats */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Thống kê nhanh</h3>
               <div className="space-y-3">
@@ -377,7 +340,7 @@ const RegularCheckupDetails = () => {
                     {details.specialist_exams?.length || 0}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <div className="flex justify-between items-center(py-2 border-b border-gray-100">
                   <span className="text-gray-600">Trạng thái</span>
                   <span className="font-semibold text-gray-900">{getStatusText(details.status)}</span>
                 </div>

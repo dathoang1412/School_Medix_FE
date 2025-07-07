@@ -5,7 +5,7 @@ import axiosClient from "../../../config/axiosClient";
 import VaccineRecordsInfo from "./VaccineRecordInfo";
 import { ChildContext } from "../../../layouts/ParentLayout";
 
-const VaccineInfo = () => {
+const VaccineCampaignInfo = () => {
   const { student_id } = useParams();
   const { handleSelectChild, children } = useContext(ChildContext);
   const [campaignList, setCampaignList] = useState([]);
@@ -365,4 +365,4 @@ const VaccineInfo = () => {
   );
 };
 
-export default VaccineInfo;
+export default VaccineCampaignInfo;

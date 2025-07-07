@@ -10,45 +10,53 @@ import {
   Plus,
   XCircle,
   FileText,
-  Edit,
   Activity,
   Users,
-  Loader2, // Add Loader2 for refresh button
+  Loader2,
+  Send,
+  Pencil,
 } from "lucide-react";
-
 import axiosClient from "../../../config/axiosClient";
+import { getUserRole } from "../../../service/authService";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import {
   getStatusColor,
-  formatDate,
   getCardBorderColor,
   getStatusText,
-} from "../../../utils/campaignUtils"
-import { getUserRole } from "../../../service/authService";
+  formatDate,
+} from "../../../utils/campaignUtils";
 
 const VaccineCampaignManagement = () => {
   const [campaignList, setCampaignList] = useState([]);
   const [expandedItems, setExpandedItems] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [loadingActions, setLoadingActions] = useState({});
   const [userRole, setUserRole] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false); // New state for refresh loading
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const navigate = useNavigate();
 
   const fetchCampaigns = useCallback(async () => {
     try {
+      setLoading(true);
       setIsRefreshing(true);
       const res = await axiosClient.get("/vaccination-campaign");
       const campaigns = res.data.data || [];
+      console.log("Vaccination campaigns:", campaigns);
       setCampaignList(campaigns);
-      console.log("Campaign list:", campaigns);
       const ids = campaigns.map((c) => c.campaign_id);
       if (new Set(ids).size !== ids.length) {
         console.error("Duplicate campaign IDs detected:", ids);
       }
-    } catch (error) {
-      console.error("Error fetching campaigns:", error);
+      setError(null);
+    } catch (err) {
+      setError("Không thể tải danh sách chiến dịch tiêm chủng");
+      console.error("Error fetching campaigns:", err);
       enqueueSnackbar("Không thể tải danh sách chiến dịch", { variant: "error" });
     } finally {
+      setLoading(false);
       setIsRefreshing(false);
     }
   }, []);
@@ -67,8 +75,6 @@ const VaccineCampaignManagement = () => {
     }));
   }, []);
 
-  const navigate = useNavigate();
-
   const handleAddNewCampaign = () => {
     navigate("/admin/vaccine-campaign-creation");
   };
@@ -76,17 +82,21 @@ const VaccineCampaignManagement = () => {
   const handleCampaignAction = async (campaignId, action) => {
     setLoadingActions((prev) => ({ ...prev, [campaignId]: true }));
     try {
-      const response = await axiosClient.patch(
-        `/vaccination-campaign/${campaignId}/${action}`
-      );
-      await fetchCampaigns(); // Reuse fetchCampaigns instead of direct API call
-      enqueueSnackbar(response?.data.message, { variant: "info" });
+      let endpoint = `/vaccination-campaign/${campaignId}/${action}`;
+      if (action === "send-register") {
+        endpoint = `/vaccination-campaign/${campaignId}/send-register`;
+      }
+      const response = await (action === "send-register"
+        ? axiosClient.post(endpoint)
+        : axiosClient.patch(endpoint));
+      await fetchCampaigns();
+      enqueueSnackbar(response?.data.message || "Thành công!", { variant: "info" });
     } catch (error) {
       console.error(
         `Error performing ${action} on campaign ${campaignId}:`,
-        error.response.data.message
+        error.response?.data?.message || error.message
       );
-      enqueueSnackbar(error.response.data.message, { variant: "error" });
+      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", { variant: "error" });
     } finally {
       setLoadingActions((prev) => ({ ...prev, [campaignId]: false }));
     }
@@ -98,47 +108,55 @@ const VaccineCampaignManagement = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
+      case "DRAFTED":
+        return <FileText className="w-4 h-4" />;
       case "COMPLETED":
         return <CheckCircle className="w-4 h-4" />;
       case "ONGOING":
         return <Activity className="w-4 h-4" />;
       case "PREPARING":
         return <Clock className="w-4 h-4" />;
-      case "CANCELLED":
-        return <XCircle className="w-4 h-4" />;
       case "UPCOMING":
         return <AlertCircle className="w-4 h-4" />;
+      case "CANCELLED":
+        return <XCircle className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
     }
   };
 
   const getPrimaryActionConfig = (status, campaignId) => {
+    if (status === "ONGOING") {
+      return {
+        text: "Chỉnh sửa báo cáo",
+        action: "edit-report",
+        className: "bg-indigo-700 hover:bg-indigo-800 text-white",
+        disabled: false,
+        onClick: () => navigate(`/${userRole}/vaccination-report/${campaignId}`),
+      };
+    }
+
     if (userRole === "nurse") {
-      if (status === "ONGOING") {
-        return {
-          text: "Chỉnh sửa báo cáo",
-          action: "edit-report",
-          className: "bg-indigo-700 hover:bg-indigo-800 text-white",
-          disabled: false,
-          onClick: () => navigate("/" + getUserRole() + "/report/" + campaignId),
-        };
-      } else if (status === "COMPLETED") {
+      if (status === "COMPLETED") {
         return {
           text: "Xem báo cáo",
           action: "view-report",
-          className: "bg-slate-700 hover:bg-slate-800 text-white",
+          className: "bg-blue-600 hover:bg-blue-700 text-white",
           disabled: false,
-          onClick: () => {
-            console.log("ROLE: ", getUserRole());
-            navigate(`/${getUserRole()}/vaccine-campaign-report/${campaignId}`);
-          },
+          onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
         };
       }
       return null;
     }
 
     switch (status) {
+      case "DRAFTED":
+        return {
+          text: "Gửi đơn",
+          action: "send-register",
+          className: "bg-blue-600 hover:bg-blue-700 text-white",
+          disabled: false,
+        };
       case "PREPARING":
         return {
           text: "Đóng đơn đăng ký",
@@ -164,9 +182,9 @@ const VaccineCampaignManagement = () => {
         return {
           text: "Xem báo cáo",
           action: "view-report",
-          className: "bg-slate-700 hover:bg-slate-800 text-white",
+          className: "bg-blue-600 hover:bg-blue-700 text-white",
           disabled: false,
-          onClick: () => navigate(`/${getUserRole()}/vaccine-campaign-report/${campaignId}`),
+          onClick: () => navigate(`/admin/vaccination-report/${campaignId}`),
         };
       case "CANCELLED":
         return {
@@ -179,6 +197,37 @@ const VaccineCampaignManagement = () => {
         return null;
     }
   };
+
+  if (loading && !isRefreshing) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-slate-900" />
+          <p className="text-slate-600">Đang tải danh sách chiến dịch...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full mx-4 border border-slate-200">
+          <div className="flex items-center space-x-3 text-red-600 mb-4">
+            <XCircle className="h-6 w-6" />
+            <h3 className="text-lg font-semibold">Lỗi tải dữ liệu</h3>
+          </div>
+          <p className="text-slate-600 mb-4">{error}</p>
+          <button
+            onClick={handleRefresh}
+            className="w-full bg-slate-900 text-white py-2 px-4 rounded-lg hover:bg-slate-800 transition-colors"
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -238,17 +287,12 @@ const VaccineCampaignManagement = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
           {[
             {
-              status: "COMPLETED",
-              label: "Hoàn thành",
-              count: campaignList.filter((c) => c.status === "COMPLETED").length,
-            },
-            {
-              status: "ONGOING",
-              label: "Đang thực hiện",
-              count: campaignList.filter((c) => c.status === "ONGOING").length,
+              status: "DRAFTED",
+              label: "Đang chỉnh sửa",
+              count: campaignList.filter((c) => c.status === "DRAFTED").length,
             },
             {
               status: "PREPARING",
@@ -259,6 +303,16 @@ const VaccineCampaignManagement = () => {
               status: "UPCOMING",
               label: "Sắp triển khai",
               count: campaignList.filter((c) => c.status === "UPCOMING").length,
+            },
+            {
+              status: "ONGOING",
+              label: "Đang thực hiện",
+              count: campaignList.filter((c) => c.status === "ONGOING").length,
+            },
+            {
+              status: "COMPLETED",
+              label: "Hoàn thành",
+              count: campaignList.filter((c) => c.status === "COMPLETED").length,
             },
             {
               status: "CANCELLED",
@@ -310,7 +364,7 @@ const VaccineCampaignManagement = () => {
                         <span>{getStatusText(campaign.status)}</span>
                       </div>
                       <h3 className="text-lg font-semibold text-slate-900 max-w-2xl">
-                        {campaign.description}
+                        {campaign.title}
                       </h3>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -360,7 +414,7 @@ const VaccineCampaignManagement = () => {
                             <p className="text-sm font-medium text-slate-700 mb-1">
                               Địa điểm thực hiện
                             </p>
-                            <p className="text-base text-slate-900">{campaign.location}</p>
+                            <p className="text-base text-slate-900">{campaign.location || "Chưa xác định"}</p>
                           </div>
                         </div>
                         <div className="flex items-start space-x-4">
@@ -369,12 +423,9 @@ const VaccineCampaignManagement = () => {
                           </div>
                           <div>
                             <p className="text-sm font-medium text-slate-700 mb-1">
-                              Vaccine sử dụng
+                              Vaccine
                             </p>
                             <p className="text-base text-slate-900">{campaign.vaccine_name}</p>
-                            <p className="text-sm text-slate-500">
-                              Mã vaccine: {campaign.vaccine_id}
-                            </p>
                           </div>
                         </div>
                       </div>
@@ -387,9 +438,18 @@ const VaccineCampaignManagement = () => {
                           navigate(`/${getUserRole()}/vaccine-campaign/${campaign.campaign_id}`)
                         }
                       >
-                        <FileText className="w-4 h-4 inline mr-2" />
-                        Xem chi tiết
+                        <FileText className="w-4 h-4 inline mr-2" /> Xem chi tiết
                       </button>
+
+                      {userRole === "admin" && campaign.status === "DRAFTED" && (
+                        <button
+                          onClick={() => navigate(`/admin/vaccine-campaign/${campaign.campaign_id}/edit`)}
+                          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                        >
+                          <Pencil className="w-4 h-4" />
+                          <span>Chỉnh sửa</span>
+                        </button>
+                      )}
 
                       {primaryAction && (
                         <button
@@ -408,13 +468,13 @@ const VaccineCampaignManagement = () => {
                         >
                           {isLoading ? (
                             <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              <Loader2 className="w-4 h-4 animate-spin" />
                               <span>Đang xử lý...</span>
                             </>
                           ) : (
                             <>
-                              {primaryAction.action === "edit-report" && (
-                                <Edit className="w-4 h-4" />
+                              {primaryAction.action === "send-register" && (
+                                <Send className="w-4 h-4" />
                               )}
                               <span>{primaryAction.text}</span>
                             </>
@@ -423,7 +483,9 @@ const VaccineCampaignManagement = () => {
                       )}
 
                       {userRole === "admin" &&
-                        (campaign.status === "PREPARING" || campaign.status === "UPCOMING") && (
+                        (campaign.status === "DRAFTED" ||
+                          campaign.status === "PREPARING" ||
+                          campaign.status === "UPCOMING") && (
                           <button
                             onClick={() => handleCampaignAction(campaign.campaign_id, "cancel")}
                             disabled={isLoading}

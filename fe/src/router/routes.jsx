@@ -14,7 +14,6 @@ import DrugTable from "../pages/Parent/SendDrug/DrugTable";
 import StudentRegularCheckup from '../pages/Parent/RegularCheckup/StudentRegularCheckup';
 import RegularCheckupSurvey from "../pages/Parent/RegularCheckup/RegularCheckupSurvey";
 import VaccineCampaignSurvey from "../pages/Parent/VaccineCampaign/VaccineCampaignSurvey";
-import VaccineInfo from "../pages/Parent/VaccineCampaign/VaccineInfo";
 import HealthRecord from "../pages/Parent/DailyHealth/HealthRecord";
 import StudentProfile from "../pages/Parent/StudentProfile/StudentProfile";
 import NewVaccineCampaign from "../pages/Admin/VaccineCampaign/NewVaccineCampaign";
@@ -39,6 +38,8 @@ import RegularCheckupReport from "../pages/Nurse/RegularCheckupReport/RegularChe
 import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport/VaccineCampaignReport";
 import AuthFlow from "../pages/Auth/ResetPassword/AuthFlow";
 import RegularCheckupCampaignForm from "../pages/Admin&Nurse/RegularCheckupManagement/RegularCheckupCampaignForm";
+import VaccineCampaignInfo from "../pages/Parent/VaccineCampaign/VaccineCampaignInfo";
+import VaccineDeclarationForm from "../pages/Parent/VaccineCampaign/VaccineDeclarationForm";
 
 const routes = createBrowserRouter([
   {
@@ -200,7 +201,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "vaccine-info",
-            element: <VaccineInfo />,
+            element: <VaccineCampaignInfo />,
           },
           {
             path: "health-record",
@@ -214,6 +215,10 @@ const routes = createBrowserRouter([
             path: "surveyCheckup/:campaign_id",
             element: <RegularCheckupSurvey />,
           },
+          {
+            path: "vaccine-declare",
+            element: <VaccineDeclarationForm/>
+          }
         ],
       },
     ],

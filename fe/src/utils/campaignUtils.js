@@ -2,6 +2,8 @@ export const getCardBorderColor = (status) => {
   switch (status) {
     case "DONE":
       return "border-l-green-500";
+    case "COMPLETED":
+      return "border-l-green-500";
     case "ONGOING":
       return "border-l-blue-500";
     case "PREPARING":
@@ -41,6 +43,8 @@ export const getStatusColor = (status) => {
   switch (status) {
     case "DONE":
       return "text-green-700 bg-green-100 border-green-200";
+    case "COMPLETED":
+      return "text-green-700 bg-green-100 border-green-200";
     case "ONGOING":
       return "text-blue-700 bg-blue-100 border-blue-200";
     case "PREPARING":
@@ -60,6 +64,8 @@ export const getStatusText = (status) => {
   switch (status) {
     case "DONE":
       return "Đã hoàn thành";
+    case "COMPLETED":
+      return "Đã hoàn thành";
     case "ONGOING":
       return "Đang diễn ra";
     case "PREPARING":
@@ -69,7 +75,7 @@ export const getStatusText = (status) => {
     case "UPCOMING":
       return "Sắp diễn ra";
     case "DRAFTED":
-      return "Nháp";
+      return "Đang chỉnh sửa";
     default:
       return "Không xác định";
   }

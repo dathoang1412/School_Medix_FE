@@ -8,6 +8,7 @@ const NewVaccineCampaign = () => {
   const [campaignForm, setCampaignForm] = useState({
     vaccine_id: "",
     disease_id: "",
+    title: "",
     description: "",
     location: "",
     start_date: "",
@@ -58,7 +59,7 @@ const NewVaccineCampaign = () => {
         ...prev,
         vaccine_id: vaccines[0].id.toString(),
       }));
-    } 
+    }
   }, [vaccines]);
 
   const handleCampaignChange = useCallback((e) => {
@@ -69,6 +70,7 @@ const NewVaccineCampaign = () => {
       ...(name === "vaccine_id" ? { disease_id: "" } : {}),
     }));
   }, []);
+
   const handleVaccineChange = useCallback((e) => {
     const { name, value } = e.target;
     setVaccineForm((prev) => ({ ...prev, [name]: value }));
@@ -91,8 +93,8 @@ const NewVaccineCampaign = () => {
         setIsLoading(false);
         return;
       }
-      if (!campaignForm.description.trim()) {
-        setError("Vui lòng nhập mô tả chiến dịch");
+      if (!campaignForm.title.trim()) {
+        setError("Vui lòng nhập tiêu đề chiến dịch");
         setIsLoading(false);
         return;
       }
@@ -119,6 +121,7 @@ const NewVaccineCampaign = () => {
         setCampaignForm({
           vaccine_id: vaccines.length > 0 ? vaccines[0].id.toString() : "",
           disease_id: "",
+          title: "",
           description: "",
           location: "",
           start_date: "",
@@ -211,14 +214,13 @@ const NewVaccineCampaign = () => {
     };
     fetchDiseases();
   }, [campaignForm.vaccine_id]);
-  
 
   const navigate = useNavigate();
 
   return (
     <div className="relative p-6 bg-gray-50 min-h-screen pt-20">
       <div
-        onClick={() => navigate('/admin/vaccine-campaign')}
+        onClick={() => navigate("/admin/vaccine-campaign")}
         className="flex items-center justify-center absolute top-4 cursor-pointer"
       >
         <IoChevronBackOutline /> Back
@@ -305,6 +307,19 @@ const NewVaccineCampaign = () => {
             )}
           </div>
           <div>
+            <label className="block text-sm font-medium mb-1">Tiêu đề</label>
+            <input
+              type="text"
+              name="title"
+              value={campaignForm.title}
+              onChange={handleCampaignChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              required
+              placeholder="Nhập tiêu đề chiến dịch"
+              disabled={isLoading}
+            />
+          </div>
+          <div>
             <label className="block text-sm font-medium mb-1">Mô tả</label>
             <textarea
               name="description"
@@ -312,8 +327,7 @@ const NewVaccineCampaign = () => {
               onChange={handleCampaignChange}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
               rows="4"
-              required
-              placeholder="Nhập mô tả chiến dịch"
+              placeholder="Nhập mô tả chiến dịch (không bắt buộc)"
               disabled={isLoading}
             />
           </div>
@@ -384,7 +398,7 @@ const NewVaccineCampaign = () => {
       {showVaccineModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-starched mb-4">
+            <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Thêm Vaccine Mới</h3>
               <button onClick={() => setShowVaccineModal(false)} disabled={isLoading}>
                 <X size={20} />
@@ -428,14 +442,17 @@ const NewVaccineCampaign = () => {
                       ...prev,
                       disease_list: e.target.value
                         .split(",")
-                        .map((id) => parseInt(id.trim())).filter(id => !isNaN(id)),
+                        .map((id) => parseInt(id.trim()))
+                        .filter((id) => !isNaN(id)),
                     }))
                   }
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                   placeholder="Nhập ID các bệnh, cách nhau bởi dấu phẩy (VD: 1,2,3)"
                   disabled={isLoading}
                 />
-                <p className="text-xs regl format, single-line">Mô tả phải có định dạng: "bệnh [Tên bệnh] - [Chi tiết]". Tên bệnh phải tồn tại (VD: Sởi, Quai bị).</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Mô tả phải có định dạng: "bệnh [Tên bệnh] - [Chi tiết]". Tên bệnh phải tồn tại (VD: Sởi, Quai bị).
+                </p>
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <button
