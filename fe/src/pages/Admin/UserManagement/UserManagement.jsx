@@ -37,7 +37,7 @@ const UserInfo = ({ user, role, isDetailModal = false }) => (
       <b>Họ tên:</b> {user.name}
     </p>
     <p>
-      <b>Email:</b> {user.email || "Không có"}
+      <b>Email:</b> {user.email || "Chưa đăng ký tài khoản"}
     </p>
     <p>
       <b>Giới tính:</b> {user.isMale ? "Nam" : "Nữ"}
@@ -213,13 +213,17 @@ const UserManagement = () => {
       const response = await axiosClient.post("/send-invites", {
         users: selected_users,
       });
+
+      console.log(response);
       enqueueSnackbar(response.data.message || "Đã gửi lời mời!", {
         variant: "success",
       });
       updateState({ selectedUsers: [], isSendingInvites: false });
     } catch (error) {
       enqueueSnackbar(
-        `Lỗi khi gửi lời mời: ${error.response?.data?.message || error.message}`,
+        `Lỗi khi gửi lời mời: ${
+          error.response?.data?.message || error.message
+        }`,
         { variant: "error" }
       );
       updateState({ isSendingInvites: false });
@@ -276,7 +280,7 @@ const UserManagement = () => {
     const csvData = filteredUsers.map((user) => ({
       id: user.id,
       name: user.name,
-      email: user.email || "Không có",
+      email: user.email || "Chưa đăng ký tài khoản",
       phone_number: user.phone_number || "Không có",
       dob: user.dob,
       isMale: user.isMale ? "Nam" : "Nữ",
@@ -336,7 +340,9 @@ const UserManagement = () => {
     } catch (error) {
       console.error("Error uploading file:", error);
       enqueueSnackbar(
-        `Lỗi khi tải file lên: ${error.response?.data?.message || error.message}`,
+        `Lỗi khi tải file lên: ${
+          error.response?.data?.message || error.message
+        }`,
         { variant: "error" }
       );
     }
@@ -344,9 +350,12 @@ const UserManagement = () => {
 
   const handleGetImportSample = async () => {
     try {
-      const response = await axiosClient.get(`/${state.activeTab}-import-sample`, {
-        responseType: "blob",
-      });
+      const response = await axiosClient.get(
+        `/${state.activeTab}-import-sample`,
+        {
+          responseType: "blob",
+        }
+      );
 
       enqueueSnackbar("Tải file mẫu thành công!", { variant: "success" });
 
@@ -380,16 +389,14 @@ const UserManagement = () => {
       { label: "", width: "w-12" }, // Checkbox
       { label: "ID", width: "w-16" },
       { label: "Họ tên", width: "w-1/3" },
-      { label: "Email", width: "w-1/3" },
+      { label: "Email", width: "w-1/4" },
       { label: "SĐT", width: "w-20" },
       ...(state.activeTab === "parent"
         ? [{ label: "Số con", width: "w-20" }]
         : state.activeTab === "student"
-        ? [
-            { label: "Mã HS", width: "w-20" },
-            { label: "Lớp", width: "w-28" },
-          ]
+        ? [{ label: "Lớp", width: "w-28" }]
         : []),
+      { label: "Mời tham gia gần nhất", width: "w-20" },
       { label: "Trạng thái", width: "w-28" },
       { label: "Hành động", width: "w-1/5" },
     ];
@@ -425,7 +432,9 @@ const UserManagement = () => {
       </td>
       <td className="p-2 whitespace-nowrap">{user.id}</td>
       <td className="p-2 whitespace-nowrap">{user.name}</td>
-      <td className="p-2 whitespace-nowrap">{user.email || "Không có"}</td>
+      <td className="p-2 whitespace-nowrap">
+        {user.email || "Chưa đăng ký tài khoản"}
+      </td>
       <td className="p-2 whitespace-nowrap">
         {user.phone_number || "Không có"}
       </td>
@@ -434,10 +443,20 @@ const UserManagement = () => {
       )}
       {state.activeTab === "student" && (
         <>
-          <td className="p-2 whitespace-nowrap">{user.id}</td>
           <td className="p-2 whitespace-nowrap">{user.class_name}</td>
         </>
       )}
+      <td className="p-2 whitespace-nowrap">
+        {user.last_invitation_at
+          ? new Date(user.last_invitation_at).toLocaleString("vi-VN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "—"}
+      </td>
       <td className="p-2 whitespace-nowrap">
         <span
           className={`inline-block px-2 py-1 rounded-full text-xs ${
