@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axiosClient from '../../../config/axiosClient';
-import { ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axiosClient from "../../../config/axiosClient";
+import { ArrowLeft } from "lucide-react";
 
 const EditUserPage = () => {
   const { role, id } = useParams();
@@ -21,12 +21,14 @@ const EditUserPage = () => {
           // Format dob to YYYY-MM-DD
           const formattedData = {
             ...data.data,
-            dob: data.data.dob ? new Date(data.data.dob).toISOString().split('T')[0] : '',
+            dob: data.data.dob
+              ? new Date(data.data.dob).toISOString().split("T")[0]
+              : "",
           };
           setFormData(formattedData);
           setImagePreview(data.data.profile_img_url);
         } else {
-          setError('Không tìm thấy người dùng');
+          setError("Không tìm thấy người dùng");
         }
       } catch (error) {
         setError(error.response?.data?.message || error.message);
@@ -44,25 +46,31 @@ const EditUserPage = () => {
 
       if (selectedImgFile) {
         const formDataImg = new FormData();
-        formDataImg.append('image', selectedImgFile);
-        const imgUploadRes = await axiosClient.post('/profile-img', formDataImg, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        formDataImg.append("image", selectedImgFile);
+        const imgUploadRes = await axiosClient.post(
+          "/profile-img",
+          formDataImg,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
         profile_img_url = imgUploadRes.data.profile_img_url;
-        if (!profile_img_url) throw new Error('Upload ảnh thất bại');
+        if (!profile_img_url) throw new Error("Upload ảnh thất bại");
       }
 
       const updates = { ...formData, profile_img_url };
-      await axiosClient.patch('/admin/edit-user-profile', {
+      await axiosClient.patch("/admin/edit-user-profile", {
         id,
         role,
         updates,
       });
 
-      alert('Cập nhật thành công!');
-      navigate('/users');
+      alert("Cập nhật thành công!");
+      navigate("/users");
     } catch (error) {
-      alert('Lỗi khi cập nhật: ' + (error.response?.data?.message || error.message));
+      alert(
+        "Lỗi khi cập nhật: " + (error.response?.data?.message || error.message)
+      );
     }
   };
 
@@ -85,7 +93,7 @@ const EditUserPage = () => {
             <p className="text-red-700 text-sm">{error}</p>
           </div>
           <button
-            onClick={() => navigate('/users')}
+            onClick={() => navigate("/users")}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700"
           >
             <ArrowLeft size={16} /> Quay lại danh sách
@@ -101,13 +109,15 @@ const EditUserPage = () => {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate('/admin/user-manage')}
+            onClick={() => navigate("/admin/user-manage")}
             className="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 mb-4"
           >
             <ArrowLeft size={16} /> Quay lại
           </button>
           <div className="border-b border-gray-200 pb-4">
-            <h1 className="text-xl font-medium text-gray-900">Chỉnh sửa thông tin {role}</h1>
+            <h1 className="text-xl font-medium text-gray-900">
+              Chỉnh sửa thông tin {role}
+            </h1>
             <p className="text-sm text-gray-600 mt-1">ID: {id}</p>
           </div>
         </div>
@@ -115,9 +125,11 @@ const EditUserPage = () => {
         {/* Form */}
         <div className="bg-white border border-gray-200 rounded-md">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-sm font-medium text-gray-900">Thông tin cá nhân</h2>
+            <h2 className="text-sm font-medium text-gray-900">
+              Thông tin cá nhân
+            </h2>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Profile Image */}
@@ -144,15 +156,37 @@ const EditUserPage = () => {
                         setSelectedImgFile(file);
                         if (file) {
                           const reader = new FileReader();
-                          reader.onloadend = () => setImagePreview(reader.result);
+                          reader.onloadend = () =>
+                            setImagePreview(reader.result);
                           reader.readAsDataURL(file);
                         }
                       }}
                       className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
                     />
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF tối đa 10MB</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PNG, JPG, GIF tối đa 10MB
+                    </p>
                   </div>
                 </div>
+              </div>
+
+              {/* ACCOUNT INFO */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email{" "}
+                  {role !== "student" && (
+                    <span className="text-red-500">*</span>
+                  )}
+                </label>
+                <input
+                  type="email"
+                  required={role !== "student"}
+                  value={formData.email || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
 
               {/* Basic Info */}
@@ -163,25 +197,13 @@ const EditUserPage = () => {
                 <input
                   type="text"
                   required
-                  value={formData.name || ''}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={formData.name || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email {role !== 'student' && <span className="text-red-500">*</span>}
-                </label>
-                <input
-                  type="email"
-                  required={role !== 'student'}
-                  value={formData.email || ''}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Ngày sinh <span className="text-red-500">*</span>
@@ -189,8 +211,10 @@ const EditUserPage = () => {
                 <input
                   type="date"
                   required
-                  value={formData.dob || ''}
-                  onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                  value={formData.dob || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, dob: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -201,8 +225,13 @@ const EditUserPage = () => {
                 </label>
                 <select
                   required
-                  value={formData.isMale ? 'Nam' : 'Nữ'}
-                  onChange={(e) => setFormData({ ...formData, isMale: e.target.value === 'Nam' })}
+                  value={formData.isMale ? "Nam" : "Nữ"}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      isMale: e.target.value === "Nam",
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="Nam">Nam</option>
@@ -217,8 +246,10 @@ const EditUserPage = () => {
                 <input
                   type="text"
                   required
-                  value={formData.address || ''}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  value={formData.address || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -229,14 +260,16 @@ const EditUserPage = () => {
                 </label>
                 <input
                   type="text"
-                  value={formData.phone_number || ''}
-                  onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                  value={formData.phone_number || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone_number: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               {/* Student specific fields */}
-              {role === 'student' && (
+              {role === "student" && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -245,8 +278,10 @@ const EditUserPage = () => {
                     <input
                       type="text"
                       required
-                      value={formData.class_id || ''}
-                      onChange={(e) => setFormData({ ...formData, class_id: e.target.value })}
+                      value={formData.class_id || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, class_id: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -258,8 +293,13 @@ const EditUserPage = () => {
                     <input
                       type="number"
                       required
-                      value={formData.year_of_enrollment || ''}
-                      onChange={(e) => setFormData({ ...formData, year_of_enrollment: e.target.value })}
+                      value={formData.year_of_enrollment || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          year_of_enrollment: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -270,8 +310,10 @@ const EditUserPage = () => {
                     </label>
                     <input
                       type="text"
-                      value={formData.mom_profile?.id || 'Không có'}
-                      onChange={(e) => setFormData({ ...formData, mom_id: e.target.value })}
+                      value={formData.mom_profile?.id || "Không có"}
+                      onChange={(e) =>
+                        setFormData({ ...formData, mom_id: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -282,8 +324,10 @@ const EditUserPage = () => {
                     </label>
                     <input
                       type="text"
-                      value={formData.dad_profile?.id || 'Không có'}
-                      onChange={(e) => setFormData({ ...formData, dad_id: e.target.value })}
+                      value={formData.dad_profile?.id || "Không có"}
+                      onChange={(e) =>
+                        setFormData({ ...formData, dad_id: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -295,7 +339,7 @@ const EditUserPage = () => {
             <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => navigate('/admin/user-manage')}
+                onClick={() => navigate("/admin/user-manage")}
                 className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
               >
                 Hủy bỏ
