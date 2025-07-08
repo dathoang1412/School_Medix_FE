@@ -19,7 +19,7 @@ const CompletedRegularCheckupReport = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showPDFModal, setShowPDFModal] = useState(false); // New state for PDF modal
   const [selectedPDFUrl, setSelectedPDFUrl] = useState(null); // New state for selected PDF URL
-  const { checkup_id } = useParams();
+  const { campaign_id } = useParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -51,7 +51,7 @@ const CompletedRegularCheckupReport = () => {
     setLoading((prev) => ({ ...prev, general: true }));
     try {
       const res = await axiosClient.get(
-        `/health-record/campaign/${checkup_id}`
+        `/health-record/campaign/${campaign_id}`
       );
       console.log("GENERAL LIST: ", res.data.data);
       setGeneralHealthList(res.data.data);
@@ -69,7 +69,7 @@ const CompletedRegularCheckupReport = () => {
     setLoading((prev) => ({ ...prev, specialist: true }));
     try {
       const res = await axiosClient.get(
-        `/campaign/${checkup_id}/specialist-exam/record`
+        `/campaign/${campaign_id}/specialist-exam/record`
       );
       console.log("SPECIALIST: ", res.data.data);
       setSpecialistList(res.data.data);
@@ -158,7 +158,7 @@ const CompletedRegularCheckupReport = () => {
     setLoading((prev) => ({ ...prev, bulkDownload: true }));
     try {
       const response = await axiosClient.get(
-        `/campaign/${checkup_id}/download-health-record-result`,
+        `/campaign/${campaign_id}/download-health-record-result`,
         {
           responseType: "blob",
         }
@@ -171,7 +171,7 @@ const CompletedRegularCheckupReport = () => {
       );
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `health-records-${checkup_id}.xlsx`);
+      link.setAttribute("download", `health-records-${campaign_id}.xlsx`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -199,7 +199,7 @@ const CompletedRegularCheckupReport = () => {
       }
     };
     fetchAllData();
-  }, [isAuthenticated, checkup_id]);
+  }, [isAuthenticated, campaign_id]);
 
   const getStatusBadge = (status) => {
     return status === "DONE" ? (

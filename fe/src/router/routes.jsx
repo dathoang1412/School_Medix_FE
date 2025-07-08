@@ -39,7 +39,11 @@ import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport/VaccineC
 import AuthFlow from "../pages/Auth/ResetPassword/AuthFlow";
 import RegularCheckupCampaignForm from "../pages/Admin&Nurse/RegularCheckupManagement/RegularCheckupCampaignForm";
 import VaccineCampaignInfo from "../pages/Parent/VaccineCampaign/VaccineCampaignInfo";
-import VaccineDeclarationForm from "../pages/Parent/VaccineCampaign/VaccineDeclarationForm";
+import VaccineDeclarationForm from "../pages/Parent/Declare/VaccineDeclarationForm";
+import DiseaseDeclarationForm from "../pages/Parent/Declare/DiseaseDeclarationForm";
+import HealthRecordList from "../pages/Parent/HealthRecord/HealthRecordList";
+import HealthDeclarationHistory from "../pages/Parent/Declare/HealthDeclarationHistory";
+import DeclarationManagement from "../pages/Admin&Nurse/HealthDeclarationManagement/DeclarationManagement";
 
 const routes = createBrowserRouter([
   {
@@ -104,7 +108,7 @@ const routes = createBrowserRouter([
             element: <VaccineCampaignDetails />,
           },
           {
-            path: "vaccine-campaign/student-list/:id",
+            path: "vaccine-campaign/:id/register-list",
             element: <VaccineStudentList />,
           },
           {
@@ -180,6 +184,10 @@ const routes = createBrowserRouter([
         element: <RegularCheckupDetails />,
       },
       {
+        path: "vaccination-campaign/:id",
+        element: <VaccineCampaignDetails/>
+      },
+      {
         path: "edit/:student_id",
         element: <ParentLayout />,
         children: [
@@ -216,8 +224,20 @@ const routes = createBrowserRouter([
             element: <RegularCheckupSurvey />,
           },
           {
+            path: "health-record-list",
+            element: <HealthRecordList />,
+          },
+          {
+            path: "history-declare-record",
+            element: <HealthDeclarationHistory />,
+          },
+          {
             path: "vaccine-declare",
             element: <VaccineDeclarationForm/>
+          },
+          {
+            path: "disease-declare",
+            element: <DiseaseDeclarationForm/>
           }
         ],
       },
@@ -233,6 +253,10 @@ const routes = createBrowserRouter([
           {
             path: "",
             element: <NurseDashboard />,
+          },
+          {
+            path: "vaccine-campaign/:id/register-list",
+            element: <VaccineStudentList />,
           },
           {
             path: "send-drug",
@@ -251,7 +275,7 @@ const routes = createBrowserRouter([
             element: <VaccineCampaignManagement />,
           },
           {
-            path: "vaccine-campaign/:campaign_id",
+            path: "vaccine-campaign/:id",
             element: <VaccineCampaignDetails />,
           },
           {
@@ -297,6 +321,10 @@ const routes = createBrowserRouter([
           {
             path: "disease",
             element: <DiseaseRecordManagement />,
+          },
+          {
+            path: "DeclarationManagement",
+            element: <DeclarationManagement />,
           },
         ],
       },
