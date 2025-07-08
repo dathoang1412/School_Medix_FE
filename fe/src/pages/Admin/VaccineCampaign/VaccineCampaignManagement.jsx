@@ -126,22 +126,30 @@ const VaccineCampaignManagement = () => {
   };
 
   const getPrimaryActionConfig = (status, campaignId) => {
-    if (status === "ONGOING") {
-      return {
-        text: "Chỉnh sửa báo cáo",
-        action: "edit-report",
-        className: "bg-indigo-700 hover:bg-indigo-800 text-white",
-        disabled: false,
-        onClick: () => navigate(`/${userRole}/vaccination-report/${campaignId}`),
-      };
-    }
-
     if (userRole === "nurse") {
+      if (["PREPARING", "UPCOMING", "ONGOING"].includes(status)) {
+        return {
+          text: "Xem danh sách học sinh",
+          action: "view-register-list",
+          className: "bg-blue-600 hover:bg-blue-700 text-white",
+          disabled: false,
+          onClick: () => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`),
+        };
+      }
       if (status === "COMPLETED") {
         return {
           text: "Xem báo cáo",
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
+          disabled: false,
+          onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
+        };
+      }
+      if (status === "ONGOING") {
+        return {
+          text: "Chỉnh sửa báo cáo",
+          action: "edit-report",
+          className: "bg-indigo-700 hover:bg-indigo-800 text-white",
           disabled: false,
           onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
         };
@@ -476,6 +484,12 @@ const VaccineCampaignManagement = () => {
                               {primaryAction.action === "send-register" && (
                                 <Send className="w-4 h-4" />
                               )}
+                              {primaryAction.action === "complete" && (
+                                <CheckCircle className="w-4 h-4" />
+                              )}
+                              {primaryAction.action === "view-register-list" && (
+                                <Users className="w-4 h-4" />
+                              )}
                               <span>{primaryAction.text}</span>
                             </>
                           )}
@@ -483,9 +497,7 @@ const VaccineCampaignManagement = () => {
                       )}
 
                       {userRole === "admin" &&
-                        (campaign.status === "DRAFTED" ||
-                          campaign.status === "PREPARING" ||
-                          campaign.status === "UPCOMING") && (
+                        ["DRAFTED", "PREPARING", "UPCOMING"].includes(campaign.status) && (
                           <button
                             onClick={() => handleCampaignAction(campaign.campaign_id, "cancel")}
                             disabled={isLoading}

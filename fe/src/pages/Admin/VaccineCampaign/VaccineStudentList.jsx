@@ -7,18 +7,18 @@ import {
   Loader2,
   ArrowLeft,
 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../../config/axiosClient";
 
 const VaccineStudentList = () => {
-  const path = useLocation().pathname;
   const navigate = useNavigate();
-  const [id] = useState(path.split("/")[4]);
   const [studentList, setStudentList] = useState([]);
   const [statusList, setStatusList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false); // New state for refresh loading
+
+  const { id } = useParams();
 
   const fetchStudents = useCallback(async () => {
     try {
@@ -131,7 +131,7 @@ const VaccineStudentList = () => {
       {/* Header with Back and Refresh Buttons */}
       <div className="mb-6 flex justify-between items-center">
         <button
-          onClick={() => navigate("/admin/vaccine-campaign/" + id)}
+          onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <ArrowLeft className="w-4 h-4" />

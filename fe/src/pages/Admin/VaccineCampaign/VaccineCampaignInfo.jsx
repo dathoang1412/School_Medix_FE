@@ -82,22 +82,30 @@ const VaccineCampaignInfo = ({ details, setDetails }) => {
   };
 
   const getPrimaryActionConfig = (status, campaignId) => {
-    if (status === "ONGOING") {
-      return {
-        text: "Chỉnh sửa báo cáo",
-        action: "edit-report",
-        className: "bg-indigo-700 hover:bg-indigo-800 text-white",
-        disabled: false,
-        onClick: () => navigate(`/${userRole}/vaccination-report/${campaignId}`),
-      };
-    }
-
     if (userRole === "nurse") {
+      if (["PREPARING", "UPCOMING", "ONGOING"].includes(status)) {
+        return {
+          text: "Xem danh sách học sinh",
+          action: "view-register-list",
+          className: "bg-blue-600 hover:bg-blue-700 text-white",
+          disabled: false,
+          onClick: () => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`),
+        };
+      }
       if (status === "COMPLETED") {
         return {
           text: "Xem báo cáo",
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
+          disabled: false,
+          onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
+        };
+      }
+      if (status === "ONGOING") {
+        return {
+          text: "Chỉnh sửa báo cáo",
+          action: "edit-report",
+          className: "bg-indigo-700 hover:bg-indigo-800 text-white",
           disabled: false,
           onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
         };
@@ -173,18 +181,9 @@ const VaccineCampaignInfo = ({ details, setDetails }) => {
                   {getStatusText(details.status)}
                 </span>
               </div>
-              {userRole === "admin" && (
+              {(userRole === "admin" || userRole === "nurse") && (
                 <div className="flex flex-wrap gap-3">
-                  {details.status !== "DRAFTED" && (
-                    <button
-                      onClick={() => navigate(`/admin/vaccine-campaign/${details.campaign_id}/register-list`)}
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <UserCheck className="w-4 h-4 mr-2" />
-                      Xem danh sách học sinh
-                    </button>
-                  )}
-                  {details.status === "DRAFTED" && (
+                  {userRole === "admin" && details.status === "DRAFTED" && (
                     <>
                       <button
                         onClick={() => handleCampaignAction("send-register")}
@@ -212,7 +211,7 @@ const VaccineCampaignInfo = ({ details, setDetails }) => {
                       </button>
                     </>
                   )}
-                  {["DRAFTED", "PREPARING", "UPCOMING"].includes(details.status) && (
+                  {userRole === "admin" && ["DRAFTED", "PREPARING", "UPCOMING"].includes(details.status) && (
                     <button
                       onClick={() => handleCampaignAction("cancel")}
                       disabled={loadingAction}
@@ -222,7 +221,7 @@ const VaccineCampaignInfo = ({ details, setDetails }) => {
                       Hủy chiến dịch
                     </button>
                   )}
-                  {primaryAction && primaryAction.action !== "send-register" && (
+                  {primaryAction && (
                     <button
                       onClick={primaryAction.onClick || (() => handleCampaignAction(primaryAction.action))}
                       disabled={primaryAction.disabled || loadingAction}
@@ -234,7 +233,10 @@ const VaccineCampaignInfo = ({ details, setDetails }) => {
                           Đang xử lý...
                         </>
                       ) : (
-                        <span>{primaryAction.text}</span>
+                        <>
+                          {primaryAction.action === "view-register-list" && <UserCheck className="w-4 h-4 mr-2" />}
+                          <span>{primaryAction.text}</span>
+                        </>
                       )}
                     </button>
                   )}
