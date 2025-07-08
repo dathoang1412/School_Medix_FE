@@ -12,13 +12,11 @@ const RegularCheckupRegisterList = () => {
   const { campaign_id } = useParams();
   const navigate = useNavigate();
 
-  console.log("ID: ", campaign_id);
-
   const fetchList = useCallback(async () => {
     try {
       setLoading(true);
       setIsRefreshing(true);
-      const res = await axiosClient.get("/checkup-register/" + campaign_id);
+      const res = await axiosClient.get(`/checkup-register/${campaign_id}`);
       console.log("LIST: ", res.data.data);
       setList(res.data.data || []);
       setError(null);
@@ -190,10 +188,7 @@ const RegularCheckupRegisterList = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {list.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan="6"
-                    className="px-6 py-8 text-center text-gray-500"
-                  >
+                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
                     Không có dữ liệu đăng ký
                   </td>
                 </tr>
@@ -204,12 +199,8 @@ const RegularCheckupRegisterList = () => {
                       #{item.register_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {item.student_name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        ID: {item.student_id}
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{item.student_name}</div>
+                      <div className="text-sm text-gray-500">ID: {item.student_id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {item.class_name}
@@ -246,9 +237,7 @@ const RegularCheckupRegisterList = () => {
       </div>
 
       {list.length > 0 && (
-        <div className="mt-4 text-sm text-gray-600">
-          Hiển thị {list.length} kết quả
-        </div>
+        <div className="mt-4 text-sm text-gray-600">Hiển thị {list.length} kết quả</div>
       )}
     </div>
   );

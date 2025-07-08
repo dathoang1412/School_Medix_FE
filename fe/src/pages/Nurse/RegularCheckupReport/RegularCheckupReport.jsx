@@ -42,6 +42,8 @@ const RegularCheckupReport = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
+  console.log("CAMPAIGN ID: ", campaign_id)
+
   // Danh sách lựa chọn cho các trường khám
   const dropdownOptions = [
     { value: "Bình thường", label: "Bình thường" },

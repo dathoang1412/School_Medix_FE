@@ -39,13 +39,9 @@ const RegularCheckupDetails = () => {
   const fetchCampaign = async () => {
     try {
       setLoading(true);
-      const res = await axiosClient.get(
-        `/checkup-campaign-detail/${campaign_id}`
-      );
+      const res = await axiosClient.get(`/checkup-campaign-detail/${campaign_id}`);
       const campaign = res.data.data;
-
-      console.log("Regular checkup details: ", res.data.data);
-
+      console.log("Regular checkup details: ", campaign);
       if (campaign) {
         setDetails({
           id: campaign.campaign_id,
@@ -80,24 +76,23 @@ const RegularCheckupDetails = () => {
         action === "send-register"
           ? `/checkup/${campaign_id}/send-register`
           : `/checkup-campaign/${campaign_id}/${action}`;
-      const method =
-        action === "send-register" ? axiosClient.post : axiosClient.patch;
+      const method = action === "send-register" ? axiosClient.post : axiosClient.patch;
       const response = await method(endpoint);
       setDetails((prev) => ({
         ...prev,
-        status: action === "send-register" ? "PREPARING" : action === "cancel" ? "CANCELLED" : prev.status,
+        status:
+          action === "send-register"
+            ? "PREPARING"
+            : action === "cancel"
+            ? "CANCELLED"
+            : action === "finish"
+            ? "DONE"
+            : prev.status,
       }));
-      enqueueSnackbar(response?.data.message || "Thành công!", {
-        variant: "info",
-      });
+      enqueueSnackbar(response?.data.message || "Thành công!", { variant: "info" });
     } catch (error) {
-      console.error(
-        `Error performing ${action} on campaign ${campaign_id}:`,
-        error
-      );
-      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", {
-        variant: "error",
-      });
+      console.error(`Error performing ${action} on campaign ${campaign_id}:`, error);
+      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", { variant: "error" });
     } finally {
       setLoadingAction(false);
     }
@@ -132,9 +127,7 @@ const RegularCheckupDetails = () => {
         nurse: "/nurse/regular-checkup",
         parent: "/parent/student-regular-checkup",
       };
-      navigate(backRoutes[userRole] || "/parent/student-regular-checkup", {
-        state: { childId },
-      });
+      navigate(backRoutes[userRole] || "/parent/student-regular-checkup", { state: { childId } });
     }
   };
 
@@ -154,9 +147,7 @@ const RegularCheckupDetails = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Có lỗi xảy ra
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Có lỗi xảy ra</h2>
           <p className="text-gray-600">{error}</p>
           <button
             onClick={handleBack}
@@ -185,9 +176,7 @@ const RegularCheckupDetails = () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-start justify-between flex-wrap gap-4">
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">
-                  {details.name}
-                </h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-3">{details.name}</h1>
                 <div className="flex items-center gap-2 mb-4">
                   {getStatusIcon(details.status)}
                   <span
@@ -221,11 +210,7 @@ const RegularCheckupDetails = () => {
                         )}
                       </button>
                       <button
-                        onClick={() =>
-                          navigate(
-                            `/admin/checkup-campaign/${details.id}/edit`
-                          )
-                        }
+                        onClick={() => navigate(`/admin/checkup-campaign/${details.id}/edit`)}
                         className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                       >
                         <Edit className="w-4 h-4 mr-2" />
@@ -233,37 +218,33 @@ const RegularCheckupDetails = () => {
                       </button>
                     </>
                   )}
-                  {userRole === "admin" && ["PREPARING", "UPCOMING", "ONGOING"].includes(details.status) && (
-                    <button
-                      onClick={() =>
-                        navigate(
-                          `/admin/checkup-campaign/${details.id}/register-list`
-                        )
-                      }
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <UserCheck className="w-4 h-4 mr-2" />
-                      Xem danh sách học sinh
-                    </button>
-                  )}
-                  {userRole === "nurse" && ["PREPARING", "UPCOMING", "ONGOING"].includes(details.status) && (
-                    <button
-                      onClick={() =>
-                        navigate(
-                          `/nurse/checkup-campaign/${details.id}/register-list`
-                        )
-                      }
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <UserCheck className="w-4 h-4 mr-2" />
-                      Xem danh sách học sinh
-                    </button>
-                  )}
+                  {userRole === "admin" &&
+                    ["PREPARING", "UPCOMING", "ONGOING"].includes(details.status) && (
+                      <button
+                        onClick={() =>
+                          navigate(`/admin/checkup-campaign/${details.id}/register-list`)
+                        }
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Xem danh sách học sinh
+                      </button>
+                    )}
+                  {userRole === "nurse" &&
+                    ["PREPARING", "UPCOMING", "ONGOING"].includes(details.status) && (
+                      <button
+                        onClick={() =>
+                          navigate(`/nurse/checkup-campaign/${details.id}/register-list`)
+                        }
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Xem danh sách học sinh
+                      </button>
+                    )}
                   {userRole === "nurse" && details.status === "ONGOING" && (
                     <button
-                      onClick={() =>
-                        navigate(`/nurse/regular-report/${details.id}`)
-                      }
+                      onClick={() => navigate(`/nurse/regular-report/${details.id}`)}
                       className="flex items-center px-4 py-2 bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 transition-colors"
                     >
                       <Edit className="w-4 h-4 mr-2" />
@@ -272,9 +253,7 @@ const RegularCheckupDetails = () => {
                   )}
                   {userRole === "nurse" && details.status === "DONE" && (
                     <button
-                      onClick={() =>
-                        navigate(`/nurse/regular-checkup-report/${details.id}`)
-                      }
+                      onClick={() => navigate(`/nurse/regular-checkup-report/${details.id}`)}
                       className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       <FileText className="w-4 h-4 mr-2" />
@@ -282,50 +261,67 @@ const RegularCheckupDetails = () => {
                     </button>
                   )}
                   {userRole === "admin" && details.status === "ONGOING" && (
-                    <button
-                      onClick={() =>
-                        navigate(`/admin/regular-report/${details.id}`)
-                      }
-                      className="flex items-center px-4 py-2 bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 transition-colors"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Chỉnh sửa báo cáo
-                    </button>
+                    <>
+                      <button
+                        onClick={() => navigate(`/admin/regular-report/${details.id}`)}
+                        className="flex items-center px-4 py-2 bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 transition-colors"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Chỉnh sửa báo cáo
+                      </button>
+                      <button
+                        onClick={() => handleCampaignAction("finish")}
+                        disabled={loadingAction}
+                        className={`flex items-center px-4 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 transition-colors ${
+                          loadingAction ? "opacity-75 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        {loadingAction ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Đang xử lý...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Hoàn thành chiến dịch
+                          </>
+                        )}
+                      </button>
+                    </>
                   )}
                   {userRole === "admin" && details.status === "DONE" && (
                     <button
-                      onClick={() =>
-                        navigate(`/admin/regular-checkup-report/${details.id}`)
-                      }
+                      onClick={() => navigate(`/admin/regular-checkup-report/${details.id}`)}
                       className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       <FileText className="w-4 h-4 mr-2" />
                       Xem báo cáo
                     </button>
                   )}
-                  {userRole === "admin" && ["DRAFTED", "PREPARING", "UPCOMING"].includes(details.status) && (
-                    <button
-                      onClick={() => handleCampaignAction("cancel")}
-                      disabled={loadingAction}
-                      className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${
-                        loadingAction ? "opacity-75 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      <XCircle className="w-4 h-4 mr-2" />
-                      Hủy chiến dịch
-                    </button>
-                  )}
+                  {userRole === "admin" &&
+                    ["DRAFTED", "PREPARING", "UPCOMING"].includes(details.status) && (
+                      <button
+                        onClick={() => handleCampaignAction("cancel")}
+                        disabled={loadingAction}
+                        className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${
+                          loadingAction ? "opacity-75 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Hủy chiến dịch
+                      </button>
+                    )}
                 </div>
                 {userRole === "admin" && details.status === "DRAFTED" && (
                   <p className="text-sm text-gray-500 mt-2">
-                    Chiến dịch đang ở trạng thái nháp. Vui lòng gửi đơn để bắt
-                    đầu quá trình chuẩn bị.
+                    Chiến dịch đang ở trạng thái nháp. Vui lòng gửi đơn để bắt đầu quá trình chuẩn bị.
                   </p>
                 )}
               </div>
               <div className="bg-blue-50 p-4 rounded-lg">
                 <Activity className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <p className="text-sm text-blue-600 font-medium text-center">
+                <p className="text-sm font-medium text-center text-blue-600">
                   Chiến dịch khám sức khỏe
                 </p>
               </div>
@@ -338,9 +334,7 @@ const RegularCheckupDetails = () => {
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center mb-4">
                 <FileText className="w-6 h-6 text-gray-700 mr-3" />
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Mô tả chi tiết
-                </h2>
+                <h2 className="text-xl font-semibold text-gray-900">Mô tả chi tiết</h2>
               </div>
               <p className="text-gray-700 leading-relaxed text-base">
                 {details.description || "Chưa có mô tả"}
@@ -350,12 +344,9 @@ const RegularCheckupDetails = () => {
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center mb-6">
                 <Stethoscope className="w-6 h-6 text-gray-700 mr-3" />
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Các khám chuyên khoa
-                </h2>
+                <h2 className="text-xl font-semibold text-gray-900">Các khám chuyên khoa</h2>
               </div>
-              {details.specialist_exams &&
-              details.specialist_exams.length > 0 ? (
+              {details.specialist_exams && details.specialist_exams.length > 0 ? (
                 <div className="space-y-4">
                   {details.specialist_exams.map((exam) => (
                     <div
@@ -367,9 +358,7 @@ const RegularCheckupDetails = () => {
                           <Users className="w-4 h-4 text-blue-600" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-2">
-                            {exam.name}
-                          </h3>
+                          <h3 className="font-semibold text-gray-900 mb-2">{exam.name}</h3>
                           <p className="text-gray-600 text-sm leading-relaxed">
                             {exam.description || "Chưa có mô tả"}
                           </p>
@@ -397,35 +386,25 @@ const RegularCheckupDetails = () => {
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-green-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-700">
-                      Thời gian bắt đầu
-                    </p>
+                    <p className="text-sm font-medium text-gray-700">Thời gian bắt đầu</p>
                     <p className="text-gray-900 font-semibold">
-                      {details.start_date
-                        ? formatDate(details.start_date)
-                        : "Chưa xác định"}
+                      {details.start_date ? formatDate(details.start_date) : "Chưa xác định"}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-red-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-700">
-                      Thời gian kết thúc
-                    </p>
+                    <p className="text-sm font-medium text-gray-700">Thời gian kết thúc</p>
                     <p className="text-gray-900 font-semibold">
-                      {details.end_date
-                        ? formatDate(details.end_date)
-                        : "Chưa xác định"}
+                      {details.end_date ? formatDate(details.end_date) : "Chưa xác định"}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-700">
-                      Địa điểm
-                    </p>
+                    <p className="text-sm font-medium text-gray-700">Địa điểm</p>
                     <p className="text-gray-900 font-semibold capitalize">
                       {details.location || "Chưa xác định"}
                     </p>
@@ -435,9 +414,7 @@ const RegularCheckupDetails = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Thống kê nhanh
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Thống kê nhanh</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-600">Số khám chuyên khoa</span>
@@ -447,15 +424,11 @@ const RegularCheckupDetails = () => {
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-600">Trạng thái</span>
-                  <span className="font-semibold text-gray-900">
-                    {getStatusText(details.status)}
-                  </span>
+                  <span className="font-semibold text-gray-900">{getStatusText(details.status)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-gray-600">ID Chiến dịch</span>
-                  <span className="font-semibold text-gray-900">
-                    #{details.id}
-                  </span>
+                  <span className="font-semibold text-gray-900">#{details.id}</span>
                 </div>
               </div>
             </div>

@@ -7,18 +7,18 @@ import {
   Loader2,
   ArrowLeft,
 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../../config/axiosClient";
 
 const VaccineStudentList = () => {
-  const path = useLocation().pathname;
   const navigate = useNavigate();
-  const [id] = useState(path.split("/")[4]);
   const [studentList, setStudentList] = useState([]);
   const [statusList, setStatusList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false); // New state for refresh loading
+
+  const { id } = useParams();
 
   const fetchStudents = useCallback(async () => {
     try {

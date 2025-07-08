@@ -451,6 +451,16 @@ const VaccineCampaignManagement = () => {
                         </button>
                       )}
 
+                      {userRole === "admin" && ["PREPARING", "UPCOMING", "ONGOING"].includes(campaign.status) && (
+                        <button
+                          onClick={() => navigate(`/${userRole}/vaccine-campaign/${campaign.campaign_id}/register-list`)}
+                          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                        >
+                          <Users className="w-4 h-4" />
+                          <span>Xem danh sách học sinh</span>
+                        </button>
+                      )}
+
                       {primaryAction && (
                         <button
                           onClick={
@@ -476,6 +486,9 @@ const VaccineCampaignManagement = () => {
                               {primaryAction.action === "send-register" && (
                                 <Send className="w-4 h-4" />
                               )}
+                              {primaryAction.action === "complete" && (
+                                <CheckCircle className="w-4 h-4" />
+                              )}
                               <span>{primaryAction.text}</span>
                             </>
                           )}
@@ -483,9 +496,7 @@ const VaccineCampaignManagement = () => {
                       )}
 
                       {userRole === "admin" &&
-                        (campaign.status === "DRAFTED" ||
-                          campaign.status === "PREPARING" ||
-                          campaign.status === "UPCOMING") && (
+                        ["DRAFTED", "PREPARING", "UPCOMING"].includes(campaign.status) && (
                           <button
                             onClick={() => handleCampaignAction(campaign.campaign_id, "cancel")}
                             disabled={isLoading}
