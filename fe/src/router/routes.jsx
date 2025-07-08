@@ -41,6 +41,7 @@ import RegularCheckupCampaignForm from "../pages/Admin&Nurse/RegularCheckupManag
 import VaccineCampaignInfo from "../pages/Parent/VaccineCampaign/VaccineCampaignInfo";
 import VaccineDeclarationForm from "../pages/Parent/Declare/VaccineDeclarationForm";
 import DiseaseDeclarationForm from "../pages/Parent/Declare/DiseaseDeclarationForm";
+import HealthRecordList from "../pages/Parent/HealthRecord/HealthRecordList";
 
 const routes = createBrowserRouter([
   {
@@ -215,6 +216,10 @@ const routes = createBrowserRouter([
           {
             path: "surveyCheckup/:campaign_id",
             element: <RegularCheckupSurvey />,
+          },
+          {
+            path: "health-record-list",
+            element: <HealthRecordList />,
           },
           {
             path: "vaccine-declare",

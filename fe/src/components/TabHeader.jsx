@@ -31,6 +31,10 @@ const TabHeader = () => {
         to: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
       },
       {
+        label: "Hồ sơ bệnh",
+        to: selectedChild ? `/parent/edit/${selectedChild.id}/health-record-list` : "#",
+      },
+      {
         label: "Khai báo",
         to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-declare` : "#",
         subMenu: [
