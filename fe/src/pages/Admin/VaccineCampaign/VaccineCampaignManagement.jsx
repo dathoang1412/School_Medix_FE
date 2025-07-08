@@ -127,7 +127,16 @@ const VaccineCampaignManagement = () => {
 
   const getPrimaryActionConfig = (status, campaignId) => {
     if (userRole === "nurse") {
-      if (["PREPARING", "UPCOMING", "ONGOING"].includes(status)) {
+      if (status === "ONGOING") {
+        return {
+          text: "Chỉnh sửa báo cáo",
+          action: "edit-report",
+          className: "bg-indigo-700 hover:bg-indigo-800 text-white",
+          disabled: false,
+          onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
+        };
+      }
+      if (["PREPARING", "UPCOMING"].includes(status)) {
         return {
           text: "Xem danh sách học sinh",
           action: "view-register-list",
@@ -141,15 +150,6 @@ const VaccineCampaignManagement = () => {
           text: "Xem báo cáo",
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
-          disabled: false,
-          onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
-        };
-      }
-      if (status === "ONGOING") {
-        return {
-          text: "Chỉnh sửa báo cáo",
-          action: "edit-report",
-          className: "bg-indigo-700 hover:bg-indigo-800 text-white",
           disabled: false,
           onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
         };
@@ -299,7 +299,7 @@ const VaccineCampaignManagement = () => {
           {[
             {
               status: "DRAFTED",
-              label: "Đang chỉnh sửa",
+              label: "Đanging chỉnh sửa",
               count: campaignList.filter((c) => c.status === "DRAFTED").length,
             },
             {
