@@ -43,6 +43,7 @@ import VaccineDeclarationForm from "../pages/Parent/Declare/VaccineDeclarationFo
 import DiseaseDeclarationForm from "../pages/Parent/Declare/DiseaseDeclarationForm";
 import HealthRecordList from "../pages/Parent/HealthRecord/HealthRecordList";
 import HealthDeclarationHistory from "../pages/Parent/Declare/HealthDeclarationHistory";
+import DeclarationManagement from "../pages/Admin&Nurse/HealthDeclarationManagement/DeclarationManagement";
 
 const routes = createBrowserRouter([
   {
@@ -320,6 +321,10 @@ const routes = createBrowserRouter([
           {
             path: "disease",
             element: <DiseaseRecordManagement />,
+          },
+          {
+            path: "DeclarationManagement",
+            element: <DeclarationManagement />,
           },
         ],
       },

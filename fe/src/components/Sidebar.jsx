@@ -55,7 +55,7 @@ const Sidebar = () => {
     },
     {
       title: "Quản lý Khai Báo",
-      path: "disease",
+      path: "DeclarationManagement",
       icon: <MdOutlineMedicalInformation />,
     },
     {
