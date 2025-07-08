@@ -218,23 +218,11 @@ const RegularCheckupDetails = () => {
                       </button>
                     </>
                   )}
-                  {userRole === "admin" &&
+                  {(userRole === "admin" || userRole === "nurse") &&
                     ["PREPARING", "UPCOMING", "ONGOING"].includes(details.status) && (
                       <button
                         onClick={() =>
-                          navigate(`/admin/checkup-campaign/${details.id}/register-list`)
-                        }
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        <UserCheck className="w-4 h-4 mr-2" />
-                        Xem danh sách học sinh
-                      </button>
-                    )}
-                  {userRole === "nurse" &&
-                    ["PREPARING", "UPCOMING", "ONGOING"].includes(details.status) && (
-                      <button
-                        onClick={() =>
-                          navigate(`/nurse/checkup-campaign/${details.id}/register-list`)
+                          navigate(`/${userRole}/checkup-campaign/${details.id}/register-list`)
                         }
                         className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                       >

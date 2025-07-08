@@ -126,22 +126,30 @@ const VaccineCampaignManagement = () => {
   };
 
   const getPrimaryActionConfig = (status, campaignId) => {
-    if (status === "ONGOING") {
-      return {
-        text: "Chỉnh sửa báo cáo",
-        action: "edit-report",
-        className: "bg-indigo-700 hover:bg-indigo-800 text-white",
-        disabled: false,
-        onClick: () => navigate(`/${userRole}/vaccination-report/${campaignId}`),
-      };
-    }
-
     if (userRole === "nurse") {
+      if (["PREPARING", "UPCOMING", "ONGOING"].includes(status)) {
+        return {
+          text: "Xem danh sách học sinh",
+          action: "view-register-list",
+          className: "bg-blue-600 hover:bg-blue-700 text-white",
+          disabled: false,
+          onClick: () => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`),
+        };
+      }
       if (status === "COMPLETED") {
         return {
           text: "Xem báo cáo",
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
+          disabled: false,
+          onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
+        };
+      }
+      if (status === "ONGOING") {
+        return {
+          text: "Chỉnh sửa báo cáo",
+          action: "edit-report",
+          className: "bg-indigo-700 hover:bg-indigo-800 text-white",
           disabled: false,
           onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
         };
@@ -451,16 +459,6 @@ const VaccineCampaignManagement = () => {
                         </button>
                       )}
 
-                      {userRole === "admin" && ["PREPARING", "UPCOMING", "ONGOING"].includes(campaign.status) && (
-                        <button
-                          onClick={() => navigate(`/${userRole}/vaccine-campaign/${campaign.campaign_id}/register-list`)}
-                          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
-                        >
-                          <Users className="w-4 h-4" />
-                          <span>Xem danh sách học sinh</span>
-                        </button>
-                      )}
-
                       {primaryAction && (
                         <button
                           onClick={
@@ -488,6 +486,9 @@ const VaccineCampaignManagement = () => {
                               )}
                               {primaryAction.action === "complete" && (
                                 <CheckCircle className="w-4 h-4" />
+                              )}
+                              {primaryAction.action === "view-register-list" && (
+                                <Users className="w-4 h-4" />
                               )}
                               <span>{primaryAction.text}</span>
                             </>

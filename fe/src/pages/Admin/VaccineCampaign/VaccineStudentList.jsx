@@ -131,7 +131,7 @@ const VaccineStudentList = () => {
       {/* Header with Back and Refresh Buttons */}
       <div className="mb-6 flex justify-between items-center">
         <button
-          onClick={() => navigate("/admin/vaccine-campaign/" + id)}
+          onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <ArrowLeft className="w-4 h-4" />

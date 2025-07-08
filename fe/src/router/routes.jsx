@@ -244,6 +244,10 @@ const routes = createBrowserRouter([
             element: <NurseDashboard />,
           },
           {
+            path: "vaccine-campaign/:id/register-list",
+            element: <VaccineStudentList />,
+          },
+          {
             path: "send-drug",
             element: <SendDrugManagement />,
           },
