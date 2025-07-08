@@ -1,6 +1,6 @@
 import { User, Menu, X, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { MdOutlineSchool } from "react-icons/md";
+import { MdDashboard, MdDashboardCustomize, MdOutlineSchool } from "react-icons/md";
 import { getUser, getUserRole, removeUser } from "../service/authService";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
@@ -19,18 +19,15 @@ const Header = () => {
 
   const menuItems = [
     { title: "Trang chủ", path: "/" },
-    { title: "Hồ sơ sức khỏe", path: "/health-record" },
-    { title: "Quản lý thuốc", path: "/medicine" },
+    // { title: "Hồ sơ sức khỏe", path: "/health-record" },
+    { title: "Blog", path: "/blog" },
     { title: "Tiêm chủng", path: "/vaccination" },
     { title: "Kiểm tra y tế", path: "/health-check" },
-    { title: "Báo cáo", path: "/reports" },
   ];
 
   const userMenuItems = [
-    { title: "Tiện ích", path: "/" + getUserRole(), icon: User },
-    { title: "Cài đặt", path: "/settings", icon: User },
+    { title: "Dashboard", path: "/" + getUserRole(), icon: MdDashboardCustomize },
     { title: "Profile", path: "/notifications", icon: User },
-    { title: "Lịch sử", path: "/history", icon: User },
     { 
       title: "Đăng xuất", 
       action: handleLogout,
