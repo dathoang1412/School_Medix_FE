@@ -36,8 +36,12 @@ const TabHeader = () => {
       },
       {
         label: "Khai báo",
-        to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-declare` : "#",
+        to: selectedChild ? `/parent/edit/${selectedChild.id}/history-declare-record` : "#",
         subMenu: [
+          {
+            label: "Lịch sử khai báo ",
+            to: selectedChild ? `/parent/edit/${selectedChild.id}/history-declare-record` : "#",
+          },
           {
             label: "Khai báo tiêm chủng",
             to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-declare` : "#",
