@@ -57,7 +57,7 @@ const HealthRecord = () => {
     if (!currChild) return;
     setLoading(true);
     try {
-      const response = await axiosClient.get(`/student/${currChild.id}/daily-health-record`);
+      const response = await axiosClient.get(`/${currChild.id}/daily-health-record`);
       const fetchedRecords = response.data;
       if (!fetchedRecords.error && fetchedRecords.data) {
         setRecords(fetchedRecords.data);

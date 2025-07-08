@@ -39,7 +39,8 @@ import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport/VaccineC
 import AuthFlow from "../pages/Auth/ResetPassword/AuthFlow";
 import RegularCheckupCampaignForm from "../pages/Admin&Nurse/RegularCheckupManagement/RegularCheckupCampaignForm";
 import VaccineCampaignInfo from "../pages/Parent/VaccineCampaign/VaccineCampaignInfo";
-import VaccineDeclarationForm from "../pages/Parent/VaccineCampaign/VaccineDeclarationForm";
+import VaccineDeclarationForm from "../pages/Parent/Declare/VaccineDeclarationForm";
+import DiseaseDeclarationForm from "../pages/Parent/Declare/DiseaseDeclarationForm";
 
 const routes = createBrowserRouter([
   {
@@ -218,7 +219,11 @@ const routes = createBrowserRouter([
           {
             path: "vaccine-declare",
             element: <VaccineDeclarationForm/>
-          }
+          },
+          {
+            path: "disease-declare",
+            element: <DiseaseDeclarationForm/>
+          },
         ],
       },
     ],

@@ -1,40 +1,50 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { ChildContext } from "../layouts/ParentLayout";
 
 const TabHeader = () => {
   const { children, selectedChild, handleSelectChild } = useContext(ChildContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to manage dropdown visibility
 
   const menu = useMemo(
-    () =>
-      [
-        {
-          label: "Hồ sơ",
-          to: selectedChild ? `/parent/edit/${selectedChild.id}/health-profile` : "#",
-        },
-        {
-          label: "Tiêm chủng",
-          to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-info` : "#",
-        },
-        {
-          label: "Sức khỏe định kỳ",
-          to: selectedChild ? `/parent/edit/${selectedChild.id}/regular-checkup` : "#",
-        },
-        {
-          label: "Gửi thuốc",
-          to: selectedChild ? `/parent/edit/${selectedChild.id}/drug-table` : "#",
-        },
-        {
-          label: "Sức khỏe hằng ngày",
-          to: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
-        },
-        // {
-        //   label: "Khai báo bệnh",
-        //   to: selectedChild ? `/parent/edit/${selectedChild.id}/declare-disease` : "#",
-        // }
-      ],
+    () => [
+      {
+        label: "Hồ sơ",
+        to: selectedChild ? `/parent/edit/${selectedChild.id}/health-profile` : "#",
+      },
+      {
+        label: "Tiêm chủng",
+        to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-info` : "#",
+      },
+      {
+        label: "Sức khỏe định kỳ",
+        to: selectedChild ? `/parent/edit/${selectedChild.id}/regular-checkup` : "#",
+      },
+      {
+        label: "Gửi thuốc",
+        to: selectedChild ? `/parent/edit/${selectedChild.id}/drug-table` : "#",
+      },
+      {
+        label: "Sức khỏe hằng ngày",
+        to: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
+      },
+      {
+        label: "Khai báo",
+        to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-declare` : "#",
+        subMenu: [
+          {
+            label: "Khai báo tiêm chủng",
+            to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-declare` : "#",
+          },
+          {
+            label: "Khai báo bệnh",
+            to: selectedChild ? `/parent/edit/${selectedChild.id}/disease-declare` : "#",
+          },
+        ],
+      },
+    ],
     [selectedChild]
   );
 
@@ -45,7 +55,6 @@ const TabHeader = () => {
       const newPath = pathSegments.join("/");
       navigate(newPath);
     } else {
-      // Fallback to a default tab if no valid tab is in the URL
       navigate(`/parent/edit/${newChildId}/health-profile`);
     }
   };
@@ -81,19 +90,43 @@ const TabHeader = () => {
         {/* Tab Navigation */}
         <div className="flex gap-2 flex-wrap">
           {menu.map((item) => (
-            <NavLink
+            <div
               key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `px-4 py-3 rounded-t transition font-medium ${
-                  isActive
-                    ? "bg-blue-100 text-blue-700 border-b-2 border-blue-600"
-                    : "text-gray-700 hover:bg-blue-50"
-                }`
-              }
+              className="relative"
+              onMouseEnter={() => item.subMenu && setIsDropdownOpen(true)} // Show dropdown on hover
+              onMouseLeave={() => item.subMenu && setIsDropdownOpen(false)} // Hide dropdown when leaving
             >
-              {item.label}
-            </NavLink>
+              <NavLink
+                to={item.to}
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-t transition font-medium ${
+                    isActive
+                      ? "bg-blue-100 text-blue-700 border-b-2 border-blue-600"
+                      : "text-gray-700 hover:bg-blue-50"
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+              {/* Dropdown for "Khai báo" */}
+              {item.subMenu && isDropdownOpen && (
+                <div className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-lg mt-1 min-w-[180px]">
+                  {item.subMenu.map((subItem) => (
+                    <NavLink
+                      key={subItem.to}
+                      to={subItem.to}
+                      className={({ isActive }) =>
+                        `block px-4 py-2 text-gray-700 hover:bg-blue-50 whitespace-nowrap ${
+                          isActive ? "bg-blue-100 text-blue-700" : ""
+                        }`
+                      }
+                    >
+                      {subItem.label}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
