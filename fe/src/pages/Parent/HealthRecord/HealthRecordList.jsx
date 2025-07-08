@@ -39,7 +39,7 @@ const HealthRecordList = () => {
   useEffect(() => {
     if (!child) return;
     setLoading(true);
-    axiosClient.get(`/${child.id}/disease-record`)
+    axiosClient.get(`student/${child.id}/disease-record`)
       .then(({ data }) => {
         if (!data.error && data.data) {
           setRecs(data.data);
