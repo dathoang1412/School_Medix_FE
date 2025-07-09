@@ -55,6 +55,11 @@ const Sidebar = () => {
       icon: <MdOutlineMedicalInformation />,
     },
     {
+      title: "Quản lý Khai Báo",
+      path: "DeclarationManagement",
+      icon: <MdOutlineMedicalInformation />,
+    },
+    {
       title: "Khám định kỳ",
       path: "regular-checkup",
       icon: <BsTextIndentLeft />,

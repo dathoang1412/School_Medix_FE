@@ -308,13 +308,6 @@ const DiseaseDeclarationForm = () => {
               >
                 {isLoading ? "Đang gửi..." : "Gửi khai báo"}
               </button>
-              <button
-                type="button"
-                onClick={() => navigate(`/parent/edit/${formData.student_id}/disease-declare`)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Hủy
-              </button>
             </div>
           </form>
         </div>

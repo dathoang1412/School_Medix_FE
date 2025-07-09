@@ -18,15 +18,20 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosClient from "../config/axiosClient";
-import { useNavigate } from "react-router-dom";
 import { MdOutlineSchool } from "react-icons/md";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Determine the base path for navigation
+  const isAdminSection = location.pathname.includes('/admin');
+  const basePath = isAdminSection ? '/admin/blog' : '/blog';
 
   const features = [
     {
@@ -201,50 +206,61 @@ const LandingPage = () => {
               <p className="text-gray-600">{error}</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
-              {blogs.map((post, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-                  onClick={() => navigate(`/blog/${post.id}`)}
-                >
-                  <img
-                    src={
-                      post.thumbnail_url ||
-                      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=300&h=200&fit=crop"
-                    }
-                    alt={post.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                      <span>
-                        {new Date(post.created_at).toLocaleDateString("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })}
-                      </span>
-                      <span>•</span>
-                      <span>
-                        {Math.ceil(post.content.length / 200)} phút đọc
-                      </span>
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+                {blogs.map((post, index) => (
+                  <div
+                    key={index}
+                    className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer"
+                    onClick={() => navigate(`${basePath}/${post.id}`)}
+                  >
+                    <img
+                      src={
+                        post.thumbnail_url ||
+                        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=300&h=200&fit=crop"
+                      }
+                      alt={post.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-6">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                        <span>
+                          {new Date(post.created_at).toLocaleDateString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {Math.ceil(post.content.length / 200)} phút đọc
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-600 mb-4 line-clamp-3">
+                        {post.content.replace(/<[^>]+>/g, "").substring(0, 100)}
+                        ...
+                      </p>
+                      <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
+                        Đọc thêm
+                        <ArrowRight size={16} />
+                      </button>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">
-                      {post.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">
-                      {post.content.replace(/<[^>]+>/g, "").substring(0, 100)}
-                      ...
-                    </p>
-                    <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
-                      Đọc thêm
-                      <ArrowRight size={16} />
-                    </button>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              <div className="flex justify-center mt-12">
+                <button
+                  onClick={() => navigate(basePath)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg flex items-center gap-2 transition-colors duration-200"
+                >
+                  Xem thêm
+                  <ArrowRight size={20} />
+                </button>
+              </div>
+            </>
           )}
         </div>
       </section>
@@ -276,10 +292,8 @@ const LandingPage = () => {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center font-bold text-lg">
-                  <div className="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">
-                    <MdOutlineSchool className="text-lg" />
-                  </div>
+                <div className="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">
+                  <MdOutlineSchool className="text-lg" />
                 </div>
                 <span className="text-xl font-bold">SchoolMedix</span>
               </div>

@@ -45,6 +45,9 @@ import DiseaseDeclarationForm from "../pages/Parent/Declare/DiseaseDeclarationFo
 import BlogList from "../pages/Blogs/BlogList";
 import BlogEditor from "../pages/Blogs/BlogEditor";
 import ShowBlog from "../pages/Blogs/ShowBlog";
+import HealthRecordList from "../pages/Parent/HealthRecord/HealthRecordList";
+import HealthDeclarationHistory from "../pages/Parent/Declare/HealthDeclarationHistory";
+import DeclarationManagement from "../pages/Admin&Nurse/HealthDeclarationManagement/DeclarationManagement";
 
 const routes = createBrowserRouter([
   {
@@ -257,6 +260,14 @@ const routes = createBrowserRouter([
             element: <RegularCheckupSurvey />,
           },
           {
+            path: "health-record-list",
+            element: <HealthRecordList />,
+          },
+          {
+            path: "history-declare-record",
+            element: <HealthDeclarationHistory />,
+          },
+          {
             path: "vaccine-declare",
             element: <VaccineDeclarationForm />,
           },
@@ -351,6 +362,10 @@ const routes = createBrowserRouter([
           {
             path: "disease",
             element: <DiseaseRecordManagement />,
+          },
+          {
+            path: "DeclarationManagement",
+            element: <DeclarationManagement />,
           },
         ],
       },
