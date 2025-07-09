@@ -58,9 +58,9 @@ const CreateUserPage = () => {
         });
       }
     } catch (error) {
-      alert(
+      enqueueSnackbar(
         "Lỗi tạo người dùng: " +
-          (error.response?.data?.message || error.message)
+          (error.response?.data?.message || error.message), {variant: "error"}
       );
     } finally {
       setLoading((prev) => ({ ...prev, formSubmit: false }));

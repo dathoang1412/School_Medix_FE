@@ -1,5 +1,6 @@
 import React from 'react';
 import axiosClient from '../config/axiosClient';
+import { enqueueSnackbar } from 'notistack';
 
 const DeleteConfirmModal = ({ users, role, onClose, onDelete }) => {
   const restrictedEmails = [
@@ -19,7 +20,7 @@ const DeleteConfirmModal = ({ users, role, onClose, onDelete }) => {
     try {
       const restrictedUsers = users.filter(user => restrictedEmails.includes(user.email));
       if (restrictedUsers.length > 0) {
-        alert('Không thể xóa các tài khoản có email: ' + restrictedUsers.map(u => u.email).join(', '));
+        enqueueSnackbar('Không thể xóa các tài khoản có email: ' + restrictedUsers.map(u => u.email).join(', '), {variant: "warning"});
         return;
       }
 
@@ -28,10 +29,10 @@ const DeleteConfirmModal = ({ users, role, onClose, onDelete }) => {
       ));
 
       onDelete(users.map(u => u.id));
-      alert('Xóa thành công!');
+      enqueueSnackbar('Xóa thành công!', {variant: "success"});
       onClose();
     } catch (error) {
-      alert('Lỗi khi xóa: ' + (error.response?.data?.message || error.message));
+      enqueueSnackbar('Lỗi khi xóa: ' + (error.response?.data?.message || error.message), {variant: "error"});
     }
   };
 

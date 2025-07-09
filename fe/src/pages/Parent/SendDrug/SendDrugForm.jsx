@@ -4,6 +4,7 @@ import axiosClient from "../../../config/axiosClient";
 import { getUser } from "../../../service/authService";
 import { useNavigate } from "react-router-dom";
 import { getChildClass } from "../../../service/childenService";
+import { enqueueSnackbar } from "notistack";
 
 const SendDrugForm = () => {
   const navigate = useNavigate();
@@ -125,7 +126,7 @@ const SendDrugForm = () => {
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      alert("Gửi đơn thuốc thành công!");
+      enqueueSnackbar("Gửi đơn thuốc thành công!", {variant: "success"});
       navigate(`/parent/edit/${currChild.id}/drug-table`);
     } catch (error) {
       console.error("Error submitting drug request:", error);
