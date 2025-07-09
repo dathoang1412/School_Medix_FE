@@ -37,13 +37,13 @@ const StudentRegularCheckup = () => {
         campaigns = await Promise.all(
           campaigns.map(async (c) => {
             try {
-              const surveyRes = await axiosClient.get(`/survey-status/${c.campaign_id}/${childId}`);
+              const surveyRes = {};
               return {
                 ...c,
                 campaign_id: c.campaign_id || c.id,
                 status: c.status || "DRAFTED",
                 canSurvey: getCampaignStatus(c).canSurvey,
-                isSurveyed: surveyRes.data.isSurveyed || false,
+                isSurveyed: false,
               };
             } catch (error) {
               console.error(`Error fetching survey status for campaign ${c.campaign_id}:`, error);

@@ -72,7 +72,6 @@ const HealthDeclarationHistory = () => {
   }, [statusFilter, records, sortConfig]);
 
   const formatDate = date => date ? new Date(date).toLocaleDateString('vi-VN') : 'Chưa xác định';
-
   const handleSort = key => setSortConfig(prev => ({
     key,
     direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
@@ -225,6 +224,10 @@ const HealthDeclarationHistory = () => {
                               <p><span className="font-medium">Nơi điều trị:</span> {record.location_cure || 'Không có'}</p>
                               <p><span className="font-medium">Chuyển đến:</span> {record.transferred_to || 'Không chuyển viện'}</p>
                             </div>
+                            {record.reason_by_nurse && <div className="space-y-2">
+                              <h4 className="font-semibold flex items-center gap-2 text-red-700">Đơn đã bị hủy: </h4>
+                              <p>{record.reason_by_nurse || 'Không có ghi chú'}</p>
+                            </div>}
                           </div>
                         </td>
                       </tr>
