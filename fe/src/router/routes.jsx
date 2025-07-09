@@ -155,10 +155,6 @@ const routes = createBrowserRouter([
             element: <RegularCheckupCampaignForm />,
           },
           {
-            path: "vaccine-campaign-report/:campaign_id",
-            element: <CompletedVaccineReport />,
-          },
-          {
             path: "completed-regular-checkup-report/:campaign_id",
             element: <CompletedRegularCheckupReport />,
           },
@@ -206,6 +202,10 @@ const routes = createBrowserRouter([
             path: "blog/:id",
             element: <ShowBlog />,
           },
+          {
+            path: "completed-vaccine-campaign-report/:campaign_id",
+            element: <CompletedVaccineReport />,
+          }
         ],
       },
     ],
@@ -351,7 +351,7 @@ const routes = createBrowserRouter([
             element: <RegularCheckupReport />,
           },
           {
-            path: "vaccine-campaign-report/:campaign_id",
+            path: "completed-vaccine-campaign-report/:campaign_id",
             element: <CompletedVaccineReport />,
           },
           {

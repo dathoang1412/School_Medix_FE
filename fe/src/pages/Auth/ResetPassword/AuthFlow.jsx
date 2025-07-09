@@ -7,6 +7,7 @@ import ChangePassword from "./ChangePassword";
 import SendRecoveryLink from "./SendRecoveryLink";
 
 import { ChevronLeft, Mail, Shield, Lock, Check, Link2 } from "lucide-react";
+import { enqueueSnackbar } from "notistack";
 
 const AuthFlow = () => {
   const [searchParams] = useSearchParams();
@@ -33,7 +34,7 @@ const AuthFlow = () => {
 
   useEffect(() => {
     if (step === 5) {
-      alert("Đổi mật khẩu thành công! Đang chuyển hướng...");
+      enqueueSnackbar("Đổi mật khẩu thành công! Đang chuyển hướng...", {variant: "info"});
     }
   }, [step]);
 
@@ -120,7 +121,7 @@ const AuthFlow = () => {
               <EnterOTP
                 email={email}
                 onNext={(email, otp) => handleNext(3, email, otp)}
-                onResend={() => alert("OTP đã được gửi lại!")}
+                onResend={() => enqueueSnackbar("OTP đã được gửi lại!", {variant: "info"})}
               />
             )}
             {step === 3 && (
@@ -128,7 +129,8 @@ const AuthFlow = () => {
                 email={email}
                 otp={otp}
                 onNext={() => handleNext(4)}
-                onResend={() => alert("Link đổi mật khẩu đã được gửi lại!")}
+                onResend={() => enqueueSnackbar("Link đổi mật khẩu đã được gửi lại!", {variant: "info"})}
+
               />
             )}
             {step === 4 && (

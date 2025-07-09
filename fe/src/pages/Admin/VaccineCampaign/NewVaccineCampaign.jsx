@@ -19,7 +19,7 @@ const NewVaccineCampaign = () => {
     description: "",
     disease_list: [],
   });
-  const [showVaccineModal, setShowVaccineModal] = useState(false);
+  // const [showVaccineModal, setShowVaccineModal] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [vaccines, setVaccines] = useState([]);
@@ -175,7 +175,7 @@ const NewVaccineCampaign = () => {
         const response = await axiosClient.post("/vaccine", vaccineForm);
         setSuccess(response.data.message || "Tạo vaccine mới thành công");
         setVaccineForm({ name: "", description: "", disease_list: [] });
-        setShowVaccineModal(false);
+        // setShowVaccineModal(false);
         // Refresh vaccine list
         const vaccineResponse = await axiosClient.get("/vaccines");
         console.log("Refreshed vaccines:", vaccineResponse.data);
@@ -371,7 +371,7 @@ const NewVaccineCampaign = () => {
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-4">
-            <button
+            {/* <button
               type="button"
               onClick={() => setShowVaccineModal(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium"
@@ -379,7 +379,7 @@ const NewVaccineCampaign = () => {
             >
               <Plus size={16} />
               Thêm Vaccine Mới
-            </button>
+            </button> */}
             <button
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
@@ -395,7 +395,7 @@ const NewVaccineCampaign = () => {
       </div>
 
       {/* Vaccine Modal */}
-      {showVaccineModal && (
+      {/* {showVaccineModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
@@ -477,7 +477,7 @@ const NewVaccineCampaign = () => {
             </form>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

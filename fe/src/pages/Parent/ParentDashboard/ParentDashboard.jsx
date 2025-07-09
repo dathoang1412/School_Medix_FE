@@ -140,7 +140,7 @@ const ParentDashboard = () => {
     <div className="min-h-screen bg-gray-100">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-8 shadow border border-gray-200 sm:px-6 lg:px-8 rounded-md py-8 mt-2 bg-gray-200">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Trang chủ phụ huynh</h1>

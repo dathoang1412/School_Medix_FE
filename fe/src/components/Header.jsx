@@ -18,10 +18,12 @@ const Header = () => {
   const userRole = getUserRole();
 
   const menuItems = [
-    { title: "Trang chủ", path: "/" },
+    { title: "Trang chủ", path: "/" },{
+      title: "Dashboard", path: "/" + getUserRole()
+    },
     { title: "Blog", path: "/blog" },
     { title: "Tiêm chủng", path: "/vaccination" },
-    { title: "Kiểm tra y tế", path: "/health-check" },
+    { title: "Kiểm tra y tế", path: "/health-check" }
   ];
 
   const userMenuItems = [

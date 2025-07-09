@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
+import { enqueueSnackbar } from "notistack";
 
 const VaccineList = ({ vaccines, onEdit }) => {
 
@@ -9,7 +10,7 @@ const VaccineList = ({ vaccines, onEdit }) => {
       await axiosClient.delete(`/vaccine/${id}`);
       window.location.reload(); // Refresh to refetch data
     } catch (error) {
-      alert("Lỗi khi xóa vaccine: " + (error.response?.data?.message || error.message));
+      enqueueSnackbar("Lỗi khi xóa vaccine: " + (error.response?.data?.message || error.message), {variant: "error"});
     }
   };
 
