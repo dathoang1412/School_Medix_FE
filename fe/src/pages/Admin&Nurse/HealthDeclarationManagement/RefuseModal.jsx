@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 const RefuseModal = ({ isOpen, onClose, onSubmit }) => {
@@ -15,8 +16,8 @@ const RefuseModal = ({ isOpen, onClose, onSubmit }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50">
+  return createPortal(
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Từ chối khai báo bệnh</h3>
@@ -46,7 +47,8 @@ const RefuseModal = ({ isOpen, onClose, onSubmit }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

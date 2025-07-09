@@ -184,6 +184,10 @@ const routes = createBrowserRouter([
             element: <DiseaseRecordManagement />,
           },
           {
+            path: "DeclarationManagement",
+            element: <DeclarationManagement />,
+          },
+          {
             path: "blog",
             element: <BlogList />,
           },

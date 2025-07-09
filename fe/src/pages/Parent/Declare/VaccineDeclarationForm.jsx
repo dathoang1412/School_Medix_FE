@@ -102,6 +102,7 @@ const VaccineDeclarationForm = () => {
     setIsLoading(true);
     setError(null);
     setSuccess(false); // Reset success state
+    console.log("FORM DATA: ", formData); 
 
     // Validate required fields
     if (
