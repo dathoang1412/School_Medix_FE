@@ -12,9 +12,33 @@ import {
 } from 'lucide-react';
 import PropTypes from 'prop-types';
 
+const CurrentTimeDisplay = () => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="text-right">
+      <div className="text-2xl font-bold text-indigo-600">
+        {currentTime.toLocaleTimeString('vi-VN')}
+      </div>
+      <div className="text-gray-600">
+        {currentTime.toLocaleDateString('vi-VN', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}
+      </div>
+    </div>
+  );
+};
+
 const AdminDashboard = () => {
   const navigate = useNavigate(); // Hook để điều hướng
-  const [currentTime, setCurrentTime] = useState(new Date());
   
   // Summary data
   const [summary, setSummary] = useState({
@@ -60,11 +84,6 @@ const AdminDashboard = () => {
   const [heightWeightLoading, setHeightWeightLoading] = useState(true);
   const [heightWeightError, setHeightWeightError] = useState(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   // Fetch summary data
   useEffect(() => {
@@ -212,19 +231,7 @@ const AdminDashboard = () => {
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard Quản Lý Y Tế Học Đường</h1>
               <p className="text-gray-600">Trường THPT ABC - Admin Panel</p>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-indigo-600">
-                {currentTime.toLocaleTimeString('vi-VN')}
-              </div>
-              <div className="text-gray-600">
-                {currentTime.toLocaleDateString('vi-VN', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </div>
-            </div>
+            <CurrentTimeDisplay />
           </div>
         </div>
 
@@ -431,7 +438,7 @@ const AdminDashboard = () => {
 
           {/* Health Plans */}
           <div className="lg:col-span-2">
-            <ChartCard title="Kế hoạch y tế sắp tới" icon={<Calendar className="text-purple-500" />}>
+            <ChartCard title="Kế hoạch y tế nhà trường" icon={<Calendar className="text-purple-500" />}>
               {plansLoading ? (
                 <div className="h-64 flex items-center justify-center">
                   <p>Đang tải dữ liệu kế hoạch...</p>
