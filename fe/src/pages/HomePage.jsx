@@ -17,9 +17,22 @@ import {
   Star,
   CheckCircle,
 } from "lucide-react";
-import { Services } from "../components/Services";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axiosClient from "../config/axiosClient";
+import { MdOutlineSchool } from "react-icons/md";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Determine the base path for navigation
+  const isAdminSection = location.pathname.includes('/admin');
+  const basePath = isAdminSection ? '/admin/blog' : '/blog';
+
   const features = [
     {
       icon: <Clock className="w-6 h-6" />,
@@ -72,44 +85,31 @@ const LandingPage = () => {
     },
   ];
 
-  const blogPosts = [
-    {
-      image:
-        "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop",
-      title: "Giải pháp quản lý sức khỏe toàn diện",
-      excerpt:
-        "Khám phá những tính năng nổi bật của hệ thống quản lý sức khỏe học đường hiện đại...",
-      date: "15 Th12, 2024",
-      readTime: "5 phút đọc",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=300&h=200&fit=crop",
-      title: "Dinh dương học đường: Những điều cần biết",
-      excerpt:
-        "Tầm quan trọng của dinh dương trong việc phát triển thể chất và trí tuệ của học sinh...",
-      date: "12 Th12, 2024",
-      readTime: "7 phút đọc",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=300&h=200&fit=crop",
-      title: "Tầm quan trọng của khám sức khỏe định kỳ",
-      excerpt:
-        "Việc khám sức khỏe định kỳ giúp phát hiện sớm các vấn đề sức khỏe và có biện pháp điều trị kịp thời...",
-      date: "10 Th12, 2024",
-      readTime: "6 phút đọc",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=300&h=200&fit=crop",
-      title: "Dinh dương học đường: Những điều cần biết",
-      excerpt:
-        "Tầm quan trọng của dinh dương trong việc phát triển thể chất và trí tuệ của học sinh...",
-      date: "8 Th12, 2024",
-      readTime: "4 phút đọc",
-    },
-  ];
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const response = await axiosClient.get("/blog", { timeout: 5000 });
+        if (
+          response.error ||
+          !response.data.blog ||
+          !response.data.blog.length
+        ) {
+          setError("Chưa có bài viết nào!");
+          setBlogs([]);
+        } else {
+          // Limit to 4 latest blogs to match original design
+          setBlogs(response.data.blog.slice(0, 4));
+        }
+      } catch (err) {
+        setError("Không thể tải bài viết!");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -185,19 +185,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section className="py-20 bg-gray-50 max-w-7xl mx-auto px-4">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Dịch vụ nổi bật
-          </h2>
-          <p className="text-xl text-gray-600">
-            Các tính năng chính của hệ thống SchoolMedix
-          </p>
-        </div>
-        <Services services={services} />
-      </section>
-
       {/* Blog Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
@@ -210,35 +197,71 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {blogPosts.map((post, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-              >
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                    <span>{post.date}</span>
-                    <span>•</span>
-                    <span>{post.readTime}</span>
+          {loading ? (
+            <div className="flex justify-center items-center py-16">
+              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <p className="text-gray-600">{error}</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+                {blogs.map((post, index) => (
+                  <div
+                    key={index}
+                    className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer"
+                    onClick={() => navigate(`${basePath}/${post.id}`)}
+                  >
+                    <img
+                      src={
+                        post.thumbnail_url ||
+                        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=300&h=200&fit=crop"
+                      }
+                      alt={post.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-6">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                        <span>
+                          {new Date(post.created_at).toLocaleDateString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {Math.ceil(post.content.length / 200)} phút đọc
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-600 mb-4 line-clamp-3">
+                        {post.content.replace(/<[^>]+>/g, "").substring(0, 100)}
+                        ...
+                      </p>
+                      <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
+                        Đọc thêm
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
-                    {post.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                  <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
-                    Đọc thêm
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+              <div className="flex justify-center mt-12">
+                <button
+                  onClick={() => navigate(basePath)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg flex items-center gap-2 transition-colors duration-200"
+                >
+                  Xem thêm
+                  <ArrowRight size={20} />
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -269,8 +292,8 @@ const LandingPage = () => {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center font-bold text-lg">
-                  📚
+                <div className="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">
+                  <MdOutlineSchool className="text-lg" />
                 </div>
                 <span className="text-xl font-bold">SchoolMedix</span>
               </div>
@@ -359,7 +382,7 @@ const LandingPage = () => {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 SchoolMedix. Tất cả quyền được bảo lưu.</p>
+            <p>© 2024 SchoolMedix. Tất cả quyền được bảo lưu.</p>
           </div>
         </div>
       </footer>

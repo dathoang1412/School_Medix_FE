@@ -79,7 +79,6 @@ const ParentDashboardWrapper = () => {
 const ParentDashboard = () => {
   const { children, selectedChild, handleSelectChild, isLoading, error } =
     useContext(ChildContext);
-  const location = useLocation();
 
   const services = [
     {
@@ -123,10 +122,10 @@ const ParentDashboard = () => {
     },
     {
       icon: <MdDashboard className="w-6 h-6 text-blue-400" />,
-      title: "Tổng quan sức khỏe",
-      description: "Xem tổng quan sức khỏe và lịch sử",
+      title: "Khai báo",
+      description: "Khai báo bệnh và tiêm chủng cho học sinh",
       path: selectedChild
-        ? `/parent/edit/${selectedChild.id}/health-profile`
+        ? `/parent/edit/${selectedChild.id}/history-declare-record`
         : "#",
     },
   ];

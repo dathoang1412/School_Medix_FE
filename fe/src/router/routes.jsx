@@ -1,3 +1,4 @@
+// src/router/index.jsx
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import HomePage from "../pages/HomePage";
@@ -11,7 +12,7 @@ import DiseaseRecordManagement from "../pages/Admin&Nurse/DiseaseManagement/Dise
 import SpecialistExamManagement from "../pages/Admin/SpecialistExam/SpecialistExamManagement";
 import SendDrugForm from "../pages/Parent/SendDrug/SendDrugForm";
 import DrugTable from "../pages/Parent/SendDrug/DrugTable";
-import StudentRegularCheckup from '../pages/Parent/RegularCheckup/StudentRegularCheckup';
+import StudentRegularCheckup from "../pages/Parent/RegularCheckup/StudentRegularCheckup";
 import RegularCheckupSurvey from "../pages/Parent/RegularCheckup/RegularCheckupSurvey";
 import VaccineCampaignSurvey from "../pages/Parent/VaccineCampaign/VaccineCampaignSurvey";
 import HealthRecord from "../pages/Parent/DailyHealth/HealthRecord";
@@ -31,7 +32,7 @@ import AddRecordPage from "../pages/Admin&Nurse/DailyHealthManagement/AddRecordP
 import RegularCheckup from "../pages/Admin&Nurse/RegularCheckupManagement/RegularCheckup";
 import RegularCheckupDetails from "../pages/Admin&Nurse/RegularCheckupManagement/RegularCheckupDetails";
 import RegularCheckupRegisterList from "../pages/Admin&Nurse/RegularCheckupManagement/RegularCheckupRegisterList";
-import VaccineManagement from '../pages/Admin&Nurse/VaccineManagement/VaccineManagement';
+import VaccineManagement from "../pages/Admin&Nurse/VaccineManagement/VaccineManagement";
 import SendDrugManagement from "../pages/Admin&Nurse/SendDrugManagement/SendDrugManagement";
 import NurseDashboard from "../pages/Nurse/NurseDashboard/NurseDashboard";
 import RegularCheckupReport from "../pages/Nurse/RegularCheckupReport/RegularCheckupReport";
@@ -41,6 +42,9 @@ import RegularCheckupCampaignForm from "../pages/Admin&Nurse/RegularCheckupManag
 import VaccineCampaignInfo from "../pages/Parent/VaccineCampaign/VaccineCampaignInfo";
 import VaccineDeclarationForm from "../pages/Parent/Declare/VaccineDeclarationForm";
 import DiseaseDeclarationForm from "../pages/Parent/Declare/DiseaseDeclarationForm";
+import BlogList from "../pages/Blogs/BlogList";
+import BlogEditor from "../pages/Blogs/BlogEditor";
+import ShowBlog from "../pages/Blogs/ShowBlog";
 import HealthRecordList from "../pages/Parent/HealthRecord/HealthRecordList";
 import HealthDeclarationHistory from "../pages/Parent/Declare/HealthDeclarationHistory";
 import DeclarationManagement from "../pages/Admin&Nurse/HealthDeclarationManagement/DeclarationManagement";
@@ -65,6 +69,22 @@ const routes = createBrowserRouter([
       {
         path: "forgot-password",
         element: <AuthFlow />,
+      },
+      {
+        path: "/blog",
+        element: <BlogList />,
+      },
+      {
+        path: "/blog/edit/:id",
+        element: <BlogEditor />,
+      },
+      {
+        path: "/blog/edit",
+        element: <BlogEditor />,
+      },
+      {
+        path: "/blog/:id",
+        element: <ShowBlog />,
       },
     ],
   },
@@ -163,6 +183,26 @@ const routes = createBrowserRouter([
             path: "disease",
             element: <DiseaseRecordManagement />,
           },
+          {
+            path: "DeclarationManagement",
+            element: <DeclarationManagement />,
+          },
+          {
+            path: "blog",
+            element: <BlogList />,
+          },
+          {
+            path: "blog/create",
+            element: <BlogEditor/>
+          },
+          {
+            path: "blog/edit/:id",
+            element: <BlogEditor/>
+          },
+          {
+            path: "blog/:id",
+            element: <ShowBlog/>
+          }
         ],
       },
     ],
@@ -185,7 +225,7 @@ const routes = createBrowserRouter([
       },
       {
         path: "vaccination-campaign/:id",
-        element: <VaccineCampaignDetails/>
+        element: <VaccineCampaignDetails />,
       },
       {
         path: "edit/:student_id",
@@ -233,12 +273,12 @@ const routes = createBrowserRouter([
           },
           {
             path: "vaccine-declare",
-            element: <VaccineDeclarationForm/>
+            element: <VaccineDeclarationForm />,
           },
           {
             path: "disease-declare",
-            element: <DiseaseDeclarationForm/>
-          }
+            element: <DiseaseDeclarationForm />,
+          },
         ],
       },
     ],
@@ -250,6 +290,11 @@ const routes = createBrowserRouter([
       {
         element: <AdminLayout />,
         children: [
+          {
+            path: "vaccination-report/:campaign_id",
+            element: <VaccineCampaignReport />,
+          },
+
           {
             path: "",
             element: <NurseDashboard />,

@@ -8,6 +8,7 @@ import {
   User2,
   ChevronDown,
   ChevronRight,
+  Newspaper,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { MdOutlineSchool } from "react-icons/md";
@@ -15,7 +16,7 @@ import { MdOutlineMedicalInformation } from "react-icons/md";
 import { RiHome9Line } from "react-icons/ri";
 import { BsTextIndentLeft } from "react-icons/bs";
 import { MdMedicationLiquid } from "react-icons/md";
-import { LuLayoutDashboard, LuSyringe } from "react-icons/lu";
+import { LuLayoutDashboard, LuNewspaper, LuSyringe } from "react-icons/lu";
 import { FaStethoscope, FaVial } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getUser, getUserRole, removeUser } from "../service/authService";
@@ -124,6 +125,12 @@ const Sidebar = () => {
               title: "Quản lý người dùng",
               path: "user-manage",
               icon: <User2Icon />,
+            },
+            ,
+            {
+              title: "Quản lý Blog",
+              path: "blog",
+              icon: <LuNewspaper />,
             },
           ];
         }
