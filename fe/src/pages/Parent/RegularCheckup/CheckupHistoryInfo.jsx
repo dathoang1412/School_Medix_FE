@@ -4,7 +4,7 @@ import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import { getSession } from "../../../config/Supabase";
 import { ChildContext } from "../../../layouts/ParentLayout";
-import { Download, FileText, ChevronDown } from "lucide-react";
+import { Download, FileText, ChevronDown, X } from "lucide-react";
 import PDFViewer from "../../../components/PDFViewer";
 
 const CheckupHistoryInfo = () => {
@@ -18,6 +18,8 @@ const CheckupHistoryInfo = () => {
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [selectedPDFUrl, setSelectedPDFUrl] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
+  const [showFullDetailsModal, setShowFullDetailsModal] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -58,7 +60,7 @@ const CheckupHistoryInfo = () => {
     fetchHistory();
   }, [isAuthenticated, selectedChild?.id, enqueueSnackbar]);
 
-  const handleRecordDownload = async (recordUrl, healthRecordId) => {
+  const handleRecordDownload = async (recordUrl, id, type = "general") => {
     if (!isAuthenticated) {
       enqueueSnackbar("Vui lòng đăng nhập để tải file!", { variant: "error" });
       navigate("/login");
@@ -66,15 +68,16 @@ const CheckupHistoryInfo = () => {
     }
 
     if (!recordUrl) {
-      enqueueSnackbar("Không có file kết quả cho hồ sơ này!", {
+      enqueueSnackbar("Không có file kết quả cho bản ghi này!", {
         variant: "warning",
       });
       return;
     }
 
+    const downloadId = type === "general" ? id : `${id}_${type}`;
     setLoading((prev) => ({
       ...prev,
-      download: { ...prev.download, [healthRecordId]: true },
+      download: { ...prev.download, [downloadId]: true },
     }));
     try {
       const response = await fetch(recordUrl);
@@ -84,7 +87,7 @@ const CheckupHistoryInfo = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `record-${healthRecordId}.pdf`);
+      link.setAttribute("download", `record-${downloadId}.pdf`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -96,7 +99,7 @@ const CheckupHistoryInfo = () => {
     } finally {
       setLoading((prev) => ({
         ...prev,
-        download: { ...prev.download, [healthRecordId]: false },
+        download: { ...prev.download, [downloadId]: false },
       }));
     }
   };
@@ -117,8 +120,23 @@ const CheckupHistoryInfo = () => {
     setShowPDFModal(true);
   };
 
+  const closePDFModal = () => {
+    setShowPDFModal(false);
+    setSelectedPDFUrl(null);
+  };
+
   const toggleRow = (healthRecordId) => {
     setExpandedRow((prev) => (prev === healthRecordId ? null : healthRecordId));
+  };
+
+  const openFullDetailsModal = (record) => {
+    setSelectedRecord(record);
+    setShowFullDetailsModal(true);
+  };
+
+  const closeFullDetailsModal = () => {
+    setShowFullDetailsModal(false);
+    setSelectedRecord(null);
   };
 
   const getStatusBadge = (status) => {
@@ -150,7 +168,7 @@ const CheckupHistoryInfo = () => {
     }
   };
 
-  const renderSpecialistExams = (specialistExams) => {
+  const renderSpecialistExams = (specialistExams, healthRecordId) => {
     if (!specialistExams || specialistExams.length === 0) {
       return (
         <div className="text-gray-500 text-sm">Không có chuyên khoa</div>
@@ -160,11 +178,172 @@ const CheckupHistoryInfo = () => {
     return (
       <div className="space-y-2">
         {specialistExams.map((exam) => (
-          <div key={exam.spe_exam_id} className="flex items-center justify-between p-2 bg-white border border-gray-200">
-            <span className="text-gray-900 font-medium">{exam.specialist_name}</span>
-            {getStatusBadge(exam.record_status)}
+          <div
+            key={exam.spe_exam_id}
+            className="flex items-center justify-between p-2 bg-white border border-gray-200 hover:bg-gray-50"
+          >
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-900 font-medium">{exam.specialist_name}</span>
+              {getStatusBadge(exam.record_status)}
+            </div>
+            <div className="flex space-x-2">
+              {exam.record_url?.length > 0 && (
+                <button
+                  onClick={() => handleViewPDF(exam.record_url[0])}
+                  className="inline-flex items-center justify-center w-7 h-7 border border-blue-400 bg-white text-blue-600 hover:bg-blue-50 hover:border-blue-500 transition-colors"
+                  title="Xem PDF chuyên khoa"
+                >
+                  <FileText className="h-4 w-4" />
+                </button>
+              )}
+              {exam.record_url?.length > 0 && (
+                <button
+                  onClick={() => handleRecordDownload(exam.record_url[0], healthRecordId, exam.spe_exam_id)}
+                  disabled={loading.download[`${healthRecordId}_${exam.spe_exam_id}`]}
+                  className={`inline-flex items-center justify-center w-7 h-7 border transition-colors ${
+                    loading.download[`${healthRecordId}_${exam.spe_exam_id}`]
+                      ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "border-green-400 bg-white text-green-600 hover:bg-green-50 hover:border-green-500"
+                  }`}
+                  title={loading.download[`${healthRecordId}_${exam.spe_exam_id}`] ? "Đang tải..." : "Tải PDF chuyên khoa"}
+                >
+                  {loading.download[`${healthRecordId}_${exam.spe_exam_id}`] ? (
+                    <svg
+                      className="animate-spin h-4 w-4 text-gray-600"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         ))}
+      </div>
+    );
+  };
+
+  const renderFullDetailsModal = () => {
+    if (!selectedRecord) return null;
+    return (
+      <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Chi tiết toàn bộ bản ghi
+            </h3>
+            <button
+              onClick={closeFullDetailsModal}
+              className="text-gray-400 hover:text-gray-500"
+              aria-label="Đóng"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="p-6 space-y-6">
+            <div className="bg-blue-50 p-4 rounded-md">
+              <h4 className="text-sm font-medium text-blue-800">
+                Học sinh: {selectedRecord.student_name}
+              </h4>
+              <p className="text-xs text-blue-700 mt-1">
+                Chiến dịch: {selectedRecord.campaign_name} | Mã hồ sơ: #{selectedRecord.health_record_id}
+              </p>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 border-b pb-2">
+                  Khám tổng quát
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                  <div className="space-y-4">
+                    <h5 className="text-sm font-medium text-gray-700">Thông số cơ bản</h5>
+                    {[
+                      { label: "Chiều cao", value: selectedRecord.height || "Chưa cập nhật" },
+                      { label: "Cân nặng", value: selectedRecord.weight || "Chưa cập nhật" },
+                      { label: "Huyết áp", value: selectedRecord.blood_pressure || "Chưa cập nhật" },
+                    ].map(({ label, value }) => (
+                      <div key={label}>
+                        <label className="block text-sm font-medium text-gray-700">{label}</label>
+                        <p className="text-sm text-gray-900">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-4">
+                    <h5 className="text-sm font-medium text-gray-700">Thị lực</h5>
+                    {[
+                      { label: "Mắt trái", value: selectedRecord.left_eye || "Chưa cập nhật" },
+                      { label: "Mắt phải", value: selectedRecord.right_eye || "Chưa cập nhật" },
+                    ].map(({ label, value }) => (
+                      <div key={label}>
+                        <label className="block text-sm font-medium text-gray-700">{label}</label>
+                        <p className="text-sm text-gray-900">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4 space-y-4">
+                  <h5 className="text-sm font-medium text-gray-700">Khám các bộ phận</h5>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {[
+                      { label: "Tai", value: selectedRecord.ear },
+                      { label: "Mũi", value: selectedRecord.nose },
+                      { label: "Họng", value: selectedRecord.throat },
+                      { label: "Răng", value: selectedRecord.teeth },
+                      { label: "Lợi", value: selectedRecord.gums },
+                      { label: "Da", value: selectedRecord.skin_condition },
+                      { label: "Tim", value: selectedRecord.heart },
+                      { label: "Phổi", value: selectedRecord.lungs },
+                      { label: "Cột sống", value: selectedRecord.spine },
+                      { label: "Tư thế", value: selectedRecord.posture },
+                    ].map(({ label, value }) => (
+                      <div key={label}>
+                        <label className="block text-sm font-medium text-gray-700">{label}</label>
+                        <p className="text-sm text-gray-900">{value || "Chưa cập nhật"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Chẩn đoán cuối cùng
+                  </label>
+                  <p className="text-sm text-gray-900">{selectedRecord.final_diagnosis || "Chưa có chẩn đoán"}</p>
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 border-b pb-2">
+                  Khám chuyên khoa
+                </h4>
+                {renderSpecialistExams(selectedRecord.specialist_exam_records, selectedRecord.health_record_id)}
+              </div>
+            </div>
+          </div>
+          <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+            <button
+              onClick={closeFullDetailsModal}
+              className="px-6 py-2 bg-white border border-gray-400 text-gray-700 font-medium hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-400"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
       </div>
     );
   };
@@ -292,18 +471,9 @@ const CheckupHistoryInfo = () => {
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => handleViewPDF(item.record_url)}
-                      disabled={!item.record_url || loading.fetch}
-                      className={`inline-flex items-center justify-center w-7 h-7 border transition-colors ${
-                        !item.record_url || loading.fetch
-                          ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "border-blue-400 bg-white text-blue-600 hover:bg-blue-50 hover:border-blue-500"
-                      }`}
-                      title={
-                        item.record_url
-                          ? "Xem chi tiết PDF"
-                          : "Không có file kết quả"
-                      }
+                      onClick={() => openFullDetailsModal(item)}
+                      className="inline-flex items-center justify-center w-7 h-7 border border-blue-400 bg-white text-blue-600 hover:bg-blue-50 hover:border-blue-500 transition-colors"
+                      title="Xem chi tiết"
                     >
                       <FileText className="h-4 w-4" />
                     </button>
@@ -313,7 +483,7 @@ const CheckupHistoryInfo = () => {
                   <tr>
                     <td colSpan="7" className="px-4 py-4 bg-gray-50 border-b border-gray-300">
                       <div className="text-sm">
-                        {renderSpecialistExams(item.specialist_exam_records)}
+                        {renderSpecialistExams(item.specialist_exam_records, item.health_record_id)}
                       </div>
                     </td>
                   </tr>
@@ -347,10 +517,7 @@ const CheckupHistoryInfo = () => {
                 </div>
                 <div className="border-t border-gray-300 p-3 bg-gray-50">
                   <button
-                    onClick={() => {
-                      setShowPDFModal(false);
-                      setSelectedPDFUrl(null);
-                    }}
+                    onClick={closePDFModal}
                     className="px-6 py-2 bg-white border border-gray-400 text-gray-700 font-medium hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-400"
                   >
                     Đóng
@@ -360,6 +527,7 @@ const CheckupHistoryInfo = () => {
             </div>
           </div>
         )}
+        {renderFullDetailsModal()}
       </div>
     </div>
   );

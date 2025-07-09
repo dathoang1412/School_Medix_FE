@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../../config/axiosClient";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
+import { getUserRole } from "../../../service/authService";
 
 const RegularCheckupRegisterList = () => {
   const [list, setList] = useState([]);
@@ -118,7 +119,7 @@ const RegularCheckupRegisterList = () => {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <button
-            onClick={() => navigate("/nurse/regular-checkup")}
+            onClick={() => navigate(`/${getUserRole()}/regular-checkup`)}
             className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

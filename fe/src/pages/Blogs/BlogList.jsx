@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axiosClient from '../../config/axiosClient';
 import { Calendar, Edit, Trash2, Plus, Search, Filter, AlertCircle } from 'lucide-react';
 import { getUserRole } from '../../service/authService';
 import { toast } from 'react-toastify';
+import Footer from '../../components/Footer';
 
 const BlogList = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ const BlogList = () => {
   const [userRole, setUserRole] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const path = useLocation().pathname.split('/')[1]
+
 
   // Categories aligned with backend blog_type_id
   const categories = [
@@ -34,12 +37,13 @@ const BlogList = () => {
 
     const fetchBlogs = async () => {
       try {
-        const response = await axiosClient.get('/blog', { timeout: 5000 });
+        const response = await axiosClient.get('/blog', { timeout: 10000 });
         if (response.error || !response.data.blog || !response.data.blog.length) {
           setError('Chưa có blog nào!');
           setBlogs([]);
           setFilteredBlogs([]);
         } else {
+          console.log("BLOG LIST: ", response.data.blog);
           setBlogs(response.data.blog);
           setFilteredBlogs(response.data.blog);
         }
@@ -97,8 +101,8 @@ const BlogList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto py-3">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
@@ -239,6 +243,7 @@ const BlogList = () => {
           </div>
         )}
       </div>
+      {path !== "admin" && <Footer/>}
     </div>
   );
 };
