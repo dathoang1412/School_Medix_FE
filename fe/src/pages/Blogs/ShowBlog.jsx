@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axiosClient from '../../config/axiosClient';
-import { Calendar, ArrowLeft } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import axiosClient from "../../config/axiosClient";
+import { Calendar, ArrowLeft } from "lucide-react";
+import Footer from "../../components/Footer";
 
 const ShowBlog = () => {
   const { id } = useParams();
@@ -9,23 +10,25 @@ const ShowBlog = () => {
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const path = useLocation().pathname.split('/')[1]
+
 
   // Determine the base path for navigation
-  const isAdminSection = window.location.pathname.includes('/admin');
-  const basePath = isAdminSection ? '/admin/blog' : '/blog';
+  const isAdminSection = window.location.pathname.includes("/admin");
+  const basePath = isAdminSection ? "/admin/blog" : "/blog";
 
   useEffect(() => {
     const fetchBlog = async () => {
       try {
         const response = await axiosClient.get(`/blog/${id}`);
         if (response.error || !response.data.blog) {
-          setError('Không tìm thấy bài viết!');
+          setError("Không tìm thấy bài viết!");
           setBlog(null);
         } else {
           setBlog(response.data.blog);
         }
       } catch (err) {
-        setError('Không thể tải bài viết!');
+        setError("Không thể tải bài viết!");
         console.error(err);
       } finally {
         setLoading(false);
@@ -44,7 +47,10 @@ const ShowBlog = () => {
             onClick={() => navigate(basePath)}
             className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-all duration-200 group"
           >
-            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform duration-200" />
+            <ArrowLeft
+              size={20}
+              className="group-hover:-translate-x-1 transition-transform duration-200"
+            />
             <span className="font-medium">Quay lại danh sách</span>
           </button>
         </div>
@@ -59,12 +65,26 @@ const ShowBlog = () => {
           <div className="text-center py-20">
             <div className="max-w-md mx-auto">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-8 h-8 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Không tìm thấy bài viết</h3>
-              <p className="text-gray-600 mb-6">Bài viết không tồn tại hoặc đã bị xóa.</p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                Không tìm thấy bài viết
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Bài viết không tồn tại hoặc đã bị xóa.
+              </p>
               <button
                 onClick={() => navigate(basePath)}
                 className="inline-flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md"
@@ -100,12 +120,12 @@ const ShowBlog = () => {
                     <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
                       <Calendar size={16} />
                       <span className="text-sm font-medium">
-                        {new Date(blog.created_at).toLocaleDateString('vi-VN', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
+                        {new Date(blog.created_at).toLocaleDateString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })}
                       </span>
                     </div>
@@ -149,6 +169,7 @@ const ShowBlog = () => {
           </div>
         )}
       </div>
+      {path !== "admin" && <Footer />}
     </div>
   );
 };

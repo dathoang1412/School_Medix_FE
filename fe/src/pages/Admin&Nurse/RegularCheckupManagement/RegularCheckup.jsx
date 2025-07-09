@@ -83,7 +83,7 @@ const RegularCheckup = () => {
     try {
       let endpoint = `/checkup-campaign/${campaignId}/${action}`;
       if (action === "send-register") {
-        endpoint = `/checkup-campaign/${campaignId}/send-register`;
+        endpoint = `/checkup/${campaignId}/send-register`;
       }
       const response = await (action === "send-register"
         ? axiosClient.post(endpoint)
@@ -151,7 +151,7 @@ const RegularCheckup = () => {
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
           disabled: false,
-          onClick: () => navigate(`/nurse/regular-checkup-report/${campaignId}`),
+          onClick: () => navigate(`/nurse/completed-regular-checkup-report/${campaignId}`),
         };
       }
       return null;
@@ -168,7 +168,7 @@ const RegularCheckup = () => {
       case "PREPARING":
         return {
           text: "Đóng đơn đăng ký",
-          action: "close-register",
+          action: "close",
           className: "bg-amber-700 hover:bg-amber-800 text-white",
           disabled: false,
         };
@@ -182,7 +182,7 @@ const RegularCheckup = () => {
       case "ONGOING":
         return {
           text: "Hoàn thành chiến dịch",
-          action: "complete",
+          action: "finish",
           className: "bg-emerald-700 hover:bg-emerald-800 text-white",
           disabled: false,
         };
@@ -193,7 +193,7 @@ const RegularCheckup = () => {
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
           disabled: false,
-          onClick: () => navigate(`/admin/regular-checkup-report/${campaignId}`),
+          onClick: () => navigate(`/admin/completed-regular-checkup-report/${campaignId}`),
         };
       case "CANCELLED":
         return {
@@ -487,7 +487,7 @@ const RegularCheckup = () => {
                               {primaryAction.action === "send-register" && (
                                 <Send className="w-4 h-4" />
                               )}
-                              {primaryAction.action === "complete" && (
+                              {primaryAction.action === "finish" && (
                                 <CheckCircle className="w-4 h-4" />
                               )}
                               {primaryAction.action === "view-register-list" && (
