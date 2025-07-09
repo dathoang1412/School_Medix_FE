@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
-import { Save, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Save, ArrowLeft, AlertCircle, Upload, Image } from 'lucide-react';
 import axiosClient from '../../config/axiosClient';
-import { toast } from 'react-toastify';
+import { enqueueSnackbar } from 'notistack';
 
 const BlogEditor = () => {
   const { id } = useParams();
@@ -19,7 +19,7 @@ const BlogEditor = () => {
     category: '',
     thumbnail: null,
     thumbnailPreview: '',
-    content: '<p></p>',
+    content: '',
   });
 
   // UI states
@@ -29,12 +29,44 @@ const BlogEditor = () => {
   const [formErrors, setFormErrors] = useState({});
   const [quillInitialized, setQuillInitialized] = useState(false);
 
+  // Determine the base path for navigation
+  const isAdminSection = window.location.pathname.includes('/admin');
+  const basePath = isAdminSection ? '/admin/blog' : '/blog';
+
   const categories = [
     { id: 1, name: 'Tin tức' },
     { id: 2, name: 'Hướng dẫn' },
     { id: 3, name: 'Đánh giá' },
     { id: 4, name: 'Chia sẻ' },
   ];
+
+  // Handle image uploads in Quill
+  const handleImageUpload = useCallback(() => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = () => {
+      const file = input.files[0];
+      if (!file) return;
+
+      if (file.size > 5 * 1024 * 1024) {
+        enqueueSnackbar('Ảnh phải nhỏ hơn 5MB', { variant: 'warning' });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        if (quillInstanceRef.current) {
+          const range = quillInstanceRef.current.getSelection(true) || { index: 0 };
+          quillInstanceRef.current.insertEmbed(range.index, 'image', evt.target.result);
+          quillInstanceRef.current.setSelection(range.index + 1);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+  }, []);
 
   // Initialize Quill editor
   useEffect(() => {
@@ -73,17 +105,19 @@ const BlogEditor = () => {
 
         quill.on('text-change', () => {
           const content = quill.root.innerHTML;
-          setFormData((prev) => ({
-            ...prev,
-            content,
-          }));
+          setFormData((prev) => {
+            if (prev.content !== content) {
+              return { ...prev, content };
+            }
+            return prev;
+          });
         });
 
         quillInstanceRef.current = quill;
         setQuillInitialized(true);
 
         // Set initial content if it exists
-        if (formData.content && formData.content !== '<p></p>') {
+        if (formData.content) {
           quill.root.innerHTML = formData.content;
         }
 
@@ -104,7 +138,7 @@ const BlogEditor = () => {
         setQuillInitialized(false);
       }
     };
-  }, []);
+  }, [handleImageUpload]);
 
   // Load blog data when editing
   useEffect(() => {
@@ -125,7 +159,7 @@ const BlogEditor = () => {
           throw new Error('Không tìm thấy bài viết');
         }
 
-        const content = blog.content || '<p></p>';
+        const content = blog.content || '';
         setFormData({
           title: blog.title || '',
           category: blog.blog_type_id?.toString() || '',
@@ -149,33 +183,17 @@ const BlogEditor = () => {
     loadBlogData();
   }, [id]);
 
-  // Handle image uploads in Quill
-  const handleImageUpload = () => {
-    const input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    input.setAttribute('accept', 'image/*');
-    input.click();
-
-    input.onchange = () => {
-      const file = input.files[0];
-      if (!file) return;
-
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Ảnh phải nhỏ hơn 5MB');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        if (quillInstanceRef.current) {
-          const range = quillInstanceRef.current.getSelection(true) || { index: 0 };
-          quillInstanceRef.current.insertEmbed(range.index, 'image', evt.target.result);
-          quillInstanceRef.current.setSelection(range.index + 1);
-        }
-      };
-      reader.readAsDataURL(file);
-    };
-  };
+  // Update Quill content when formData.content changes and Quill is initialized
+  useEffect(() => {
+    if (
+      quillInitialized &&
+      quillInstanceRef.current &&
+      formData.content &&
+      quillInstanceRef.current.root.innerHTML !== formData.content
+    ) {
+      quillInstanceRef.current.root.innerHTML = formData.content;
+    }
+  }, [quillInitialized, formData.content]);
 
   // Handle thumbnail selection
   const handleThumbnailChange = (e) => {
@@ -183,7 +201,7 @@ const BlogEditor = () => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Ảnh đại diện phải nhỏ hơn 5MB');
+      enqueueSnackbar('Ảnh đại diện phải nhỏ hơn 5MB', { variant: 'warning' });
       return;
     }
 
@@ -235,7 +253,7 @@ const BlogEditor = () => {
     setFormErrors(errors);
 
     if (Object.keys(errors).length > 0) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      enqueueSnackbar('Vui lòng điền đầy đủ thông tin', { variant: 'warning' });
       return;
     }
 
@@ -299,16 +317,16 @@ const BlogEditor = () => {
       // Save blog
       if (id) {
         await axiosClient.put(`/update-blog/${id}`, blogData);
-        toast.success('Cập nhật bài viết thành công');
+        enqueueSnackbar('Cập nhật bài viết thành công', { variant: 'success' });
       } else {
         await axiosClient.post('/created-blog', blogData);
-        toast.success('Tạo bài viết thành công');
+        enqueueSnackbar('Tạo bài viết thành công', { variant: 'success' });
       }
 
-      navigate('/blog');
+      navigate(basePath);
     } catch (err) {
       console.error('Submission error:', err);
-      toast.error(err.response?.data?.message || err.message || 'Có lỗi xảy ra khi lưu bài viết');
+      enqueueSnackbar(err.response?.data?.message || err.message || 'Có lỗi xảy ra khi lưu bài viết', { variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -325,129 +343,203 @@ const BlogEditor = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
-      {isLoading ? (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : error ? (
-        <div className="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-          <div className="flex items-center gap-3 text-red-600 mb-4">
-            <AlertCircle size={24} />
-            <h3 className="text-xl font-semibold">Lỗi</h3>
+    <div className="min-h-screen bg-gray-50 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              <p className="text-gray-600">Đang tải...</p>
+            </div>
           </div>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button
-            onClick={() => navigate('/blog')}
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            <ArrowLeft size={18} />
-            Quay lại danh sách
-          </button>
-        </div>
-      ) : (
-        <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-md p-8 sm:p-10">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800">
-              {id ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'}
-            </h2>
-            <button
-              onClick={() => navigate('/blog')}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
-            >
-              <ArrowLeft size={18} />
-              Quay lại
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-1">
-                Tiêu đề bài viết
-              </label>
-              <input
-                id="title"
-                name="title"
-                type="text"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder="Tiêu đề bài viết"
-                className={`w-full px-4 py-2 border ${formErrors.title ? 'border-red-500' : 'border-gray-300'} rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base`}
-              />
-              {formErrors.title && (
-                <p className="mt-1 text-sm text-red-500">{formErrors.title}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="category" className="block text-sm font-semibold text-gray-700 mb-1">
-                Thể loại
-              </label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-2 border ${formErrors.category ? 'border-red-500' : 'border-gray-300'} rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base`}
-              >
-                <option value="">Chọn thể loại</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              {formErrors.category && (
-                <p className="mt-1 text-sm text-red-500">{formErrors.category}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="thumbnail" className="block text-sm font-semibold text-gray-700 mb-1">
-                Ảnh đại diện {id ? '' : '(bắt buộc)'}
-              </label>
-              <input
-                id="thumbnail"
-                type="file"
-                accept="image/*"
-                onChange={handleThumbnailChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-              {formData.thumbnailPreview && (
-                <img
-                  src={formData.thumbnailPreview}
-                  alt="Thumbnail preview"
-                  className="mt-2 max-w-xs max-h-32 rounded-lg border border-gray-200"
-                />
-              )}
-              {formErrors.thumbnail && (
-                <p className="mt-1 text-sm text-red-500">{formErrors.thumbnail}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Nội dung bài viết
-              </label>
-              <div className={`border ${formErrors.content ? 'border-red-500' : 'border-gray-300'} rounded-lg bg-white`}>
-                <div ref={editorContainerRef} style={{ minHeight: '260px' }} />
+        ) : error ? (
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white border border-red-200 rounded-lg p-6">
+              <div className="flex items-center gap-3 text-red-600 mb-4">
+                <AlertCircle size={24} />
+                <h3 className="text-lg font-medium">Đã xảy ra lỗi</h3>
               </div>
-              {formErrors.content && (
-                <p className="mt-1 text-sm text-red-500">{formErrors.content}</p>
-              )}
+              <p className="text-gray-700 mb-6">{error}</p>
+              <button
+                onClick={() => navigate(basePath)}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+              >
+                <ArrowLeft size={16} />
+                Quay lại danh sách
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-6xl mx-auto">
+            {/* Header */}
+            <div className="bg-white border-b border-gray-200 rounded-t-lg px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-medium text-gray-900">
+                    {id ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'}
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {id ? 'Cập nhật thông tin và nội dung bài viết' : 'Tạo một bài viết mới cho blog'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate(basePath)}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+                >
+                  <ArrowLeft size={16} />
+                  Quay lại
+                </button>
+              </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting || !quillInitialized}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition font-semibold text-base"
-            >
-              <Save size={18} />
-              {isSubmitting ? 'Đang lưu...' : id ? 'Cập nhật bài viết' : 'Lưu bài viết'}
-            </button>
-          </form>
-        </div>
-      )}
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="bg-white border-x border-b border-gray-200 rounded-b-lg">
+              <div className="px-6 py-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Left Column - Basic Info */}
+                  <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin cơ bản</h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                            Tiêu đề bài viết
+                          </label>
+                          <input
+                            id="title"
+                            name="title"
+                            type="text"
+                            value={formData.title}
+                            onChange={handleInputChange}
+                            placeholder="Nhập tiêu đề bài viết"
+                            className={`w-full px-3 py-2 border ${formErrors.title ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm`}
+                          />
+                          {formErrors.title && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.title}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                            Thể loại
+                          </label>
+                          <select
+                            id="category"
+                            name="category"
+                            value={formData.category}
+                            onChange={handleInputChange}
+                            className={`w-full px-3 py-2 border ${formErrors.category ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm`}
+                          >
+                            <option value="">Chọn thể loại</option>
+                            {categories.map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </option>
+                            ))}
+                          </select>
+                          {formErrors.category && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.category}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label htmlFor="thumbnail" className="block text-sm font-medium text-gray-700 mb-2">
+                            Ảnh đại diện {!id && <span className="text-red-500">*</span>}
+                          </label>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-center w-full">
+                              <label htmlFor="thumbnail" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                  <Upload className="w-8 h-8 mb-3 text-gray-400" />
+                                  <p className="text-sm text-gray-500">
+                                    <span className="font-medium">Click để chọn ảnh</span>
+                                  </p>
+                                  <p className="text-xs text-gray-400">PNG, JPG tối đa 5MB</p>
+                                </div>
+                                <input
+                                  id="thumbnail"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleThumbnailChange}
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
+                            {formData.thumbnailPreview && (
+                              <div className="relative">
+                                <img
+                                  src={formData.thumbnailPreview}
+                                  alt="Thumbnail preview"
+                                  className="w-full h-40 object-cover rounded-lg border border-gray-200"
+                                />
+                                <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-sm">
+                                  <Image size={16} className="text-gray-500" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          {formErrors.thumbnail && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.thumbnail}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column - Content */}
+                  <div className="lg:col-span-2">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Nội dung bài viết</h3>
+                      
+                      <div className={`border ${formErrors.content ? 'border-red-300' : 'border-gray-300'} rounded-lg bg-white`}>
+                        <div 
+                          ref={editorContainerRef} 
+                          style={{ minHeight: '400px', direction: 'ltr' }}
+                          className="prose max-w-none"
+                        />
+                      </div>
+                      {formErrors.content && (
+                        <p className="mt-2 text-sm text-red-600">{formErrors.content}</p>
+                      )}
+                      
+                      <div className="mt-4 text-sm text-gray-500">
+                        <p>💡 Mẹo: Sử dụng thanh công cụ ở trên để định dạng văn bản và chèn hình ảnh</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-lg">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    {id ? 'Lưu thay đổi vào bài viết' : 'Tạo bài viết mới'}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => navigate(basePath)}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || !quillInitialized}
+                      className="inline-flex items-center gap-2 px-6 py-2 text-sm font-medium text-white bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Save size={16} />
+                      {isSubmitting ? 'Đang lưu...' : id ? 'Cập nhật' : 'Tạo bài viết'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

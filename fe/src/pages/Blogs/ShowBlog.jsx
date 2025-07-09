@@ -10,6 +10,10 @@ const ShowBlog = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Determine the base path for navigation
+  const isAdminSection = window.location.pathname.includes('/admin');
+  const basePath = isAdminSection ? '/admin/blog' : '/blog';
+
   useEffect(() => {
     const fetchBlog = async () => {
       try {
@@ -37,7 +41,7 @@ const ShowBlog = () => {
       <div className="bg-white/90 backdrop-blur-sm border-b border-blue-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <button
-            onClick={() => navigate('/blog')}
+            onClick={() => navigate(basePath)}
             className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-all duration-200 group"
           >
             <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform duration-200" />
@@ -62,7 +66,7 @@ const ShowBlog = () => {
               <h3 className="text-xl font-semibold text-gray-800 mb-2">Không tìm thấy bài viết</h3>
               <p className="text-gray-600 mb-6">Bài viết không tồn tại hoặc đã bị xóa.</p>
               <button
-                onClick={() => navigate('/blog')}
+                onClick={() => navigate(basePath)}
                 className="inline-flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md"
               >
                 <ArrowLeft size={18} />
@@ -135,7 +139,7 @@ const ShowBlog = () => {
             {/* Bottom navigation */}
             <div className="flex justify-center pt-4">
               <button
-                onClick={() => navigate('/blog')}
+                onClick={() => navigate(basePath)}
                 className="flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md"
               >
                 <ArrowLeft size={18} />

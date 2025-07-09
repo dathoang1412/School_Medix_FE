@@ -24,6 +24,10 @@ const BlogList = () => {
     { value: '4', label: 'Chia sẻ' },
   ];
 
+  // Determine the base path for navigation
+  const isAdminSection = window.location.pathname.includes('/admin');
+  const basePath = isAdminSection ? '/admin/blog' : '/blog';
+
   useEffect(() => {
     const role = getUserRole() || 'guest';
     setUserRole(role);
@@ -85,11 +89,11 @@ const BlogList = () => {
   };
 
   const handleCreateBlog = () => {
-    navigate('/blog/edit');
+    navigate(isAdminSection ? '/admin/blog/create' : '/blog/edit');
   };
 
   const handleBlogClick = (id) => {
-    navigate(`/blog/${id}`);
+    navigate(`${basePath}/${id}`);
   };
 
   return (
@@ -106,7 +110,7 @@ const BlogList = () => {
                 Chia sẻ kiến thức và thông tin về sức khỏe học đường
               </p>
             </div>
-            {['admin', 'nurse'].includes(userRole) && (
+            {userRole === 'admin' && (
               <button
                 onClick={handleCreateBlog}
                 className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200 font-semibold"
@@ -168,7 +172,7 @@ const BlogList = () => {
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Chưa có blog nào</h3>
             <p className="text-gray-600 mb-6">Hãy tạo bài viết đầu tiên để chia sẻ kiến thức y tế!</p>
-            {['admin', 'nurse'].includes(userRole) && (
+            {userRole === 'admin' && (
               <button
                 onClick={handleCreateBlog}
                 className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200 font-semibold"
@@ -211,14 +215,10 @@ const BlogList = () => {
                     <Calendar size={16} className="mr-2" />
                     Ngày tạo: {new Date(blog.created_at).toLocaleString('vi-VN')}
                   </div>
-                  <div
-                    className="text-gray-700 text-sm line-clamp-3 mb-4"
-                    dangerouslySetInnerHTML={{ __html: blog.content }}
-                  />
-                  {['admin', 'nurse'].includes(userRole) && (
+                  {userRole === 'admin' && (
                     <div className="flex gap-3">
                       <button
-                        onClick={() => navigate(`/blog/edit/${blog.id}`)}
+                        onClick={() => navigate(isAdminSection ? `/admin/blog/edit/${blog.id}` : `/blog/edit/${blog.id}`)}
                         className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200 text-sm font-semibold"
                       >
                         <Edit size={16} />

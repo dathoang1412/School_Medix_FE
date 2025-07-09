@@ -180,6 +180,22 @@ const routes = createBrowserRouter([
             path: "disease",
             element: <DiseaseRecordManagement />,
           },
+          {
+            path: "blog",
+            element: <BlogList />,
+          },
+          {
+            path: "blog/create",
+            element: <BlogEditor/>
+          },
+          {
+            path: "blog/edit/:id",
+            element: <BlogEditor/>
+          },
+          {
+            path: "blog/:id",
+            element: <ShowBlog/>
+          }
         ],
       },
     ],
@@ -261,7 +277,7 @@ const routes = createBrowserRouter([
         children: [
           {
             path: "vaccination-report/:campaign_id",
-            element: <VaccineCampaignReport/>
+            element: <VaccineCampaignReport />,
           },
 
           {
