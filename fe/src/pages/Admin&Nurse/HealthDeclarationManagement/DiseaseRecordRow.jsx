@@ -115,7 +115,6 @@ const DiseaseRecordRow = ({ record, diseaseMap, onUpdate }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700">
               <div className="space-y-2">
                 <h4 className="font-semibold flex items-center gap-2"><User className="w-4 h-4 text-blue-600" />Thông tin cơ bản</h4>
-                <p><span className="font-medium">Mã học sinh:</span> {getStudentDisplay(record.student_id)}</p>
                 <p><span className="font-medium">Họ và tên:</span> {record.student_name || 'Không xác định'}</p>
                 <p><span className="font-medium">Ngày phát hiện:</span> {formatDate(record.detect_date)}</p>
                 <p><span className="font-medium">Ngày tạo:</span> {formatDate(record.created_at)}</p>
@@ -131,11 +130,11 @@ const DiseaseRecordRow = ({ record, diseaseMap, onUpdate }) => {
                 <p><span className="font-medium">Ngày khỏi:</span> {formatDate(record.cure_date)}</p>
                 <p><span className="font-medium">Nơi điều trị:</span> {record.location_cure || 'Không có'}</p>
                 <p><span className="font-medium">Chuyển đến:</span> {record.transferred_to || 'Không chuyển viện'}</p>
-                <p><span className="font-medium">Trạng thái đơn:</span> {getBadge('pending', record.pending)}</p>
-                {record.reason_by_nurse && (
-                  <p><span className="font-medium">Lý do từ chối:</span> {record.reason_by_nurse}</p>
-                )}
               </div>
+              {record.reason_by_nurse && <div>
+                <h4 className="font-semibold flex items-center gap-2 text-red-700">Đơn đã bị hủy: </h4>
+                <p>{record.reason_by_nurse || 'Không có ghi chú'}</p>
+              </div>}
             </div>
           </td>
         </tr>
