@@ -43,7 +43,7 @@ const RegularCheckup = () => {
       setIsRefreshing(true);
       const res = await axiosClient.get("/checkup-campaign");
       const campaigns = res.data.data || [];
-      console.log("Checkup campaigns: ", campaigns);
+      console.log("Checkup campaigns:", campaigns);
       setCampaignList(campaigns);
       const ids = campaigns.map((c) => c.id);
       if (new Set(ids).size !== ids.length) {
@@ -53,9 +53,7 @@ const RegularCheckup = () => {
     } catch (err) {
       setError("Không thể tải danh sách chiến dịch khám sức khỏe");
       console.error("Error fetching campaigns:", err);
-      enqueueSnackbar("Không thể tải danh sách chiến dịch", {
-        variant: "error",
-      });
+      enqueueSnackbar("Không thể tải danh sách chiến dịch", { variant: "error" });
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -84,25 +82,20 @@ const RegularCheckup = () => {
     setLoadingActions((prev) => ({ ...prev, [campaignId]: true }));
     try {
       let endpoint = `/checkup-campaign/${campaignId}/${action}`;
-      let response;
       if (action === "send-register") {
-        endpoint = `/checkup/${campaignId}/send-register`;
-        response = await axiosClient.post(endpoint);
-      } else {
-        response = await axiosClient.patch(endpoint);
+        endpoint = `/checkup-campaign/${campaignId}/send-register`;
       }
+      const response = await (action === "send-register"
+        ? axiosClient.post(endpoint)
+        : axiosClient.patch(endpoint));
       await fetchCampaigns();
-      enqueueSnackbar(response?.data.message || "Thành công!", {
-        variant: "info",
-      });
+      enqueueSnackbar(response?.data.message || "Thành công!", { variant: "info" });
     } catch (error) {
       console.error(
         `Error performing ${action} on campaign ${campaignId}:`,
-        error
+        error.response?.data?.message || error.message
       );
-      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", {
-        variant: "error",
-      });
+      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", { variant: "error" });
     } finally {
       setLoadingActions((prev) => ({ ...prev, [campaignId]: false }));
     }
@@ -116,6 +109,7 @@ const RegularCheckup = () => {
     switch (status) {
       case "DRAFTED":
         return <FileText className="w-4 h-4" />;
+      case "COMPLETED":
       case "DONE":
         return <CheckCircle className="w-4 h-4" />;
       case "ONGOING":
@@ -133,33 +127,31 @@ const RegularCheckup = () => {
 
   const getPrimaryActionConfig = (status, campaignId) => {
     if (userRole === "nurse") {
-      if (["PREPARING", "UPCOMING", "ONGOING"].includes(status)) {
-        return {
-          text: "Xem danh sách học sinh",
-          action: "view-register-list",
-          className: "bg-blue-600 hover:bg-blue-700 text-white",
-          disabled: false,
-          onClick: () =>
-            navigate(`/nurse/checkup-campaign/${campaignId}/register-list`),
-        };
-      }
       if (status === "ONGOING") {
         return {
           text: "Chỉnh sửa báo cáo",
           action: "edit-report",
           className: "bg-indigo-700 hover:bg-indigo-800 text-white",
           disabled: false,
-          onClick: () => navigate(`/nurse/regular-report/${campaignId}`),
+          onClick: () => navigate(`/nurse/regular-checkup-report/${campaignId}`),
         };
       }
-      if (status === "DONE") {
+      if (["PREPARING", "UPCOMING"].includes(status)) {
+        return {
+          text: "Xem danh sách học sinh",
+          action: "view-register-list",
+          className: "bg-blue-600 hover:bg-blue-700 text-white",
+          disabled: false,
+          onClick: () => navigate(`/nurse/checkup-campaign/${campaignId}/register-list`),
+        };
+      }
+      if (status === "DONE" || status === "COMPLETED") {
         return {
           text: "Xem báo cáo",
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
           disabled: false,
-          onClick: () =>
-            navigate(`/nurse/regular-checkup-report/${campaignId}`),
+          onClick: () => navigate(`/nurse/regular-checkup-report/${campaignId}`),
         };
       }
       return null;
@@ -176,7 +168,7 @@ const RegularCheckup = () => {
       case "PREPARING":
         return {
           text: "Đóng đơn đăng ký",
-          action: "close",
+          action: "close-register",
           className: "bg-amber-700 hover:bg-amber-800 text-white",
           disabled: false,
         };
@@ -190,18 +182,18 @@ const RegularCheckup = () => {
       case "ONGOING":
         return {
           text: "Hoàn thành chiến dịch",
-          action: "finish",
+          action: "complete",
           className: "bg-emerald-700 hover:bg-emerald-800 text-white",
           disabled: false,
         };
       case "DONE":
+      case "COMPLETED":
         return {
           text: "Xem báo cáo",
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
           disabled: false,
-          onClick: () =>
-            navigate(`/admin/regular-checkup-report/${campaignId}`),
+          onClick: () => navigate(`/admin/regular-checkup-report/${campaignId}`),
         };
       case "CANCELLED":
         return {
@@ -314,8 +306,7 @@ const RegularCheckup = () => {
             {
               status: "PREPARING",
               label: "Chuẩn bị",
-              count: campaignList.filter((c) => c.status === "PREPARING")
-                .length,
+              count: campaignList.filter((c) => c.status === "PREPARING").length,
             },
             {
               status: "UPCOMING",
@@ -335,8 +326,7 @@ const RegularCheckup = () => {
             {
               status: "CANCELLED",
               label: "Đã hủy",
-              count: campaignList.filter((c) => c.status === "CANCELLED")
-                .length,
+              count: campaignList.filter((c) => c.status === "CANCELLED").length,
             },
           ].map(({ status, label, count }) => (
             <div
@@ -345,12 +335,8 @@ const RegularCheckup = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">
-                    {label}
-                  </p>
-                  <p className="text-2xl font-semibold text-slate-900">
-                    {count}
-                  </p>
+                  <p className="text-sm font-medium text-slate-600 mb-1">{label}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{count}</p>
                 </div>
                 <div className={`p-2 rounded-lg ${getStatusColor(status)}`}>
                   {getStatusIcon(status)}
@@ -362,10 +348,7 @@ const RegularCheckup = () => {
 
         <div className="space-y-4">
           {campaignList.map((campaign) => {
-            const primaryAction = getPrimaryActionConfig(
-              campaign.status,
-              campaign.id
-            );
+            const primaryAction = getPrimaryActionConfig(campaign.status, campaign.id);
             const isLoading = loadingActions[campaign.id];
 
             return (
@@ -394,9 +377,7 @@ const RegularCheckup = () => {
                       </h3>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <span className="text-sm text-slate-500 font-medium">
-                        Chi tiết
-                      </span>
+                      <span className="text-sm text-slate-500 font-medium">Chi tiết</span>
                       {expandedItems[campaign.id] ? (
                         <ChevronUp className="w-5 h-5 text-slate-400" />
                       ) : (
@@ -418,9 +399,7 @@ const RegularCheckup = () => {
                             <p className="text-sm font-medium text-slate-700 mb-1">
                               Thời gian bắt đầu
                             </p>
-                            <p className="text-base text-slate-900">
-                              {formatDate(campaign.start_date)}
-                            </p>
+                            <p className="text-base text-slate-900">{formatDate(campaign.start_date)}</p>
                           </div>
                         </div>
                         <div className="flex items-start space-x-4">
@@ -431,9 +410,7 @@ const RegularCheckup = () => {
                             <p className="text-sm font-medium text-slate-700 mb-1">
                               Thời gian kết thúc
                             </p>
-                            <p className="text-base text-slate-900">
-                              {formatDate(campaign.end_date)}
-                            </p>
+                            <p className="text-base text-slate-900">{formatDate(campaign.end_date)}</p>
                           </div>
                         </div>
                       </div>
@@ -446,9 +423,7 @@ const RegularCheckup = () => {
                             <p className="text-sm font-medium text-slate-700 mb-1">
                               Địa điểm thực hiện
                             </p>
-                            <p className="text-base text-slate-900">
-                              {campaign.location || "Chưa xác định"}
-                            </p>
+                            <p className="text-base text-slate-900">{campaign.location || "Chưa xác định"}</p>
                           </div>
                         </div>
                         <div className="flex items-start space-x-4">
@@ -471,46 +446,21 @@ const RegularCheckup = () => {
                       <button
                         className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200"
                         onClick={() =>
-                          navigate(
-                            `/${getUserRole()}/checkup-campaign/${campaign.id}`
-                          )
+                          navigate(`/${getUserRole()}/checkup-campaign/${campaign.id}`)
                         }
                       >
-                        <FileText className="w-4 h-4 inline mr-2" /> Xem chi
-                        tiết
+                        <FileText className="w-4 h-4 inline mr-2" /> Xem chi tiết
                       </button>
 
-                      {userRole === "admin" &&
-                        campaign.status === "DRAFTED" && (
-                          <button
-                            onClick={() =>
-                              navigate(
-                                `/admin/checkup-campaign/${campaign.id}/edit`
-                              )
-                            }
-                            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
-                          >
-                            <Pencil className="w-4 h-4" />
-                            <span>Chỉnh sửa</span>
-                          </button>
-                        )}
-
-                      {(userRole === "admin" || userRole === "nurse") &&
-                        ["PREPARING", "UPCOMING", "ONGOING"].includes(
-                          campaign.status
-                        ) && (
-                          <button
-                            onClick={() =>
-                              navigate(
-                                `/${userRole}/checkup-campaign/${campaign.id}/register-list`
-                              )
-                            }
-                            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
-                          >
-                            <Users className="w-4 h-4" />
-                            <span>Xem danh sách học sinh</span>
-                          </button>
-                        )}
+                      {userRole === "admin" && campaign.status === "DRAFTED" && (
+                        <button
+                          onClick={() => navigate(`/admin/checkup-campaign/${campaign.id}/edit`)}
+                          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                        >
+                          <Pencil className="w-4 h-4" />
+                          <span>Chỉnh sửa</span>
+                        </button>
+                      )}
 
                       {primaryAction && (
                         <button
@@ -518,17 +468,12 @@ const RegularCheckup = () => {
                             primaryAction.onClick ||
                             (() => {
                               if (primaryAction.action) {
-                                handleCampaignAction(
-                                  campaign.id,
-                                  primaryAction.action
-                                );
+                                handleCampaignAction(campaign.id, primaryAction.action);
                               }
                             })
                           }
                           disabled={primaryAction.disabled || isLoading}
-                          className={`px-5 py-2.5 font-medium rounded-lg transition-colors duration-200 ${
-                            primaryAction.className
-                          } ${
+                          className={`px-5 py-2.5 font-medium rounded-lg transition-colors duration-200 ${primaryAction.className} ${
                             isLoading ? "opacity-75 cursor-not-allowed" : ""
                           } flex items-center space-x-2`}
                         >
@@ -542,8 +487,11 @@ const RegularCheckup = () => {
                               {primaryAction.action === "send-register" && (
                                 <Send className="w-4 h-4" />
                               )}
-                              {primaryAction.action === "finish" && (
+                              {primaryAction.action === "complete" && (
                                 <CheckCircle className="w-4 h-4" />
+                              )}
+                              {primaryAction.action === "view-register-list" && (
+                                <Users className="w-4 h-4" />
                               )}
                               <span>{primaryAction.text}</span>
                             </>
@@ -552,13 +500,9 @@ const RegularCheckup = () => {
                       )}
 
                       {userRole === "admin" &&
-                        ["DRAFTED", "PREPARING", "UPCOMING"].includes(
-                          campaign.status
-                        ) && (
+                        ["DRAFTED", "PREPARING", "UPCOMING"].includes(campaign.status) && (
                           <button
-                            onClick={() =>
-                              handleCampaignAction(campaign.id, "cancel")
-                            }
+                            onClick={() => handleCampaignAction(campaign.id, "cancel")}
                             disabled={isLoading}
                             className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 ${
                               isLoading ? "opacity-75 cursor-not-allowed" : ""

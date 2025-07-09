@@ -79,7 +79,6 @@ const ParentDashboardWrapper = () => {
 const ParentDashboard = () => {
   const { children, selectedChild, handleSelectChild, isLoading, error } =
     useContext(ChildContext);
-  const location = useLocation();
 
   const services = [
     {
