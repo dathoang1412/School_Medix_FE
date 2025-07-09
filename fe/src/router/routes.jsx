@@ -48,6 +48,9 @@ import ShowBlog from "../pages/Blogs/ShowBlog";
 import HealthRecordList from "../pages/Parent/HealthRecord/HealthRecordList";
 import HealthDeclarationHistory from "../pages/Parent/Declare/HealthDeclarationHistory";
 import DeclarationManagement from "../pages/Admin&Nurse/HealthDeclarationManagement/DeclarationManagement";
+import HealthDashboard from "../pages/Parent/RegularCheckup/HealthDashboard";
+import CheckupHistoryInfo from "../pages/Parent/RegularCheckup/CheckupHistoryInfo";
+import ParentCheckupLayout from "../pages/Parent/RegularCheckup/ParentCheckupLayout";
 
 const routes = createBrowserRouter([
   {
@@ -193,16 +196,16 @@ const routes = createBrowserRouter([
           },
           {
             path: "blog/create",
-            element: <BlogEditor/>
+            element: <BlogEditor />,
           },
           {
             path: "blog/edit/:id",
-            element: <BlogEditor/>
+            element: <BlogEditor />,
           },
           {
             path: "blog/:id",
-            element: <ShowBlog/>
-          }
+            element: <ShowBlog />,
+          },
         ],
       },
     ],
@@ -257,7 +260,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "regular-checkup",
-            element: <StudentRegularCheckup />,
+            element: <ParentCheckupLayout />,
           },
           {
             path: "surveyCheckup/:campaign_id",
