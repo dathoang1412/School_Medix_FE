@@ -13,31 +13,36 @@ const DeclarationManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
 
+  const fetchRecords = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axiosClient.get('/disease-record/requestsHistory');
+      console.log('Fetched records:', data); // Log for debugging
+      if (!data.error && data.data?.rows) {
+        setRecords(data.data.rows);
+        setFilteredRecords(data.data.rows);
+      } else {
+        setError(data.message || 'Không thể tải danh sách khai báo bệnh');
+      }
+    } catch (err) {
+      console.error('Fetch records error:', err.response?.data || err.message);
+      setError('Không thể tải danh sách khai báo bệnh: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDiseases = async () => {
+    try {
+      const { data } = await axiosClient.get('/diseases');
+      setDiseaseMap(data.reduce((acc, d) => ({ ...acc, [d.id]: d.name }), {}));
+    } catch (err) {
+      console.error('Fetch diseases error:', err.response?.data || err.message);
+      setError('Không thể tải danh sách bệnh: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   useEffect(() => {
-    const fetchDiseases = async () => {
-      try {
-        const { data } = await axiosClient.get('/diseases');
-        setDiseaseMap(data.reduce((acc, d) => ({ ...acc, [d.id]: d.name }), {}));
-      } catch {
-        setError('Không thể tải danh sách bệnh');
-      }
-    };
-    const fetchRecords = async () => {
-      setLoading(true);
-      try {
-        const { data } = await axiosClient.get('/disease-record/requestsHistory');
-        if (!data.error && data.data?.rows) {
-          setRecords(data.data.rows);
-          setFilteredRecords(data.data.rows);
-        } else {
-          setError(data.message || 'Không thể tải danh sách khai báo bệnh');
-        }
-      } catch {
-        setError('Không thể tải danh sách khai báo bệnh');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchDiseases();
     fetchRecords();
   }, []);
@@ -103,7 +108,7 @@ const DeclarationManagement = () => {
                   <div className="flex items-center gap-2"><Pill className="w-4 h-4" /> Tên Bệnh</div>
                 </th>
                 <th className="p-4 text-left text-sm font-semibold text-gray-700">
-                  <div className="flex items-center gap-2"><Activity className="w-4 h-4" /> Chẩn Đoán</div>
+                  <div className="flex items-center gap-2"><Activity className="w-4 h-4" /> Tình trạng</div>
                 </th>
                 <th className="p-4 text-left text-sm font-semibold text-gray-700">
                   <div className="flex items-center gap-2"><Shield className="w-4 h-4" /> Trạng Thái Đơn</div>
@@ -132,7 +137,7 @@ const DeclarationManagement = () => {
                     key={record.id}
                     record={record}
                     diseaseMap={diseaseMap}
-                    onUpdate={() => fetchRecords()}
+                    onUpdate={fetchRecords} // Pass fetchRecords directly
                   />
                 ))
               )}

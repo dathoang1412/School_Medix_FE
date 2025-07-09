@@ -19,8 +19,8 @@ const DiseaseRecordRow = ({ record, diseaseMap, onUpdate }) => {
         CANCELLED: { style: 'bg-red-50 text-red-700 border-red-200', icon: <XCircle className="w-4 h-4" />, label: 'Đã hủy' }
       },
       status: {
-        UNDER_TREATMENT: { style: 'bg-amber-50 text-amber-700 border-amber-200', icon: <Clock className="w-4 h-4" />, label: 'Đang điều trị' },
-        RECOVERED: { style: 'bg-green-50 text-green-700 border-green-200', icon: <CheckCircle className="w-4 h-4" />, label: 'Đã khỏi' }
+        UNDER_TREATMENT: { style: 'text-amber-700 border-amber-200', icon: <Clock className="w-4 h-4" />, label: 'Đang điều trị' },
+        RECOVERED: { style: ' text-green-700 border-green-200', icon: <CheckCircle className="w-4 h-4" />, label: 'Đã khỏi' }
       }
     };
     const { style, icon, label } = config[type][value] || { style: 'bg-gray-50 text-gray-700 border-gray-200', icon: <AlertCircle className="w-4 h-4" />, label: 'Không xác định' };
@@ -29,20 +29,42 @@ const DiseaseRecordRow = ({ record, diseaseMap, onUpdate }) => {
 
   const handleAccept = async () => {
     try {
-      await axiosClient.patch(`/disease-record/${record.id}/accept`);
+      const response = await axiosClient.patch(`/disease-record/${record.id}/accept`);
+      console.log('Accept response:', response.status, response.data);
+      if (response.data.error) {
+        throw new Error(response.data.message || 'API returned an error');
+      }
+      setError('');
       onUpdate();
-    } catch {
-      setError('Không thể duyệt đơn');
+    } catch (err) {
+      console.error('Accept error:', {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data,
+        config: err.config
+      });
+      setError('Không thể duyệt đơn: ' + (err.response?.data?.message || err.message || 'Lỗi không xác định'));
     }
   };
 
   const handleRefuse = async reason => {
     try {
-      await axiosClient.patch(`/disease-record/${record.id}/refuse`, { reason_by_nurse: reason });
+      const response = await axiosClient.patch(`/disease-record/${record.id}/refuse`, { reason_by_nurse: reason });
+      console.log('Refuse response:', response.status, response.data);
+      if (response.data.error) {
+        throw new Error(response.data.message || 'API returned an error');
+      }
+      setError('');
       onUpdate();
       setIsRefuseModalOpen(false);
-    } catch {
-      setError('Không thể từ chối đơn');
+    } catch (err) {
+      console.error('Refuse error:', {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data,
+        config: err.config
+      });
+      setError('Không thể từ chối đơn: ' + (err.response?.data?.message || err.message || 'Lỗi không xác định'));
     }
   };
 
@@ -52,11 +74,11 @@ const DiseaseRecordRow = ({ record, diseaseMap, onUpdate }) => {
         <td className="p-4 text-sm text-gray-700">{formatDate(record.created_at)}</td>
         <td className="p-4 text-sm text-gray-800 font-medium">{getStudentDisplay(record.student_id)}</td>
         <td className="p-4 text-sm text-gray-800 font-medium">{diseaseMap[record.disease_id] || 'Không xác định'}</td>
-        <td className="p-4 text-sm text-gray-800 font-medium">{record.diagnosis || 'Chưa có chẩn đoán'}</td>
+        <td className="p-4">{getBadge('status', record.status)}</td>
         <td className="p-4">{getBadge('pending', record.pending)}</td>
         <td className="p-4 text-center">
           <div className="flex items-center gap-2 justify-center">
-            {record.pending === 'PENDING' ? (
+            {record.pending === 'PENDING' && (
               <>
                 <button
                   onClick={handleAccept}
@@ -71,8 +93,6 @@ const DiseaseRecordRow = ({ record, diseaseMap, onUpdate }) => {
                   Từ chối
                 </button>
               </>
-            ) : (
-              getBadge('pending', record.pending)
             )}
             <button
               onClick={() => setExpanded(!expanded)}
