@@ -13,6 +13,7 @@ const AddRecordPage = () => {
     on_site_treatment: '',
     transferred_to: '',
     items_usage: '',
+    status: ''
   });
   const [error, setError] = useState('');
 
@@ -163,6 +164,20 @@ const AddRecordPage = () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
               placeholder="Liệt kê vật tư y tế đã sử dụng"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Tình Trạng</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+              <option value="">Chọn tình trạng</option>
+              <option value="MILD">Nhẹ</option>
+              <option value="SERIOUS">Nghiêm trọng</option>
+            </select>
           </div>
 
           <div className="flex justify-end space-x-4 pt-4">
