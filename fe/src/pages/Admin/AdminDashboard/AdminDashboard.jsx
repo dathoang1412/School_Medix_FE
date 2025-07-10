@@ -11,6 +11,12 @@ import {
   Users, Heart, AlertTriangle, Thermometer, Activity, Shield, TrendingUp, Calendar, Pill
 } from 'lucide-react';
 import PropTypes from 'prop-types';
+import {
+  getStatusColor,
+  getCardBorderColor,
+  getStatusText,
+  formatDate,
+} from "../../../utils/campaignUtils";
 
 const CurrentTimeDisplay = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -69,11 +75,6 @@ const AdminDashboard = () => {
   const [selectedDiseaseId, setSelectedDiseaseId] = useState('');
   const [maxDiseaseCases, setMaxDiseaseCases] = useState(0);
 
-  // Health stats
-  const [healthStats, setHealthStats] = useState([]);
-  const [healthLoading, setHealthLoading] = useState(true);
-  const [healthError, setHealthError] = useState(null);
-
   // Health plans
   const [healthPlanUpcoming, setHealthPlanUpcoming] = useState([]);
   const [plansLoading, setPlansLoading] = useState(true);
@@ -83,7 +84,7 @@ const AdminDashboard = () => {
   const [heightWeightAvg, setHeightWeightAvg] = useState({});
   const [heightWeightLoading, setHeightWeightLoading] = useState(true);
   const [heightWeightError, setHeightWeightError] = useState(null);
-  const [selectedGrade, setSelectedGrade] = useState(null);
+  const [selectedGradeId, setSelectedGradeId] = useState('');
 
   // Fetch summary data
   useEffect(() => {
@@ -145,22 +146,24 @@ const AdminDashboard = () => {
   }, [selectedDiseaseId]);
 
   // Fetch health stats
+  // Fetch height weight data
   useEffect(() => {
-    const fetchHealthStats = async () => {
-      setHealthLoading(true);
-      setHealthError(null);
+    const fetchHeightWeight = async () => {
+      setHeightWeightLoading(true);
+      setHeightWeightError(null);
       try {
-        const response = await axiosClient.get('/dashboard/health-stats');
-        setHealthStats(Array.isArray(response.data) ? response.data : []);
+        const response = await axiosClient.get(`/dashboard/height-weight/${selectedGradeId || ''}`);
+        const data = response.data.data?.data || response.data.data || {};
+        setHeightWeightAvg(data);
       } catch (err) {
-        console.error('Error fetching health stats:', err);
-        setHealthError('Không thể tải dữ liệu tình trạng sức khỏe. Vui lòng thử lại sau.');
+        console.error('Error fetching height weight:', err);
+        setHeightWeightError(err.response?.data?.message || 'Không thể tải dữ liệu chiều cao cân nặng. Vui lòng thử lại sau.');
       } finally {
-        setHealthLoading(false);
+        setHeightWeightLoading(false);
       }
     };
-    fetchHealthStats();
-  }, []);
+    fetchHeightWeight();
+  }, [selectedGradeId]);
 
   // Fetch health plans
   useEffect(() => {
@@ -169,10 +172,10 @@ const AdminDashboard = () => {
       setPlansError(null);
       try {
         const response = await axiosClient.get('/dashboard/upcoming-health-plans');
-        setHealthPlanUpcoming(Array.isArray(response.data) ? response.data : []);
+        setHealthPlanUpcoming(Array.isArray(response.data.data) ? response.data.data : []);
       } catch (err) {
-        console.error('Error fetching health plans:', err);
-        setPlansError('Không thể tải dữ liệu kế hoạch y tế. Vui lòng thử lại sau.');
+        console.error('Error fetching upcoming plans:', err);
+        setPlansError(err.response?.data?.message || 'Không thể tải dữ liệu kế hoạch y tế. Vui lòng thử lại sau.');
       } finally {
         setPlansLoading(false);
       }
@@ -180,35 +183,6 @@ const AdminDashboard = () => {
     fetchHealthPlans();
   }, []);
 
-  // Fetch height weight data
-  useEffect(() => {
-    const fetchHeightWeight = async () => {
-      setHeightWeightLoading(true);
-      setHeightWeightError(null);
-      try {
-        const response = await axiosClient.get(`/dashboard/height-weight?grade=${selectedGrade || ''}`);
-        setHeightWeightAvg(response.data || {});
-      } catch (err) {
-        console.error('Error fetching height weight:', err);
-        setHeightWeightError('Không thể tải dữ liệu chiều cao cân nặng. Vui lòng thử lại sau.');
-      } finally {
-        setHeightWeightLoading(false);
-      }
-    };
-    fetchHeightWeight();
-  }, [selectedGrade]);
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'DRAFTED': return 'bg-gray-100 text-gray-800';
-      case 'PREPARING': return 'bg-yellow-100 text-yellow-800';
-      case 'UPCOMING': return 'bg-orange-100 text-orange-800';
-      case 'ONGOING': return 'bg-blue-100 text-blue-800';
-      case 'COMPLETED': return 'bg-green-100 text-green-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const getAccidentComparison = (recent, previous) => {
     const diff = recent - previous;
@@ -219,6 +193,12 @@ const AdminDashboard = () => {
     } else {
       return 'Không thay đổi so với tuần trước';
     }
+  };
+
+  // Handle navigation for plan items
+  const handlePlanClick = (planID) => {
+    const plan_type = planID !== null ? 'regular-checkup' : 'vaccine-campaign';
+    navigate(plan_type);
   };
 
   return (
@@ -248,12 +228,6 @@ const AdminDashboard = () => {
           ) : summaryError ? (
             <div className="col-span-full bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-600">{summaryError}</p>
-              <button
-                className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                onClick={() => fetchSummary()}
-              >
-                Thử lại
-              </button>
             </div>
           ) : (
             <>
@@ -385,80 +359,133 @@ const AdminDashboard = () => {
         {/* Health Status + Plans */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Health Status */}
-          <ChartCard title="Tình trạng sức khỏe tổng quát" icon={<TrendingUp className="text-blue-500" />}>
-            {healthLoading ? (
-              <div className="h-64 flex items-center justify-center">
+          <ChartCard
+            title={`Tình trạng sức khỏe tổng quát${heightWeightAvg.isAllGrades ? ' (Tất cả khối lớp)' : ''}`}
+            icon={<TrendingUp className="text-blue-500" />}
+            className="min-h-[620px]"
+          >
+            {heightWeightLoading ? (
+              <div className="h-full flex items-center justify-center">
                 <p>Đang tải dữ liệu sức khỏe...</p>
               </div>
-            ) : healthError ? (
-              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
-                <p className="text-red-600">{healthError}</p>
+            ) : heightWeightError ? (
+              <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
+                <p className="text-red-600">{heightWeightError}</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie data={healthStats || []} dataKey="value" innerRadius={60} outerRadius={90}>
-                    {Array.isArray(healthStats) && healthStats.length > 0 ? (
-                      healthStats.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color || '#8884d8'} />
+              <div className="space-y-4">
+                {/* Metric Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
+                    <p className="text-sm text-gray-500">Tham gia khám</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Tỷ lệ: {heightWeightAvg.totalStudents ? ((heightWeightAvg.totalChecked / heightWeightAvg.totalStudents) * 100).toFixed(1) : 0}% 
+                    </p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-pink-500">
+                    <p className="text-sm text-gray-500">Tỷ lệ nam/nữ</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {heightWeightAvg.maleCount || 0} / {heightWeightAvg.femaleCount || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Nam: {heightWeightAvg.totalChecked ? ((heightWeightAvg.maleCount / heightWeightAvg.totalChecked) * 100).toFixed(1) : 0}% 
+                    </p>
+                  </div>
+                </div>
+                {/* Detailed Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-gray-600">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="p-2 text-left">Thông số</th>
+                        <th className="p-2 text-left">Giá trị</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="p-2 border-t">Tên đợt khám</td>
+                        <td className="p-2 border-t">{heightWeightAvg.checkupName || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Ngày khám</td>
+                        <td className="p-2 border-t">{heightWeightAvg.latestCheckupDate || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Chiều cao TB nam</td>
+                        <td className="p-2 border-t">{heightWeightAvg.maleHeightAvg ? `${heightWeightAvg.maleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Cân nặng TB nam</td>
+                        <td className="p-2 border-t">{heightWeightAvg.maleWeightAvg ? `${heightWeightAvg.maleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Chiều cao TB nữ</td>
+                        <td className="p-2 border-t">{heightWeightAvg.femaleHeightAvg ? `${heightWeightAvg.femaleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Cân nặng TB nữ</td>
+                        <td className="p-2 border-t">{heightWeightAvg.femaleWeightAvg ? `${heightWeightAvg.femaleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                {/* Grade Filter */}
+                <div className="mt-4">
+                  <select
+                    className={`rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-full sm:w-48 ${!heightWeightAvg?.grades?.length ? 'text-gray-400' : ''}`}
+                    onChange={(e) => setSelectedGradeId(e.target.value)}
+                    value={selectedGradeId || ''}
+                  >
+                    <option value="">Tất cả khối lớp</option>
+                    {heightWeightAvg?.grades?.length > 0 ? (
+                      heightWeightAvg.grades.map(g => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
                       ))
                     ) : (
-                      <Cell fill="#8884d8" />
-                    )}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-            
-            {/* Height Weight Info */}
-            <div className="mt-4 text-sm text-gray-600">
-              {heightWeightLoading ? (
-                <p>Đang tải dữ liệu chiều cao cân nặng...</p>
-              ) : heightWeightError ? (
-                <p className="text-red-600">{heightWeightError}</p>
-              ) : (
-                <>
-                  <p>Chiều cao trung bình: {heightWeightAvg?.heightAvg || 'N/A'} cm</p>
-                  <p>Cân nặng trung bình: {heightWeightAvg?.weightAvg || 'N/A'} kg</p>
-                  <p>Đợt khám gần nhất: {heightWeightAvg?.latestCheckupDate || 'N/A'}</p>
-                  <p>Đã khám {heightWeightAvg?.checked || 0} / {heightWeightAvg?.total || 0} học sinh</p>
-                  <select className="mt-2 border rounded px-2 py-1" onChange={(e) => setSelectedGrade(e.target.value)}>
-                    <option value="">Chọn khối</option>
-                    {heightWeightAvg?.grades?.length > 0 ? (
-                      heightWeightAvg.grades.map(g => <option key={g} value={g}>{g}</option>)
-                    ) : (
-                      <option value="">Không có dữ liệu</option>
+                      <option value="" disabled>Không có khối lớp</option>
                     )}
                   </select>
-                </>
-              )}
-            </div>
+                </div>
+              </div>
+            )}
           </ChartCard>
 
           {/* Health Plans */}
           <div className="lg:col-span-2">
-            <ChartCard title="Kế hoạch y tế nhà trường" icon={<Calendar className="text-purple-500" />}>
+            <ChartCard
+              title="Kế hoạch y tế sắp tới"
+              icon={<Calendar className="text-purple-500" />}
+              className="min-h-[620px]"
+            >
               {plansLoading ? (
-                <div className="h-64 flex items-center justify-center">
+                <div className="h-full flex items-center justify-center">
                   <p>Đang tải dữ liệu kế hoạch...</p>
                 </div>
               ) : plansError ? (
-                <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
+                <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
                   <p className="text-red-600">{plansError}</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar">
                   {healthPlanUpcoming.length > 0 ? (
                     healthPlanUpcoming.map((plan) => (
-                      <div key={plan.id} className="flex justify-between border p-3 rounded-md">
+                      <div
+                        key={plan.id}
+                        className="flex justify-between border p-3 rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => handlePlanClick(plan.checkup_id)}
+                      >
                         <div>
                           <h4 className="font-semibold">{plan.name}</h4>
                           <p className="text-sm text-gray-500">{plan.date}</p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status)}`}>
-                          {plan.status}
-                        </span>
+                        <div className="flex items-center">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status)}`}>
+                            {getStatusText(plan.status)}
+                          </span>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -495,13 +522,13 @@ const SummaryCard = ({ icon, label, value, color, navigateTo, children }) => {
   return (
     <div
       className={`bg-white p-5 rounded-xl shadow border-l-4 ${classes} cursor-pointer hover:shadow-lg transition-shadow duration-200`}
-      onClick={() => navigateTo && navigate(navigateTo)} // Điều hướng khi click vào card
+      onClick={() => navigateTo && navigate(navigateTo)}
     >
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-500">{label}</p>
           <p className="text-2xl font-bold text-gray-800">{value}</p>
-          {children} {/* Hiển thị nội dung tùy chỉnh, như button */}
+          {children}
         </div>
         <div className={classes}>{icon}</div>
       </div>
@@ -518,8 +545,8 @@ SummaryCard.propTypes = {
   children: PropTypes.node,
 };
 
-const ChartCard = ({ title, icon, select, children }) => (
-  <div className="bg-white p-6 rounded-xl shadow">
+const ChartCard = ({ title, icon, select, children, className }) => (
+  <div className={`bg-white p-6 rounded-xl shadow ${className}`}>
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center">
         {icon}
@@ -534,7 +561,33 @@ const ChartCard = ({ title, icon, select, children }) => (
 ChartCard.propTypes = {
   title: PropTypes.string.isRequired,
   icon: PropTypes.element.isRequired,
+  select: PropTypes.element,
   children: PropTypes.node.isRequired,
+  className: PropTypes.string
 };
+
+// Custom scrollbar styles
+const styles = `
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+`;
+
+// Inject custom scrollbar styles
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);
 
 export default AdminDashboard;

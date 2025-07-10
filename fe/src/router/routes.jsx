@@ -52,6 +52,7 @@ import HealthDashboard from "../pages/Parent/RegularCheckup/HealthDashboard";
 import CheckupHistoryInfo from "../pages/Parent/RegularCheckup/CheckupHistoryInfo";
 import ParentCheckupLayout from "../pages/Parent/RegularCheckup/ParentCheckupLayout";
 import StudentOverview from "../pages/Student/StudentOverview";
+import UpdateVaccineCampaign from "../pages/Admin/VaccineCampaign/UpdateVaccineCampaign";
 
 const routes = createBrowserRouter([
   {
@@ -210,6 +211,14 @@ const routes = createBrowserRouter([
           {
             path: "student-overview/:student_id",
             element: <StudentOverview />,
+          },
+          {
+            path: "vaccination-report/:campaign_id",
+            element: <VaccineCampaignReport />,
+          },
+          {
+            path: "vaccine-campaign/:campaign_id/edit",
+            element: <UpdateVaccineCampaign/>
           }
         ],
       },

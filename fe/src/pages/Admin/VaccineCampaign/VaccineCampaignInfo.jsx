@@ -98,7 +98,7 @@ const VaccineCampaignInfo = ({ details, setDetails }) => {
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
           disabled: false,
-          onClick: () => navigate(`/nurse/vaccination-report/${campaignId}`),
+          onClick: () => navigate(`/nurse/completed-vaccine-campaign-report/${campaignId}`),
         };
       }
       if (status === "ONGOING") {
@@ -148,7 +148,7 @@ const VaccineCampaignInfo = ({ details, setDetails }) => {
           action: "view-report",
           className: "bg-blue-600 hover:bg-blue-700 text-white",
           disabled: false,
-          onClick: () => navigate(`/admin/vaccination-report/${campaignId}`),
+          onClick: () => navigate(`/admin/completed-vaccine-campaign-report/${campaignId}`),
         };
       case "CANCELLED":
         return {
