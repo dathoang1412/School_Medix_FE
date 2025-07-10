@@ -296,94 +296,8 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Accident Chart */}
-          <ChartCard title="Tần suất tai nạn y tế" icon={<Activity className="text-black-500" />}>
-            {accidentLoading ? (
-              <div className="h-64 flex items-center justify-center">
-                <p>Đang tải dữ liệu tai nạn...</p>
-              </div>
-            ) : accidentError ? (
-              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
-                <p className="text-red-600">{accidentError}</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={accidentStats}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis
-                    domain={[0, Math.max(4, maxAccidentCases)]} // Minimum upper bound of 5, or maxCases if higher
-                    tickCount={Math.max(6, maxAccidentCases + 1)} // Ensure enough ticks for integers
-                    interval={0} // Show all ticks
-                    allowDecimals={false} // Integer ticks
-                    type="number"
-                    label={{ value: 'Số ca bệnh', angle: -90, position: 'insideLeft' }}
-                  />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="minor" stackId="a" fill="#facc15" name="Tai nạn nhẹ" />
-                  <Bar dataKey="serious" stackId="a" fill="#ef4444" name="Tai nạn nặng" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
-
-          {/* Disease Chart */}
-          <ChartCard
-            title="Thống kê dịch bệnh theo năm"
-            icon={<Shield className="text-black-500" />}
-            select={(
-              <select
-                id="diseaseSelect"
-                value={selectedDiseaseId}
-                onChange={(e) => setSelectedDiseaseId(e.target.value)}
-                className="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-48"
-              >
-                <option value="">Tất cả các bệnh</option>
-                {availableDiseases.map(disease => (
-                  <option key={disease.id} value={disease.id}>
-                    {disease.name}
-                  </option>
-                ))}
-              </select>
-            )}
-          >
-            {diseaseLoading ? (
-              <div className="h-64 flex items-center justify-center">
-                <p>Đang tải dữ liệu dịch bệnh...</p>
-              </div>
-            ) : diseaseError ? (
-              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
-                <p className="text-red-600">{diseaseError}</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={diseaseStats}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                  />
-                  <YAxis
-                    domain={[0, Math.max(5, maxDiseaseCases)]}
-                    tickCount={Math.max(6, maxDiseaseCases + 1)}
-                    interval={0}
-                    allowDecimals={false}
-                    type="number"
-                    label={{ value: 'Số ca bệnh', angle: -90, position: 'insideLeft' }}
-                  />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="cases" stroke="#3b82f6" strokeWidth={2} name="Ca bệnh" />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
-        </div>
-
         {/* Health Status + Plans */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
           {/* Health Plans */}
           <div className="lg:col-span-2">
@@ -579,6 +493,92 @@ const AdminDashboard = () => {
                   </select>
                 </div>
               </div>
+            )}
+          </ChartCard>
+        </div>
+
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Accident Chart */}
+          <ChartCard title="Tần suất tai nạn y tế" icon={<Activity className="text-black-500" />}>
+            {accidentLoading ? (
+              <div className="h-64 flex items-center justify-center">
+                <p>Đang tải dữ liệu tai nạn...</p>
+              </div>
+            ) : accidentError ? (
+              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
+                <p className="text-red-600">{accidentError}</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={accidentStats}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis
+                    domain={[0, Math.max(4, maxAccidentCases)]} // Minimum upper bound of 5, or maxCases if higher
+                    tickCount={Math.max(6, maxAccidentCases + 1)} // Ensure enough ticks for integers
+                    interval={0} // Show all ticks
+                    allowDecimals={false} // Integer ticks
+                    type="number"
+                    label={{ value: 'Số ca bệnh', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="minor" stackId="a" fill="#facc15" name="Tai nạn nhẹ" />
+                  <Bar dataKey="serious" stackId="a" fill="#ef4444" name="Tai nạn nặng" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+
+          {/* Disease Chart */}
+          <ChartCard
+            title="Thống kê dịch bệnh theo năm"
+            icon={<Shield className="text-black-500" />}
+            select={(
+              <select
+                id="diseaseSelect"
+                value={selectedDiseaseId}
+                onChange={(e) => setSelectedDiseaseId(e.target.value)}
+                className="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-48"
+              >
+                <option value="">Tất cả các bệnh</option>
+                {availableDiseases.map(disease => (
+                  <option key={disease.id} value={disease.id}>
+                    {disease.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          >
+            {diseaseLoading ? (
+              <div className="h-64 flex items-center justify-center">
+                <p>Đang tải dữ liệu dịch bệnh...</p>
+              </div>
+            ) : diseaseError ? (
+              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
+                <p className="text-red-600">{diseaseError}</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={diseaseStats}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                  />
+                  <YAxis
+                    domain={[0, Math.max(5, maxDiseaseCases)]}
+                    tickCount={Math.max(6, maxDiseaseCases + 1)}
+                    interval={0}
+                    allowDecimals={false}
+                    type="number"
+                    label={{ value: 'Số ca bệnh', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="cases" stroke="#3b82f6" strokeWidth={2} name="Ca bệnh" />
+                </LineChart>
+              </ResponsiveContainer>
             )}
           </ChartCard>
         </div>
