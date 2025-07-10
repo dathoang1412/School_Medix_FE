@@ -8,7 +8,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import {
-  Users, Heart, AlertTriangle, Thermometer, Activity, Shield, TrendingUp, Calendar, Pill
+  Users, Heart, AlertTriangle, Thermometer, Activity, Shield, TrendingUp, Calendar, Pill, Syringe, Stethoscope
 } from 'lucide-react';
 import PropTypes from 'prop-types';
 import {
@@ -28,7 +28,7 @@ const CurrentTimeDisplay = () => {
 
   return (
     <div className="text-right">
-      <div className="text-2xl font-bold text-indigo-600">
+      <div className="text-2xl font-bold text-black-600">
         {currentTime.toLocaleTimeString('vi-VN')}
       </div>
       <div className="text-gray-600">
@@ -79,6 +79,10 @@ const AdminDashboard = () => {
   const [healthPlanUpcoming, setHealthPlanUpcoming] = useState([]);
   const [plansLoading, setPlansLoading] = useState(true);
   const [plansError, setPlansError] = useState(null);
+  const [planStats, setPlanStats] = useState({
+    vaccineCount: 0,
+    regularCount: 0,
+  });
 
   // Height weight data
   const [heightWeightAvg, setHeightWeightAvg] = useState({});
@@ -172,7 +176,28 @@ const AdminDashboard = () => {
       setPlansError(null);
       try {
         const response = await axiosClient.get('/dashboard/upcoming-health-plans');
-        setHealthPlanUpcoming(Array.isArray(response.data.data) ? response.data.data : []);
+        const plans = Array.isArray(response.data.data) ? response.data.data : [];
+        setHealthPlanUpcoming(plans);
+
+        // Tính số kế hoạch trong 30 ngày tới
+        const today = new Date();
+        const thirtyDaysFromNow = new Date(today);
+        thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+        const vaccineCount = plans.filter(
+          (plan) =>
+            plan.type === 'vaccine' &&
+            new Date(plan.date) >= today &&
+            new Date(plan.date) <= thirtyDaysFromNow
+        ).length;
+        const regularCount = plans.filter(
+          (plan) =>
+            plan.type === 'regular' &&
+            new Date(plan.date) >= today &&
+            new Date(plan.date) <= thirtyDaysFromNow
+        ).length;
+
+        setPlanStats({ vaccineCount, regularCount });
       } catch (err) {
         console.error('Error fetching upcoming plans:', err);
         setPlansError(err.response?.data?.message || 'Không thể tải dữ liệu kế hoạch y tế. Vui lòng thử lại sau.');
@@ -244,7 +269,7 @@ const AdminDashboard = () => {
                 icon={<AlertTriangle />}
                 label="Tai nạn tuần này"
                 value={summary.recentAccidents}
-                color="purple"
+                color="orange"
                 navigateTo="/admin/daily-health"
               >
                 {getAccidentComparison(summary.recentAccidents, summary.previousAccidents)}
@@ -274,7 +299,7 @@ const AdminDashboard = () => {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Accident Chart */}
-          <ChartCard title="Tần suất tai nạn y tế" icon={<Activity className="text-red-500" />}>
+          <ChartCard title="Tần suất tai nạn y tế" icon={<Activity className="text-black-500" />}>
             {accidentLoading ? (
               <div className="h-64 flex items-center justify-center">
                 <p>Đang tải dữ liệu tai nạn...</p>
@@ -308,7 +333,7 @@ const AdminDashboard = () => {
           {/* Disease Chart */}
           <ChartCard
             title="Thống kê dịch bệnh theo năm"
-            icon={<Shield className="text-green-500" />}
+            icon={<Shield className="text-black-500" />}
             select={(
               <select
                 id="diseaseSelect"
@@ -362,7 +387,7 @@ const AdminDashboard = () => {
           {/* Health Status */}
           <ChartCard
             title={`Tình trạng sức khỏe tổng quát${heightWeightAvg.isAllGrades ? ' (Tất cả khối lớp)' : ''}`}
-            icon={<TrendingUp className="text-blue-500" />}
+            icon={<TrendingUp className="text-black-500" />}
             className="min-h-[620px]"
           >
             {heightWeightLoading ? (
@@ -398,7 +423,7 @@ const AdminDashboard = () => {
                 </div>
                 {/* Detailed Table */}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-gray-600">
+                  <table className="w-full text-sm text-black-600">
                     <thead>
                       <tr className="bg-gray-100">
                         <th className="p-2 text-left">Thông số</th>
@@ -458,9 +483,8 @@ const AdminDashboard = () => {
           <div className="lg:col-span-2">
             <ChartCard
               title="Kế hoạch y tế nhà trường"
-              icon={<Calendar className="text-purple-500" />}
+              icon={<Calendar className="text-black-500" />}
               className="min-h-[620px]"
-              
             >
               {plansLoading ? (
                 <div className="h-full flex items-center justify-center">
@@ -471,28 +495,61 @@ const AdminDashboard = () => {
                   <p className="text-red-600">{plansError}</p>
                 </div>
               ) : (
-                <div className="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar">
-                  {healthPlanUpcoming.length > 0 ? (
-                    healthPlanUpcoming.map((plan) => (
-                      <div
-                        key={plan.id}
-                        className="flex justify-between border p-3 rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
-                        onClick={() => handlePlanClick(plan.checkup_id)}
-                      >
-                        <div>
-                          <h4 className="font-semibold">{plan.name}</h4>
-                          <p className="text-sm text-gray-500">{plan.date}</p>
+                <div className="space-y-3">
+                  {/* Thống kê kế hoạch */}
+                  <div className="bg-gray-100 p-3 rounded-md flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700">
+                        Kế hoạch trong 30 ngày tới
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Vaccine: {planStats.vaccineCount} | Khám định kỳ: {planStats.regularCount}
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <Stethoscope className="w-4 h-4 mr-1" />
+                        Khám định kỳ
+                      </span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
+                        <Syringe className="w-4 h-4 mr-1" />
+                        Vaccine
+                      </span>
+                    </div>
+                  </div>
+                  {/* Danh sách kế hoạch */}
+                  <div className="max-h-[540px] overflow-y-auto custom-scrollbar">
+                    {healthPlanUpcoming.length > 0 ? (
+                      healthPlanUpcoming.map((plan) => (
+                        <div
+                          key={plan.id}
+                          className={`flex justify-between border-b p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
+                            plan.checkup_id !== null ? 'border-gray-500' : 'border-gray-500'
+                          }`}
+                          onClick={() => handlePlanClick(plan.checkup_id)}
+                        >
+                          <div className="flex items-center">
+                            {plan.checkup_id !== null ? (
+                              <Stethoscope className="w-5 h-5 text-blue-500 mr-2" />
+                            ) : (
+                              <Syringe className="w-5 h-5 text-pink-500 mr-2" />
+                            )}
+                            <div>
+                              <h4 className="font-semibold">{plan.name}</h4>
+                              <p className="text-sm text-gray-500">{formatDate(plan.date)}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status)}`}>
+                              {getStatusText(plan.status)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status)}`}>
-                            {getStatusText(plan.status)}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-center py-8">Không có kế hoạch y tế nào</p>
-                  )}
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-center py-8">Không có kế hoạch y tế nào</p>
+                    )}
+                  </div>
                 </div>
               )}
             </ChartCard>
@@ -515,11 +572,12 @@ const colorMap = {
   purple: 'border-purple-500 text-purple-500',
   red: 'border-red-500 text-red-500',
   indigo: 'border-indigo-500 text-indigo-500',
+  orange: 'border-orange-500 text-orange-500'
 };
 
 const SummaryCard = ({ icon, label, value, color, navigateTo, children }) => {
   const navigate = useNavigate();
-  const classes = colorMap[color] || 'border-gray-500 text-gray-500';
+  const classes = colorMap[color] || 'border-gray-500 text-black-500';
 
   return (
     <div
