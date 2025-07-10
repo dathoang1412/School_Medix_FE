@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2 } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
-import { ChildContext } from '../../../layouts/ParentLayout';
+import { getStudentInfo } from '../../../service/childenService';
 
 const HealthRecord = () => {
-  const { handleSelectChild, children } = useContext(ChildContext);
+  const { student_id } = useParams();
   const [records, setRecords] = useState([]);
   const [filteredRecords, setFilteredRecords] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -13,16 +14,8 @@ const HealthRecord = () => {
   const [dateFilter, setDateFilter] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'detect_time', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [student, setStudent] = useState(null);
   const recordsPerPage = 10;
-  const [currChild, setCurrChild] = useState(null);
-
-  useEffect(() => {
-    const selectedChild = children.find((c) => c.id === JSON.parse(localStorage.getItem("selectedChild"))?.id) || JSON.parse(localStorage.getItem("selectedChild"));
-    if (selectedChild) {
-      setCurrChild(selectedChild);
-      handleSelectChild(selectedChild);
-    }
-  }, [children, handleSelectChild]);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa xác định';
@@ -53,31 +46,51 @@ const HealthRecord = () => {
     return date.toDateString() === today.toDateString();
   };
 
-  const fetchRecords = async () => {
-    if (!currChild) return;
-    setLoading(true);
-    try {
-      const response = await axiosClient.get(`/${currChild.id}/daily-health-record`);
-      const fetchedRecords = response.data;
-      if (!fetchedRecords.error && fetchedRecords.data) {
-        setRecords(fetchedRecords.data);
-        setFilteredRecords(fetchedRecords.data);
-      } else {
-        setError(fetchedRecords.message || 'Không thể tải hồ sơ y tế');
-      }
-    } catch (error) {
-      setError('Không thể tải hồ sơ y tế');
-      console.error('Error fetching health records:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (currChild) {
-      fetchRecords();
-    }
-  }, [currChild]);
+    const fetchData = async () => {
+      setLoading(true);
+      setError('');
+
+      // Fetch student data
+      try {
+        if (!student_id) {
+          setError('Không tìm thấy ID học sinh.');
+          setLoading(false);
+          return;
+        }
+
+        const studentData = await getStudentInfo(student_id);
+        if (!studentData) {
+          setError('Không thể tải thông tin học sinh. Vui lòng thử lại.');
+          setLoading(false);
+          return;
+        }
+        setStudent(studentData);
+      } catch (error) {
+        console.error('Error fetching student:', error);
+        setError('Không thể tải thông tin học sinh. Vui lòng thử lại.');
+      }
+
+      // Fetch health records
+      try {
+        const response = await axiosClient.get(`/${student_id}/daily-health-record`);
+        console.log("Daily health record: ", response.data.data);
+        const fetchedRecords = response.data;
+        if (!fetchedRecords.error && fetchedRecords.data) {
+          setRecords(fetchedRecords.data);
+          setFilteredRecords(fetchedRecords.data);
+        } else {
+          setError(fetchedRecords.message || 'Không thể tải hồ sơ y tế');
+        }
+      } catch (error) {
+        setError('Không thể tải hồ sơ y tế');
+        console.error('Error fetching health records:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [student_id]);
 
   useEffect(() => {
     let filtered = records.filter((record) => {
@@ -171,9 +184,9 @@ const HealthRecord = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Sức khỏe hằng ngày</h1>
               <p className="text-gray-600">Theo dõi tình hình sức khỏe của con em tại trường</p>
-              {currChild && (
+              {student && (
                 <p className="text-sm font-medium text-gray-700 mt-2">
-                  Học sinh: {getStudentDisplay(currChild.id)}
+                  Học sinh: {student.name || getStudentDisplay(student.id)}
                 </p>
               )}
             </div>
@@ -340,7 +353,7 @@ const HealthRecord = () => {
                                     Thông tin cơ bản
                                   </h4>
                                   <div className="space-y-2 text-sm text-gray-700">
-                                    <p><span className="font-medium text-gray-600">Mã học sinh:</span> {getStudentDisplay(record.student_id)}</p>
+                                    <p><span className="font-medium text-gray-600">Mã học sinh:</span> {student?.name || getStudentDisplay(record.student_id)}</p>
                                     <p><span className="font-medium text-gray-600">Ngày phát hiện:</span> {formatDate(record.detect_time)}</p>
                                     <p><span className="font-medium text-gray-600">Ngày ghi nhận:</span> {formatDate(record.record_date)}</p>
                                   </div>

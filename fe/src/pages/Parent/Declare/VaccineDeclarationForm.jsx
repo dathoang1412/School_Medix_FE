@@ -1,11 +1,11 @@
-import { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../../config/axiosClient";
-import { getUser } from "../../../service/authService";
-import { ChildContext } from "../../../layouts/ParentLayout";
+import { getStudentInfo } from "../../../service/childenService";
+import { enqueueSnackbar } from "notistack";
 
 const VaccineDeclarationForm = () => {
-  const { selectedChild } = useContext(ChildContext);
+  const { student_id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     student_id: "",
@@ -19,35 +19,41 @@ const VaccineDeclarationForm = () => {
   });
   const [vaccines, setVaccines] = useState([]);
   const [diseases, setDiseases] = useState([]);
+  const [student, setStudent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false); // New state for success message
 
-  // Fetch user and selected child data
+  // Fetch student and vaccines data
   useEffect(() => {
     const fetchData = async () => {
-      const user = getUser();
-      if (!user?.id) {
-        setError("Vui lòng đăng nhập để gửi khai báo tiêm chủng.");
-        return;
+      setIsLoading(true);
+      setError(null);
+
+      // Fetch student data
+      try {
+        if (!student_id) {
+          setError("Không tìm thấy ID học sinh.");
+          setIsLoading(false);
+          return;
+        }
+
+        const studentData = await getStudentInfo(student_id);
+        if (!studentData) {
+          setError("Không thể tải thông tin học sinh. Vui lòng thử lại.");
+          setIsLoading(false);
+          return;
+        }
+        setStudent(studentData);
+        setFormData((prev) => ({
+          ...prev,
+          student_id: studentData.id || "",
+        }));
+      } catch (error) {
+        console.error("Error fetching student:", error);
+        setError("Không thể tải thông tin học sinh. Vui lòng thử lại.");
       }
 
-      if (!selectedChild) {
-        setError("Vui lòng chọn một đứa trẻ để gửi khai báo.");
-        return;
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        student_id: selectedChild.id || "",
-      }));
-    };
-    fetchData();
-  }, [selectedChild]);
-
-  // Fetch vaccines
-  useEffect(() => {
-    const fetchVaccines = async () => {
+      // Fetch vaccines
       try {
         const response = await axiosClient.get("/vaccines");
         console.log("Vaccines response:", response.data);
@@ -58,10 +64,12 @@ const VaccineDeclarationForm = () => {
       } catch (error) {
         console.error("Error fetching vaccines:", error);
         setError("Không thể tải danh sách vaccine. Vui lòng thử lại sau.");
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchVaccines();
-  }, []);
+    fetchData();
+  }, [student_id]);
 
   // Fetch diseases when vaccine_id changes
   useEffect(() => {
@@ -69,7 +77,9 @@ const VaccineDeclarationForm = () => {
       if (formData.vaccine_id && !isNaN(formData.vaccine_id)) {
         console.log("Fetching diseases for vaccine_id:", formData.vaccine_id);
         try {
-          const response = await axiosClient.get(`/vaccines/${formData.vaccine_id}/diseases`);
+          const response = await axiosClient.get(
+            `/vaccines/${formData.vaccine_id}/diseases`
+          );
           console.log("Diseases response:", response.data);
           if (response.data.error) {
             throw new Error(response.data.message);
@@ -100,9 +110,7 @@ const VaccineDeclarationForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
-    setSuccess(false); // Reset success state
-    console.log("FORM DATA: ", formData); 
+    console.log("FORM DATA: ", formData);
 
     // Validate required fields
     if (
@@ -110,7 +118,10 @@ const VaccineDeclarationForm = () => {
       !formData.vaccination_date ||
       !formData.vaccine_id
     ) {
-      setError("Vui lòng nhập đầy đủ các trường bắt buộc (trừ bệnh nếu không có).");
+      enqueueSnackbar(
+        "Vui lòng nhập đầy đủ các trường bắt buộc (trừ bệnh nếu không có).",
+        { variant: "warning" }
+      );
       setIsLoading(false);
       return;
     }
@@ -119,7 +130,9 @@ const VaccineDeclarationForm = () => {
       student_id: formData.student_id,
       register_id: formData.register_id,
       description: formData.description || null,
-      disease_id: formData.disease_id ? parseInt(formData.disease_id, 10) : null,
+      disease_id: formData.disease_id
+        ? parseInt(formData.disease_id, 10)
+        : null,
       vaccine_id: parseInt(formData.vaccine_id, 10),
       location: formData.location || null,
       vaccination_date: formData.vaccination_date,
@@ -130,18 +143,24 @@ const VaccineDeclarationForm = () => {
     console.log("Submitting data:", dataToSend);
 
     try {
-      const response = await axiosClient.post("/vaccination-record", dataToSend);
+      const response = await axiosClient.post(
+        "/vaccination-record",
+        dataToSend
+      );
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      setSuccess(true); // Set success state to show message
+      enqueueSnackbar("Khai báo tiêm chủng thành công.", {
+        variant: "success",
+      });
       navigate(`/parent/edit/${formData.student_id}/vaccine-declare`);
     } catch (error) {
       console.error("Error submitting vaccination record:", error);
-      setError(
+      enqueueSnackbar(
         error.response?.data?.message ||
           error.message ||
-          "Không thể gửi khai báo. Vui lòng thử lại sau."
+          "Không thể gửi khai báo. Vui lòng thử lại sau.",
+        { variant: "error" }
       );
     } finally {
       setIsLoading(false);
@@ -187,7 +206,7 @@ const VaccineDeclarationForm = () => {
                   </label>
                   <input
                     type="text"
-                    value={selectedChild?.name || ""}
+                    value={student?.name || ""}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700"
                     disabled
                   />
@@ -225,7 +244,10 @@ const VaccineDeclarationForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bệnh {diseases.length > 0 && <span className="text-red-500">*</span>}
+                    Bệnh{" "}
+                    {diseases.length > 0 && (
+                      <span className="text-red-500">*</span>
+                    )}
                   </label>
                   <select
                     name="disease_id"
@@ -311,11 +333,6 @@ const VaccineDeclarationForm = () => {
 
             {/* Action Buttons and Success Message */}
             <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
-              {success && (
-                <p className="text-sm font-medium text-green-600 flex items-center">
-                  <span className="mr-1">✔</span> ĐÃ KHAI BÁO TIÊM CHỦNG CHO HỌC SINH THÀNH CÔNG
-                </p>
-              )}
               <button
                 type="submit"
                 disabled={isLoading}

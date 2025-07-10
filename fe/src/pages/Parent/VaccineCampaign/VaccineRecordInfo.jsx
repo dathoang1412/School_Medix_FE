@@ -1,21 +1,75 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; // Added React import
+import { useParams, useNavigate } from "react-router-dom";
 import { Syringe, Loader2, AlertCircle, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
+import { getStudentInfo } from "../../../service/childenService";
+import { getSession } from "../../../config/Supabase";
+import { useSnackbar } from "notistack";
 import VaccineDetailsDropdown from "./VaccineDetailsDropdown";
 
-const VaccineRecordInfo = ({ records, currChild }) => {
+const VaccineRecordInfo = () => {
+  const [records, setRecords] = useState([]);
   const [details, setDetails] = useState({});
   const [openDropdown, setOpenDropdown] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState({});
   const [filterMode, setFilterMode] = useState("all"); // "all", "notEnough", "enough"
+  const [currChild, setCurrChild] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { student_id } = useParams();
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
+  // Check authentication
   useEffect(() => {
-    if (!currChild?.id) {
-      console.log("Không tìm thấy thông tin học sinh");
-      return;
-    }
-  }, [currChild?.id]);
+    const checkAuth = async () => {
+      setLoading(true);
+      const { data, error } = await getSession();
+      if (error || !data.session) {
+        enqueueSnackbar("Vui lòng đăng nhập để tiếp tục!", {
+          variant: "error",
+        });
+        navigate("/login");
+        return;
+      }
+      setIsAuthenticated(true);
+    };
+    checkAuth();
+  }, [navigate, enqueueSnackbar]);
 
+  // Fetch student info and completed doses
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isAuthenticated || !student_id) return;
+
+      setLoading(true);
+      try {
+        // Fetch student info
+        const child = await getStudentInfo(student_id);
+        if (!child?.id) {
+          throw new Error("Không tìm thấy thông tin học sinh");
+        }
+        setCurrChild(child);
+
+        // Fetch completed doses
+        const dosesRes = await axiosClient.get(`/student/${child.id}/completed-doses`);
+        const dosesData = dosesRes.data.diseases || [];
+        setRecords(dosesData);
+        setError(null);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+        enqueueSnackbar("Không thể tải dữ liệu!", { variant: "error" });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [isAuthenticated, student_id, enqueueSnackbar]);
+
+  // Fetch vaccination details for a specific disease
   const fetchDetails = async (diseaseId) => {
     if (!details[diseaseId]) {
       try {
@@ -25,6 +79,7 @@ const VaccineRecordInfo = ({ records, currChild }) => {
         setDetails((prev) => ({ ...prev, [diseaseId]: allRecords }));
       } catch (error) {
         console.error("Error fetching vaccination details:", error);
+        enqueueSnackbar("Không thể tải chi tiết tiêm chủng!", { variant: "error" });
       } finally {
         setLoadingDetails((prev) => ({ ...prev, [diseaseId]: false }));
       }
@@ -43,11 +98,13 @@ const VaccineRecordInfo = ({ records, currChild }) => {
     }
   };
 
-  // Lọc danh sách dựa trên filterMode
+  // Filter records based on filterMode
   const filteredRecords = (() => {
     switch (filterMode) {
       case "notEnough":
-        return records.filter((record) => record.completed_doses > 0 && record.completed_doses < record.dose_quantity);
+        return records.filter(
+          (record) => record.completed_doses > 0 && record.completed_doses < record.dose_quantity
+        );
       case "enough":
         return records.filter((record) => +record.completed_doses === record.dose_quantity);
       default:
@@ -55,20 +112,48 @@ const VaccineRecordInfo = ({ records, currChild }) => {
     }
   })();
 
-  if (!records) {
+  if (!isAuthenticated) {
     return (
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Đang kiểm tra đăng nhập...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Lỗi</h3>
-          <p className="text-red-600 mb-4">Không có dữ liệu lịch sử tiêm chủng</p>
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Lỗi tải dữ liệu</h3>
+          <p className="text-red-700 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Thử lại
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-8 flex flex-col items-center text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
           <Syringe className="w-8 h-8 text-blue-600" />
@@ -76,12 +161,12 @@ const VaccineRecordInfo = ({ records, currChild }) => {
         </h1>
         <p className="text-gray-600 py-2">
           Thông tin lịch sử tiêm chủng của{" "}
-          <span className="font-semibold">Mai Triệu Phú</span>
+          <span className="font-semibold">{currChild?.name || "Học sinh"}</span>
         </p>
-        <div className="mt-4">
+        <div className="mt-4 flex gap-2">
           <button
             onClick={() => setFilterMode(filterMode === "all" ? "notEnough" : "all")}
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors mr-2"
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Filter className="w-4 h-4" />
             {filterMode === "all" ? "Chưa đủ mũi" : "Hiển thị tất cả"}
@@ -123,10 +208,12 @@ const VaccineRecordInfo = ({ records, currChild }) => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredRecords.map((record, index) => (
-                  <>
-                    <tr key={record.disease_id} className="hover:bg-gray-50">
+                  <React.Fragment key={record.disease_id}>
+                    <tr className="hover:bg-gray-50">
                       <td className="px-4 py-4 text-center text-sm text-gray-600">{index + 1}</td>
-                      <td className="px-4 py-4 text-center text-sm text-gray-600">{currChild.id}</td>
+                      <td className="px-4 py-4 text-center text-sm text-gray-600">
+                        HS{String(currChild?.id || "").padStart(6, "0")}
+                      </td>
                       <td className="px-4 py-4 text-center text-sm text-gray-600">{record.disease_name}</td>
                       <td className="px-4 py-4 text-center text-sm text-gray-600">{record.completed_doses}</td>
                       <td className="px-4 py-4 text-center text-sm text-gray-600">{record.dose_quantity}</td>
@@ -172,7 +259,7 @@ const VaccineRecordInfo = ({ records, currChild }) => {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>

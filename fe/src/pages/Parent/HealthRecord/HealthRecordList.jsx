@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2 } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
-import { ChildContext } from '../../../layouts/ParentLayout';
+import { useParams } from 'react-router-dom';
+import { getStudentInfo } from '../../../service/childenService';
 
 const HealthRecordList = () => {
-  const { handleSelectChild, children } = useContext(ChildContext);
   const [recs, setRecs] = useState([]);
   const [filtRecs, setFiltRecs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -15,6 +15,7 @@ const HealthRecordList = () => {
   const [page, setPage] = useState(1);
   const recsPerPage = 10;
   const [child, setChild] = useState(null);
+  const { student_id } = useParams();
 
   const fmtDate = (d, forInput = false) => {
     if (!d) return forInput ? '' : 'Chưa xác định';
@@ -29,12 +30,14 @@ const HealthRecordList = () => {
   const isToday = (d) => d ? new Date(d).toDateString() === new Date().toDateString() : false;
 
   useEffect(() => {
-    const selChild = children.find(c => c.id === JSON.parse(localStorage.getItem("selectedChild"))?.id) || JSON.parse(localStorage.getItem("selectedChild"));
-    if (selChild) {
-      setChild(selChild);
-      handleSelectChild(selChild);
+    const fc = async () => {
+      const selChild = await getStudentInfo(student_id);
+      if (selChild) {
+        setChild(selChild);
+      }
     }
-  }, [children, handleSelectChild]);
+    fc();
+  }, [student_id]);
 
   useEffect(() => {
     if (!child) return;

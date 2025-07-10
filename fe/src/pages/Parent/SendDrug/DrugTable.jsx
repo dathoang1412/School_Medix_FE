@@ -12,8 +12,8 @@ import {
   Plus,
 } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
-import { getUser } from "../../../service/authService";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getStudentInfo } from "../../../service/childenService";
 
 const DrugTable = () => {
   const [drugs, setDrugs] = useState([]);
@@ -24,6 +24,7 @@ const DrugTable = () => {
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState({});
   const [childClass, setChildClass] = useState(null);
+  const { student_id } = useParams();
 
   // Trạng thái để theo dõi nhiều đơn thuốc đang được mở rộng
   const [expandedRows, setExpandedRows] = useState([]);
@@ -32,19 +33,11 @@ const DrugTable = () => {
 
   useEffect(() => {
     const fetchDrugHistory = async () => {
-      const user = getUser();
-      if (!user?.id) {
-        setError("Vui lòng đăng nhập để xem lịch sử gửi thuốc");
-        return;
-      }
-
-      const selectedChild = localStorage.getItem("selectedChild");
-      if (!selectedChild) {
+      const child = await getStudentInfo(student_id);
+      if (!child) {
         setError("Vui lòng chọn một đứa trẻ để xem lịch sử gửi thuốc.");
         return;
       }
-
-      const child = JSON.parse(selectedChild);
       setCurrChild(child);
 
       setIsLoading(true);
