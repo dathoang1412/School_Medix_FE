@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import axiosClient from "../../../config/axiosClient"
+import { enqueueSnackbar } from "notistack";
 
 const SpecialistExamList = ({ exams, onEdit }) => {
 
@@ -9,7 +10,7 @@ const SpecialistExamList = ({ exams, onEdit }) => {
       await axiosClient.delete(`/special-exam/${id}`);
       window.location.reload(); // Refresh to refetch data
     } catch (error) {
-      alert("Lỗi khi xóa chuyên khoa: " + (error.response?.data?.message || error.message));
+      enqueueSnackbar("Lỗi khi xóa chuyên khoa: " + (error.response?.data?.message || error.message), {variant: "error"});
       console.log(error.response?.data?.message)
     }
   };

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axiosClient from "../../../config/axiosClient";
 import { getUserRole } from "../../../service/authService";
 import { IoChevronBackOutline } from "react-icons/io5";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 
 const CompletedVaccineReport = () => {
   const { campaign_id } = useParams();
@@ -10,7 +10,6 @@ const CompletedVaccineReport = () => {
   const [loading, setLoading] = useState(false);
   const [updatingRecords, setUpdatingRecords] = useState(new Set());
   const [vaccinationStatus, setVaccinationStatus] = useState("");
-
   const navigate = useNavigate();
 
   const fetchStudentList = async () => {
@@ -21,11 +20,8 @@ const CompletedVaccineReport = () => {
       );
       console.log(res);
       console.log("REGISTERED LIST: ", res.data.data);
-      
-      setTimeout(() => {
-        setStudentList(res.data.data);
-        setLoading(false);
-      }, 500);
+      setStudentList(res.data.data);
+      setLoading(false);
 
       const res2 = await axiosClient.get(
         `/vaccination-campaign/${campaign_id}`
@@ -135,58 +131,63 @@ const CompletedVaccineReport = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {student.student_id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {student.student_profile?.name || "N/A"}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Link
+                      to={`/${getUserRole()}/student-overview/${student.student_id}`}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                      aria-label={`Xem thông tin chi tiết của học sinh ${student.student_profile?.name || "N/A"}`}
+                    >
+                      {student.student_profile?.name || "N/A"}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {student.student_profile?.gender || "N/A"}
+                    {student.student_profile?.ismale ? "Nam" : "Nữ"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex items-center justify-center">
-                      {/* Chỉ hiển thị checkbox khi campaign chưa completed */}
-                      {student.status === "PENDING" && vaccinationStatus !== "COMPLETED" && (
-                        <input
-                          type="checkbox"
-                          checked={student.is_vaccinated}
-                          disabled={
-                            student.is_vaccinated ||
-                            updatingRecords.has(student.id)
-                          }
-                          className={`h-4 w-4 rounded border-gray-300 ${
-                            student.is_vaccinated
-                              ? "text-green-600 bg-green-50 border-green-300 cursor-not-allowed"
-                              : updatingRecords.has(student.id)
-                              ? "text-blue-400 cursor-not-allowed animate-pulse"
-                              : "text-blue-600 focus:ring-blue-500 cursor-pointer hover:border-blue-400"
-                          }`}
-                          onChange={() =>
-                            handleVaccinationUpdate(
-                              student.record_id,
-                              student.student_profile?.name
-                            )
-                          }
-                          title={
-                            student.is_vaccinated
-                              ? "Đã tiêm chủng"
-                              : "Click để xác nhận tiêm chủng"
-                          }
-                        />
-                      )}
+                      {student.status === "PENDING" &&
+                        vaccinationStatus !== "COMPLETED" && (
+                          <input
+                            type="checkbox"
+                            checked={student.is_vaccinated}
+                            disabled={
+                              student.is_vaccinated ||
+                              updatingRecords.has(student.id)
+                            }
+                            className={`h-4 w-4 rounded border-gray-300 ${
+                              student.is_vaccinated
+                                ? "text-green-600 bg-green-50 border-green-300 cursor-not-allowed"
+                                : updatingRecords.has(student.id)
+                                ? "text-blue-400 cursor-not-allowed animate-pulse"
+                                : "text-blue-600 focus:ring-blue-500 cursor-pointer hover:border-blue-400"
+                            }`}
+                            onChange={() =>
+                              handleVaccinationUpdate(
+                                student.record_id,
+                                student.student_profile?.name
+                              )
+                            }
+                            title={
+                              student.is_vaccinated
+                                ? "Đã tiêm chủng"
+                                : "Click để xác nhận tiêm chủng"
+                            }
+                          />
+                        )}
 
-                      {(student.status === "COMPLETED" &&
+                      {student.status === "COMPLETED" && (
                         <span className="text-xs text-green-600 font-medium">
                           ✓ Đã tiêm
                         </span>
                       )}
 
-                      {/* Hiển thị trạng thái chưa tiêm khi campaign đã completed nhưng student chưa tiêm */}
-                      {student.status === "PENDING" && 
-                       vaccinationStatus === "COMPLETED" && 
-                       !student.is_vaccinated && (
-                        <span className="text-xs text-red-600 font-medium">
-                          ✗ Chưa tiêm
-                        </span>
-                      )}
+                      {student.status === "PENDING" &&
+                        vaccinationStatus === "COMPLETED" &&
+                        !student.is_vaccinated && (
+                          <span className="text-xs text-red-600 font-medium">
+                            ✗ Chưa tiêm
+                          </span>
+                        )}
 
                       {updatingRecords.has(student.id) && (
                         <span className="ml-2 text-xs text-blue-600">

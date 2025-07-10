@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   Newspaper,
+  PencilLineIcon,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { MdOutlineSchool } from "react-icons/md";
@@ -53,11 +54,19 @@ const Sidebar = () => {
       title: "Quản lý bệnh",
       path: "disease",
       icon: <MdOutlineMedicalInformation />,
-    },
-    {
-      title: "Quản lý Khai Báo",
-      path: "DeclarationManagement",
-      icon: <MdOutlineMedicalInformation />,
+      hasDropdown: true,
+      children: [
+        {
+          title: "Quản lý bệnh",
+          path: "disease",
+          icon: <MdOutlineMedicalInformation />,
+        },
+        {
+          title: "Quản lý Khai Báo",
+          path: "DeclarationManagement",
+          icon: <PencilLineIcon />,
+        },
+      ],
     },
     {
       title: "Khám định kỳ",
@@ -126,7 +135,6 @@ const Sidebar = () => {
               path: "user-manage",
               icon: <User2Icon />,
             },
-            ,
             {
               title: "Quản lý Blog",
               path: "blog",

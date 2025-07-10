@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom"; // Added Link
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import { getSession } from "../../../config/Supabase";
 import { ArrowLeft, Edit, X, ChevronDown, Upload } from "lucide-react";
+import { getUserRole } from "../../../service/authService";
 
 const RegularCheckupReport = () => {
   const [generalHealthList, setGeneralHealthList] = useState([]);
@@ -129,7 +130,6 @@ const RegularCheckupReport = () => {
   const handleInputChange = (e, field) => {
     const value = e.target.value;
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Validate ngay khi nhập
     const error = validateField(field, value);
     setFormErrors((prev) => ({ ...prev, [field]: error }));
   };
@@ -271,7 +271,6 @@ const RegularCheckupReport = () => {
     }));
 
     try {
-      // Bước 1: Cập nhật chỉ số sức khỏe
       const updateResponse = await axiosClient.patch(`/checkup/${register_id}/record`, payload);
       setGeneralHealthList((prev) =>
         prev.map((item) =>
@@ -284,7 +283,6 @@ const RegularCheckupReport = () => {
         variant: "success",
       });
 
-      // Bước 2: Đánh dấu trạng thái DONE
       const completeResponse = await axiosClient.patch(`/health-record/${register_id}/done`);
       setGeneralHealthList((prev) =>
         prev.map((item) =>
@@ -539,7 +537,12 @@ const RegularCheckupReport = () => {
                   #{item.register_id}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.student_name}
+                  <Link
+                    to={`/${getUserRole()}/student-overview/${item.student_id}`}
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {item.student_name || "N/A"}
+                  </Link>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {item.class_name}
@@ -656,7 +659,6 @@ const RegularCheckupReport = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {/* Back Button */}
       <div className="mb-6">
         <button
           onClick={() => navigate("/nurse/regular-checkup")}
@@ -668,7 +670,6 @@ const RegularCheckupReport = () => {
         </button>
       </div>
 
-      {/* Main Tabs */}
       <div className="border-b border-gray-200 mb-4">
         <nav className="-mb-px flex space-x-8" aria-label="Main Tabs">
           {mainTabs.map((tab) => (
@@ -688,7 +689,6 @@ const RegularCheckupReport = () => {
         </nav>
       </div>
 
-      {/* Sub Tabs for Specialist */}
       {activeMainTab === "Chuyên khoa" && (
         <div className="border-b border-gray-200 mb-4">
           <nav
@@ -715,7 +715,6 @@ const RegularCheckupReport = () => {
         </div>
       )}
 
-      {/* Tab Content */}
       <div className="mt-6 bg-white shadow-md rounded-lg overflow-hidden">
         <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -730,7 +729,6 @@ const RegularCheckupReport = () => {
         {renderHealthTable(tabData.records, tabData.type)}
       </div>
 
-      {/* General Health Update Modal */}
       {showUpdateModal && selectedRecord && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
@@ -982,7 +980,6 @@ const RegularCheckupReport = () => {
         </div>
       )}
 
-      {/* Specialist Update Modal */}
       {showSpecialistModal && selectedRecord && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">

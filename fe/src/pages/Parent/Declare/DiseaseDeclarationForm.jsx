@@ -1,12 +1,10 @@
-
-import { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../../config/axiosClient";
-import { getUser } from "../../../service/authService";
-import { ChildContext } from "../../../layouts/ParentLayout";
+import { getStudentInfo } from "../../../service/childenService";
 
 const DiseaseDeclarationForm = () => {
-  const { selectedChild } = useContext(ChildContext);
+  const { student_id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     student_id: "",
@@ -19,35 +17,43 @@ const DiseaseDeclarationForm = () => {
     status: "",
   });
   const [diseases, setDiseases] = useState([]);
+  const [student, setStudent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Fetch user and selected child data
+  // Fetch student and diseases data
   useEffect(() => {
     const fetchData = async () => {
-      const user = getUser();
-      if (!user?.id) {
-        setError("Vui lòng đăng nhập để gửi khai báo bệnh.");
-        return;
+      setIsLoading(true);
+      setError(null);
+
+      // Fetch student data
+      try {
+        if (!student_id) {
+          setError("Không tìm thấy ID học sinh.");
+          setIsLoading(false);
+          return;
+        }
+
+        const studentData = await getStudentInfo(student_id);
+        if (!studentData) {
+          setError("Không thể tải thông tin học sinh. Vui lòng thử lại.");
+          setIsLoading(false);
+          return;
+        }
+
+        setStudent(studentData);
+        setFormData((prev) => ({
+          ...prev,
+          student_id: studentData.id || "",
+        }));
+      } catch (error) {
+        console.error("Error fetching student:", error);
+        setError("Không thể tải thông tin học sinh. Vui lòng thử lại.");
       }
 
-      if (!selectedChild) {
-        setError("Vui lòng chọn một đứa trẻ để gửi khai báo.");
-        return;
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        student_id: selectedChild.id || "",
-      }));
-    };
-    fetchData();
-  }, [selectedChild]);
-
-  // Fetch diseases
-  useEffect(() => {
-    const fetchDiseases = async () => {
+      // Fetch diseases
       try {
         const response = await axiosClient.get("/diseases");
         console.log("Diseases response:", response.data);
@@ -59,10 +65,12 @@ const DiseaseDeclarationForm = () => {
             "Không thể tải danh sách bệnh. Vui lòng thử lại sau."
         );
         setDiseases([]);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchDiseases();
-  }, []);
+    fetchData();
+  }, [student_id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -161,7 +169,7 @@ const DiseaseDeclarationForm = () => {
                   </label>
                   <input
                     type="text"
-                    value={selectedChild?.name || ""}
+                    value={student?.name || ""}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700"
                     disabled
                   />

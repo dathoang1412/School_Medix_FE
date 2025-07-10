@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Plus, X } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { getUser } from "../../../service/authService";
-import { useNavigate } from "react-router-dom";
-import { getChildClass } from "../../../service/childenService";
+import { useNavigate, useParams } from "react-router-dom";
+import { getChildClass, getStudentInfo } from "../../../service/childenService";
+import { enqueueSnackbar } from "notistack";
 
 const SendDrugForm = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const SendDrugForm = () => {
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState({});
   const [currUser, setCurrUser] = useState({});
+  const { student_id } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,12 +33,11 @@ const SendDrugForm = () => {
       }
       setCurrUser(user);
 
-      const selectedChild = localStorage.getItem("selectedChild");
-      if (!selectedChild) {
+      const child = await getStudentInfo(student_id);
+      if (!child) {
         setError("Vui lòng chọn một đứa trẻ để gửi đơn thuốc.");
         return;
       }
-      const child = JSON.parse(selectedChild);
       setCurrChild(child);
 
       setFormData((prev) => ({
@@ -125,7 +126,7 @@ const SendDrugForm = () => {
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      alert("Gửi đơn thuốc thành công!");
+      enqueueSnackbar("Gửi đơn thuốc thành công!", {variant: "success"});
       navigate(`/parent/edit/${currChild.id}/drug-table`);
     } catch (error) {
       console.error("Error submitting drug request:", error);

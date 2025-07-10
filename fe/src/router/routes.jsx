@@ -48,6 +48,10 @@ import ShowBlog from "../pages/Blogs/ShowBlog";
 import HealthRecordList from "../pages/Parent/HealthRecord/HealthRecordList";
 import HealthDeclarationHistory from "../pages/Parent/Declare/HealthDeclarationHistory";
 import DeclarationManagement from "../pages/Admin&Nurse/HealthDeclarationManagement/DeclarationManagement";
+import HealthDashboard from "../pages/Parent/RegularCheckup/HealthDashboard";
+import CheckupHistoryInfo from "../pages/Parent/RegularCheckup/CheckupHistoryInfo";
+import ParentCheckupLayout from "../pages/Parent/RegularCheckup/ParentCheckupLayout";
+import StudentOverview from "../pages/Student/StudentOverview";
 
 const routes = createBrowserRouter([
   {
@@ -152,10 +156,6 @@ const routes = createBrowserRouter([
             element: <RegularCheckupCampaignForm />,
           },
           {
-            path: "vaccine-campaign-report/:campaign_id",
-            element: <CompletedVaccineReport />,
-          },
-          {
             path: "completed-regular-checkup-report/:campaign_id",
             element: <CompletedRegularCheckupReport />,
           },
@@ -193,15 +193,23 @@ const routes = createBrowserRouter([
           },
           {
             path: "blog/create",
-            element: <BlogEditor/>
+            element: <BlogEditor />,
           },
           {
             path: "blog/edit/:id",
-            element: <BlogEditor/>
+            element: <BlogEditor />,
           },
           {
             path: "blog/:id",
-            element: <ShowBlog/>
+            element: <ShowBlog />,
+          },
+          {
+            path: "completed-vaccine-campaign-report/:campaign_id",
+            element: <CompletedVaccineReport />,
+          },
+          {
+            path: "student-overview/:student_id",
+            element: <StudentOverview />,
           }
         ],
       },
@@ -257,7 +265,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "regular-checkup",
-            element: <StudentRegularCheckup />,
+            element: <ParentCheckupLayout />,
           },
           {
             path: "surveyCheckup/:campaign_id",
@@ -348,7 +356,7 @@ const routes = createBrowserRouter([
             element: <RegularCheckupReport />,
           },
           {
-            path: "vaccine-campaign-report/:campaign_id",
+            path: "completed-vaccine-campaign-report/:campaign_id",
             element: <CompletedVaccineReport />,
           },
           {
@@ -370,6 +378,10 @@ const routes = createBrowserRouter([
           {
             path: "DeclarationManagement",
             element: <DeclarationManagement />,
+          },
+          {
+            path: "student-overview/:student_id",
+            element: <StudentOverview />,
           },
         ],
       },

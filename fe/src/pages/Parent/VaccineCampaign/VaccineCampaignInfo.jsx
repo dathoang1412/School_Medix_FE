@@ -1,49 +1,82 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { Calendar, MapPin, Loader2, AlertCircle, ClipboardList, History, Shield, FileText, CheckCircle, Clock, XCircle } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Loader2,
+  AlertCircle,
+  ClipboardList,
+  History,
+  Shield,
+  FileText,
+  CheckCircle,
+  Clock,
+  XCircle,
+} from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
-import VaccineRecordsInfo from "./VaccineRecordInfo";
-import { ChildContext } from "../../../layouts/ParentLayout";
+import { getStudentInfo } from "../../../service/childenService";
+import { getSession } from "../../../config/Supabase";
+import { useSnackbar } from "notistack";
+import VaccineRecordInfo from "./VaccineRecordInfo";
 
 const VaccineCampaignInfo = () => {
   const { student_id } = useParams();
-  const { handleSelectChild, children } = useContext(ChildContext);
   const [campaignList, setCampaignList] = useState([]);
-  const [completedDoses, setCompletedDoses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState(null);
   const [historyView, setHistoryView] = useState(false);
   const [registerMap, setRegisterMap] = useState({});
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { enqueueSnackbar } = useSnackbar();
 
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      setLoading(true);
+      const { data, error } = await getSession();
+      if (error || !data.session) {
+        enqueueSnackbar("Vui lòng đăng nhập để tiếp tục!", {
+          variant: "error",
+        });
+        navigate("/login");
+        return;
+      }
+      setIsAuthenticated(true);
+    };
+    checkAuth();
+  }, [navigate, enqueueSnackbar]);
+
+  // Fetch student info and campaigns
   useEffect(() => {
     const fetchData = async () => {
+      if (!isAuthenticated || !student_id) return;
+
+      setLoading(true);
       try {
-        setLoading(true);
-        const child = children.find((c) => c.id === student_id) || JSON.parse(localStorage.getItem("selectedChild"));
-        if (!child || child.id !== student_id) {
-          setError("Không tìm thấy thông tin học sinh");
-          setLoading(false);
-          return;
+        // Fetch student info
+        const child = await getStudentInfo(student_id);
+        if (!child?.id) {
+          throw new Error("Không tìm thấy thông tin học sinh");
         }
         setCurrChild(child);
-        handleSelectChild(child);
 
+        // Fetch vaccination campaigns
         const campaignRes = await axiosClient.get("/vaccination-campaign");
         let campaigns = campaignRes.data.data || [];
 
-        const dosesRes = await axiosClient.get(`/student/${child.id}/completed-doses`);
-        const dosesData = dosesRes.data.diseases || [];
-        setCompletedDoses(dosesData);
-
+        // Fetch registration status for each campaign
         const registerPromises = campaigns.map(async (campaign) => {
           try {
             const res = await axiosClient.get(
               `/student/${child.id}/vaccination-campaign/${campaign.campaign_id}/register`
             );
-            return { campaign_id: campaign.campaign_id, isSurveyed: res.data.data[0]?.is_registered || false };
+            return {
+              campaign_id: campaign.campaign_id,
+              isSurveyed: res.data.data[0]?.is_registered || false,
+            };
           } catch (error) {
             console.error(`Error fetching survey status for campaign ${campaign.campaign_id}:`, error);
             return { campaign_id: campaign.campaign_id, isSurveyed: false };
@@ -56,14 +89,16 @@ const VaccineCampaignInfo = () => {
         }, {});
         setRegisterMap(newRegisterMap);
 
+        // Process campaigns
         campaigns = campaigns.map((c) => ({
           ...c,
           campaign_id: c.campaign_id || c.id,
           status: c.status || "DRAFTED",
-          canSurvey: getCampaignStatus(c, dosesData, newRegisterMap[c.campaign_id]).canSurvey,
+          canSurvey: getCampaignStatus(c, newRegisterMap[c.campaign_id]).canSurvey,
           isSurveyed: newRegisterMap[c.campaign_id]?.isSurveyed || false,
         }));
 
+        // Sort campaigns
         campaigns.sort((a, b) => {
           const aCanSurveyNotSurveyed = a.canSurvey && !a.isSurveyed;
           const bCanSurveyNotSurveyed = b.canSurvey && !b.isSurveyed;
@@ -76,57 +111,46 @@ const VaccineCampaignInfo = () => {
         setCampaignList(campaigns);
         setError(null);
       } catch (error) {
-        setError("Failed to fetch data");
-        console.error(error);
+        console.error("Error fetching data:", error);
+        setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+        enqueueSnackbar("Không thể tải dữ liệu!", { variant: "error" });
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-
-    const handlePopState = () => {
-      fetchData();
-    };
-    window.addEventListener("popstate", handlePopState);
-
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [student_id, children, handleSelectChild]);
+  }, [isAuthenticated, student_id, enqueueSnackbar]);
 
   const handleSurvey = (campaignId) => {
-    navigate(`/parent/edit/${currChild.id}/vaccine-campaign-survey/${campaignId}`, {
-      state: { from: location.pathname, childId: currChild.id },
+    navigate(`/parent/edit/${currChild?.id}/vaccine-campaign-survey/${campaignId}`, {
+      state: { from: location.pathname, childId: currChild?.id },
     });
   };
 
   const handleViewDetails = (campaignId) => {
     navigate(`/parent/vaccination-campaign/${campaignId}`, {
-      state: { from: location.pathname, childId: currChild.id },
+      state: { from: location.pathname, childId: currChild?.id },
     });
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return "Chưa xác định";
     try {
-      return new Date(dateString).toLocaleDateString("vi-VN");
+      return new Date(dateString).toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
     } catch {
       return "Chưa xác định";
     }
   };
 
-  const getCampaignStatus = (campaign, dosesData = completedDoses, register = registerMap[campaign.campaign_id]) => {
-    const doseInfo = dosesData.find((dose) => dose.disease_id === campaign.disease_id);
+  const getCampaignStatus = (campaign, register = registerMap[campaign.campaign_id]) => {
     const currentDate = new Date();
     const status = campaign.status?.toUpperCase();
 
-    if (doseInfo && doseInfo.completed_doses === doseInfo.dose_quantity) {
-      return {
-        status: "Đã đủ mũi tiêm",
-        className: "bg-green-50 text-green-700 border-green-200",
-        icon: CheckCircle,
-        canSurvey: false,
-      };
-    }
     if (new Date(campaign.end_date) < currentDate && status !== "COMPLETED") {
       return {
         status: "Đã hết hạn đăng ký",
@@ -181,6 +205,17 @@ const VaccineCampaignInfo = () => {
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Đang kiểm tra đăng nhập...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -220,7 +255,9 @@ const VaccineCampaignInfo = () => {
               <Shield className="w-8 h-8 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Hệ thống quản lý tiêm chủng</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Hệ thống quản lý tiêm chủng - {currChild?.name || "Học sinh"}
+              </h1>
               <p className="text-gray-600">Theo dõi và đăng ký tham gia các chiến dịch tiêm chủng</p>
             </div>
           </div>
@@ -257,7 +294,7 @@ const VaccineCampaignInfo = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {historyView ? (
           <div className="bg-white rounded-lg shadow-sm">
-            <VaccineRecordsInfo records={completedDoses} currChild={currChild} />
+            <VaccineRecordInfo />
           </div>
         ) : (
           <>
@@ -278,8 +315,8 @@ const VaccineCampaignInfo = () => {
                       key={campaign.campaign_id}
                       className={`bg-white border rounded-lg p-6 hover:shadow-md transition-all duration-200 ${
                         !campaign.isSurveyed && statusInfo.canSurvey 
-                          ? 'border-blue-200 ring-1 ring-blue-100' 
-                          : 'border-gray-200'
+                          ? "border-blue-200 ring-1 ring-blue-100" 
+                          : "border-gray-200"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -317,6 +354,14 @@ const VaccineCampaignInfo = () => {
 
                         {/* Right Section - Status and Actions */}
                         <div className="flex items-center gap-4">
+                          {/* Survey Status */}
+                          {campaign.isSurveyed && (
+                            <div className="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm">
+                              <CheckCircle className="w-4 h-4" />
+                              <span>Đã đăng ký</span>
+                            </div>
+                          )}
+
                           {/* Campaign Status */}
                           <div className={`flex items-center gap-2 px-3 py-1 border rounded-full text-sm ${statusInfo.className}`}>
                             <StatusIcon className="w-4 h-4" />

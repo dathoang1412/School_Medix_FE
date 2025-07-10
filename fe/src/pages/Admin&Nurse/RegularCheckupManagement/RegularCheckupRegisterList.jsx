@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom"; // Added Link import
 import axiosClient from "../../../config/axiosClient";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
@@ -200,7 +200,12 @@ const RegularCheckupRegisterList = () => {
                       #{item.register_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{item.student_name}</div>
+                      <Link
+                        to={`/${getUserRole()}/student-overview/${item.student_id}`}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {item.student_name}
+                      </Link>
                       <div className="text-sm text-gray-500">ID: {item.student_id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
