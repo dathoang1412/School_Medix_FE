@@ -378,7 +378,7 @@ const AdminDashboard = () => {
                 {/* Metric Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-                    <p className="text-sm text-gray-500">Học sinh tham gia</p>
+                    <p className="text-sm text-gray-500">Tham gia</p>
                     <p className="text-2xl font-bold text-gray-800">
                       {heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}
                     </p>
@@ -386,7 +386,7 @@ const AdminDashboard = () => {
                       Tỷ lệ: {heightWeightAvg.totalStudents ? ((heightWeightAvg.totalChecked / heightWeightAvg.totalStudents) * 100).toFixed(1) : 0}% 
                     </p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-indigo-500">
+                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-pink-500">
                     <p className="text-sm text-gray-500">Tỷ lệ nam/nữ</p>
                     <p className="text-2xl font-bold text-gray-800">
                       {heightWeightAvg.maleCount || 0} / {heightWeightAvg.femaleCount || 0}
@@ -456,7 +456,7 @@ const AdminDashboard = () => {
 
           {/* Health Plans */}
           <div className="lg:col-span-2">
-            <ChartCard title="Kế hoạch y tế sắp tới" icon={<Calendar className="text-purple-500" />}>
+            <ChartCard title="Kế hoạch y tế nhà trường" icon={<Calendar className="text-purple-500" />}>
               {plansLoading ? (
                 <div className="h-64 flex items-center justify-center">
                   <p>Đang tải dữ liệu kế hoạch...</p>
