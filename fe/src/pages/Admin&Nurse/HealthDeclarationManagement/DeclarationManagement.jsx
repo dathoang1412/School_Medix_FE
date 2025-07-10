@@ -1,32 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, FileText, Loader2, XCircle, Calendar, Pill, Activity, User } from 'lucide-react';
+import { Shield, FileText, Loader2, XCircle, Calendar, Pill, Activity, User, Syringe } from 'lucide-react';
 import DiseaseRecordRow from './DiseaseRecordRow';
+import VaccineRecordRow from './VaccineRecordRow';
 import axiosClient from '../../../config/axiosClient';
 
 const DeclarationManagement = () => {
-  const [records, setRecords] = useState([]);
-  const [filteredRecords, setFilteredRecords] = useState([]);
+  const [diseaseRecords, setDiseaseRecords] = useState([]);
+  const [vaccineRecords, setVaccineRecords] = useState([]);
+  const [filteredDiseaseRecords, setFilteredDiseaseRecords] = useState([]);
+  const [filteredVaccineRecords, setFilteredVaccineRecords] = useState([]);
   const [diseaseMap, setDiseaseMap] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState('disease'); // 'disease' or 'vaccine'
   const recordsPerPage = 10;
 
   const fetchRecords = async () => {
     setLoading(true);
+    setError('');
+
+    // Fetch disease records
     try {
-      const { data } = await axiosClient.get('/disease-record/requestsHistory');
-      console.log('Fetched records:', data); // Log for debugging
+      const { data } = await axiosClient.get('/disease-record/requests/history');
       if (!data.error && data.data?.rows) {
-        setRecords(data.data.rows);
-        setFilteredRecords(data.data.rows);
+        // Deduplicate by id
+        const uniqueRecords = Array.from(
+          new Map(data.data.rows.map(record => [record.id, record])).values()
+        );
+        setDiseaseRecords(uniqueRecords);
+        setFilteredDiseaseRecords(uniqueRecords);
       } else {
         setError(data.message || 'Không thể tải danh sách khai báo bệnh');
       }
     } catch (err) {
-      console.error('Fetch records error:', err.response?.data || err.message);
+      console.error('Fetch disease records error:', err.response?.data || err.message);
       setError('Không thể tải danh sách khai báo bệnh: ' + (err.response?.data?.message || err.message));
+    }
+
+    // Fetch vaccine records
+    try {
+      const { data } = await axiosClient.get('/vaccination-record/requests/history');
+      if (!data.error && data.data?.rows) {
+        // Deduplicate by id
+        const uniqueRecords = Array.from(
+          new Map(data.data.rows.map(record => [record.id, record])).values()
+        );
+        setVaccineRecords(uniqueRecords);
+        setFilteredVaccineRecords(uniqueRecords);
+      } else {
+        setError(data.message || 'Không thể tải danh sách khai báo vaccine');
+      }
+    } catch (err) {
+      console.error('Fetch vaccine records error:', err.response?.data || err.message);
+      setError('Không thể tải danh sách khai báo vaccine: ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
@@ -48,15 +76,17 @@ const DeclarationManagement = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = records.filter(r => statusFilter === 'All' || r.pending === statusFilter);
-    setFilteredRecords(filtered);
+    const filteredDiseases = diseaseRecords.filter(r => statusFilter === 'All' || r.pending === statusFilter);
+    const filteredVaccines = vaccineRecords.filter(r => statusFilter === 'All' || r.pending === statusFilter);
+    setFilteredDiseaseRecords(filteredDiseases);
+    setFilteredVaccineRecords(filteredVaccines);
     setCurrentPage(1);
-  }, [statusFilter, records]);
+  }, [statusFilter, diseaseRecords, vaccineRecords]);
 
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
-  const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
+  const currentRecords = (viewMode === 'disease' ? filteredDiseaseRecords : filteredVaccineRecords).slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil((viewMode === 'disease' ? filteredDiseaseRecords : filteredVaccineRecords).length / recordsPerPage);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -65,13 +95,26 @@ const DeclarationManagement = () => {
           <div className="flex items-center gap-4 mb-6">
             <Shield className="w-8 h-8 text-blue-600 p-2 bg-blue-50 rounded-lg" />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Quản lý khai báo bệnh</h1>
-              <p className="text-gray-600">Xem và duyệt các đơn khai báo bệnh của học sinh</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {viewMode === 'disease' ? 'Quản lý khai báo bệnh' : 'Quản lý khai báo vaccine'}
+              </h1>
+              <p className="text-gray-600">
+                {viewMode === 'disease' ? 'Xem và duyệt các đơn khai báo bệnh của học sinh' : 'Xem và duyệt các đơn khai báo vaccine của học sinh'}
+              </p>
             </div>
           </div>
           <div className="flex justify-between items-center">
-            <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 text-sm">
-              Tổng hồ sơ: <span className="font-medium text-blue-600">{records.length}</span>
+            <div className="flex items-center gap-4">
+              <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 text-sm">
+                Tổng hồ sơ: <span className="font-medium text-blue-600">{viewMode === 'disease' ? diseaseRecords.length : vaccineRecords.length}</span>
+              </div>
+              <button
+                onClick={() => setViewMode(viewMode === 'disease' ? 'vaccine' : 'disease')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm"
+              >
+                {viewMode === 'disease' ? <Syringe className="w-4 h-4" /> : <Pill className="w-4 h-4" />}
+                {viewMode === 'disease' ? 'Xem khai báo vaccine' : 'Xem khai báo bệnh'}
+              </button>
             </div>
             <select
               value={statusFilter}
@@ -104,12 +147,25 @@ const DeclarationManagement = () => {
                 <th className="p-4 text-left text-sm font-semibold text-gray-700">
                   <div className="flex items-center gap-2"><User className="w-4 h-4" /> Mã Học Sinh</div>
                 </th>
-                <th className="p-4 text-left text-sm font-semibold text-gray-700">
-                  <div className="flex items-center gap-2"><Pill className="w-4 h-4" /> Tên Bệnh</div>
-                </th>
-                <th className="p-4 text-left text-sm font-semibold text-gray-700">
-                  <div className="flex items-center gap-2"><Activity className="w-4 h-4" /> Tình trạng</div>
-                </th>
+                {viewMode === 'disease' ? (
+                  <>
+                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center gap-2"><Pill className="w-4 h-4" /> Tên Bệnh</div>
+                    </th>
+                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center gap-2"><Activity className="w-4 h-4" /> Tình trạng</div>
+                    </th>
+                  </>
+                ) : (
+                  <>
+                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center gap-2"><Syringe className="w-4 h-4" /> Tên Vaccine</div>
+                    </th>
+                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center gap-2"><Pill className="w-4 h-4" /> Bệnh Ngừa</div>
+                    </th>
+                  </>
+                )}
                 <th className="p-4 text-left text-sm font-semibold text-gray-700">
                   <div className="flex items-center gap-2"><Shield className="w-4 h-4" /> Trạng Thái Đơn</div>
                 </th>
@@ -133,12 +189,20 @@ const DeclarationManagement = () => {
                 </tr>
               ) : (
                 currentRecords.map(record => (
-                  <DiseaseRecordRow
-                    key={record.id}
-                    record={record}
-                    diseaseMap={diseaseMap}
-                    onUpdate={fetchRecords} // Pass fetchRecords directly
-                  />
+                  viewMode === 'disease' ? (
+                    <DiseaseRecordRow
+                      key={record.id}
+                      record={record}
+                      diseaseMap={diseaseMap}
+                      onUpdate={fetchRecords}
+                    />
+                  ) : (
+                    <VaccineRecordRow
+                      key={record.id}
+                      record={record}
+                      onUpdate={fetchRecords}
+                    />
+                  )
                 ))
               )}
             </tbody>
