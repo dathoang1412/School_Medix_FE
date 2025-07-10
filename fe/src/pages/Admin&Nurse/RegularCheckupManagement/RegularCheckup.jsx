@@ -265,7 +265,7 @@ const RegularCheckup = () => {
         buttons.push(
           <button
             key="view-report"
-            onClick={() => navigate(`/admin/regular-checkup-report/${campaignId}`)}
+            onClick={() => navigate(`/admin/completed-regular-checkup-report/${campaignId}`)}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
           >
             <FileText className="w-4 h-4" />
@@ -321,7 +321,7 @@ const RegularCheckup = () => {
         buttons.push(
           <button
             key="view-report"
-            onClick={() => navigate(`/nurse/regular-checkup-report/${campaignId}`)}
+            onClick={() => navigate(`/nurse/completed-regular-checkup-report/${campaignId}`)}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
           >
             <FileText className="w-4 h-4" />

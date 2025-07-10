@@ -148,13 +148,6 @@ const CompletedRegularCheckupReport = () => {
 
   // Handle bulk report download
   const handleBulkReportDownload = async () => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để tải báo cáo!", {
-        variant: "error",
-      });
-      navigate("/login");
-      return;
-    }
 
     setLoading((prev) => ({ ...prev, bulkDownload: true }));
     try {
@@ -260,7 +253,7 @@ const CompletedRegularCheckupReport = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <Link
-                    to={`/${getUserRole()}/student-overview/${item.student_id}`}
+                    to={`/${getUserRole()}/student-overview/${item?.id}`}
                     className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
                     aria-label={`Xem thông tin chi tiết của học sinh ${item.student_name}`}
                   >

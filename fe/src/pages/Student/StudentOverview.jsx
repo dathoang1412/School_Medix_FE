@@ -59,7 +59,7 @@ const StudentOverview = () => {
     },
     { 
       id: 'dashboard', 
-      label: 'Dashboard', 
+      label: 'Biểu đồ phát triển', 
       icon: Activity,
       component: <HealthDashboard studentData={studentData} />,
       color: 'bg-green-50 text-green-600 border-green-200'

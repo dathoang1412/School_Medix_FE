@@ -539,7 +539,7 @@ const RegularCheckupReport = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <Link
-                    to={`/${getUserRole()}/student-overview/${item.student_id}`}
+                    to={`/${getUserRole()}/student-overview/${item.id}`}
                     className="text-blue-600 hover:text-blue-800 hover:underline"
                   >
                     {item.student_name || "N/A"}

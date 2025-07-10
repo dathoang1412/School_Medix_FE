@@ -284,7 +284,7 @@ const VaccineCampaignDetails = () => {
         buttons.push(
           <button
             key="view-report"
-            onClick={() => navigate(`/admin/vaccination-report/${campaignId}`)}
+            onClick={() => navigate(`/admin/completed-vaccine-campaign-report/${campaignId}`)}
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <FileText className="w-4 h-4 mr-2" />
@@ -346,7 +346,7 @@ const VaccineCampaignDetails = () => {
         buttons.push(
           <button
             key="view-report"
-            onClick={() => navigate(`/nurse/vaccination-report/${campaignId}`)}
+            onClick={() => navigate(`/nurse/completed-vaccine-campaign-report/${campaignId}`)}
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <FileText className="w-4 h-4 mr-2" />
