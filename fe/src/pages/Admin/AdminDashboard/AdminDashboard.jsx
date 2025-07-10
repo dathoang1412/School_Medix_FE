@@ -209,7 +209,7 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard Quản Lý Y Tế Học Đường</h1>
-              <p className="text-gray-600">Trường THPT ABC - Admin Panel</p>
+              <p className="text-gray-600">Trường TH - THPT MedixFPT</p>
             </div>
             <CurrentTimeDisplay />
           </div>
@@ -294,6 +294,7 @@ const AdminDashboard = () => {
                     interval={0} // Show all ticks
                     allowDecimals={false} // Integer ticks
                     type="number"
+                    label={{ value: 'Số ca bệnh', angle: -90, position: 'insideLeft' }}
                   />
                   <Tooltip />
                   <Legend />
@@ -456,9 +457,10 @@ const AdminDashboard = () => {
           {/* Health Plans */}
           <div className="lg:col-span-2">
             <ChartCard
-              title="Kế hoạch y tế sắp tới"
+              title="Kế hoạch y tế nhà trường"
               icon={<Calendar className="text-purple-500" />}
               className="min-h-[620px]"
+              
             >
               {plansLoading ? (
                 <div className="h-full flex items-center justify-center">
