@@ -378,7 +378,7 @@ const AdminDashboard = () => {
                 {/* Metric Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-                    <p className="text-sm text-gray-500">Tham gia</p>
+                    <p className="text-sm text-gray-500">Tham gia khám</p>
                     <p className="text-2xl font-bold text-gray-800">
                       {heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}
                     </p>
