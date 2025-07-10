@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"; // Added React import
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Syringe, Loader2, AlertCircle, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
@@ -114,9 +114,9 @@ const VaccineRecordInfo = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-3" />
           <p className="text-gray-600">Đang kiểm tra đăng nhập...</p>
         </div>
       </div>
@@ -125,9 +125,9 @@ const VaccineRecordInfo = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-3" />
           <p className="text-gray-600">Đang tải dữ liệu...</p>
         </div>
       </div>
@@ -136,14 +136,14 @@ const VaccineRecordInfo = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full text-center">
+      <div className="flex items-center justify-center min-h-96">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 max-w-md w-full text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Lỗi tải dữ liệu</h3>
-          <p className="text-red-700 mb-6">{error}</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Lỗi tải dữ liệu</h3>
+          <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors"
           >
             Thử lại
           </button>
@@ -153,37 +153,45 @@ const VaccineRecordInfo = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-8 flex flex-col items-center text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-          <Syringe className="w-8 h-8 text-blue-600" />
-          Lịch sử tiêm chủng
-        </h1>
-        <p className="text-gray-600 py-2">
-          Thông tin lịch sử tiêm chủng của{" "}
-          <span className="font-semibold">{currChild?.name || "Học sinh"}</span>
-        </p>
-        <div className="mt-4 flex gap-2">
-          <button
-            onClick={() => setFilterMode(filterMode === "all" ? "notEnough" : "all")}
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Filter className="w-4 h-4" />
-            {filterMode === "all" ? "Chưa đủ mũi" : "Hiển thị tất cả"}
-          </button>
-          <button
-            onClick={() => setFilterMode(filterMode === "all" ? "enough" : "all")}
-            className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-          >
-            <Filter className="w-4 h-4" />
-            {filterMode === "all" ? "Đã đủ mũi" : "Hiển thị tất cả"}
-          </button>
-        </div>
+    <div className="space-y-6 pt-3">
+      {/* Filters */}
+      <div className="flex justify-center gap-3">
+        <button
+          onClick={() => setFilterMode("all")}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            filterMode === "all"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          Tất cả
+        </button>
+        <button
+          onClick={() => setFilterMode("notEnough")}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            filterMode === "notEnough"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          Chưa đủ mũi
+        </button>
+        <button
+          onClick={() => setFilterMode("enough")}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            filterMode === "enough"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          Đã đủ mũi
+        </button>
       </div>
 
+      {/* Content */}
       {filteredRecords.length === 0 ? (
-        <div className="text-center py-12">
-          <Syringe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <div className="text-center py-16">
+          <Syringe className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             Chưa có lịch sử tiêm chủng
           </h3>
@@ -192,45 +200,73 @@ const VaccineRecordInfo = () => {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto w-full">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-md">
-            <table className="w-full table-fixed">
-              <thead>
-                <tr className="bg-gray-100 border-b border-gray-200 text-center">
-                  <th className="w-1/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">STT</th>
-                  <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Mã học sinh</th>
-                  <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Loại bệnh</th>
-                  <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Số mũi đã tiêm</th>
-                  <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Số mũi cần tiêm</th>
-                  <th className="w-2/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Trạng thái</th>
-                  <th className="w-3/12 px-4 py-4 text-xs font-bold text-gray-800 uppercase tracking-wider">Chi tiết</th>
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    STT
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mã học sinh
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Loại bệnh
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Số mũi đã tiêm
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Số mũi cần tiêm
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trạng thái
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Chi tiết
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRecords.map((record, index) => (
                   <React.Fragment key={record.disease_id}>
                     <tr className="hover:bg-gray-50">
-                      <td className="px-4 py-4 text-center text-sm text-gray-600">{index + 1}</td>
-                      <td className="px-4 py-4 text-center text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         HS{String(currChild?.id || "").padStart(6, "0")}
                       </td>
-                      <td className="px-4 py-4 text-center text-sm text-gray-600">{record.disease_name}</td>
-                      <td className="px-4 py-4 text-center text-sm text-gray-600">{record.completed_doses}</td>
-                      <td className="px-4 py-4 text-center text-sm text-gray-600">{record.dose_quantity}</td>
-                      <td className="px-4 py-4 text-center text-sm">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {record.disease_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {record.completed_doses}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {record.dose_quantity}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {record.completed_doses === 0 ? (
-                          <span className="text-red-600 font-medium">Chưa tiêm</span>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Chưa tiêm
+                          </span>
                         ) : +record.completed_doses === record.dose_quantity ? (
-                          <span className="text-green-600 font-medium">Đã tiêm đủ</span>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Đã tiêm đủ
+                          </span>
                         ) : (
-                          <span className="text-yellow-600 font-medium">Chưa tiêm đủ</span>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            Chưa tiêm đủ
+                          </span>
                         )}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {record.completed_doses > 0 ? (
                           <button
                             onClick={() => toggleDropdown(record.disease_id)}
-                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded px-2 py-1 transition-colors"
+                            className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
                           >
                             {loadingDetails[record.disease_id] ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -239,17 +275,19 @@ const VaccineRecordInfo = () => {
                             ) : (
                               <ChevronDown className="w-4 h-4" />
                             )}
-                            {openDropdown === record.disease_id ? "Ẩn chi tiết" : "Xem chi tiết"}
+                            <span className="text-sm">
+                              {openDropdown === record.disease_id ? "Ẩn" : "Xem"}
+                            </span>
                           </button>
                         ) : (
-                          <span className="text-gray-400">Không có</span>
+                          <span className="text-gray-400 text-sm">—</span>
                         )}
                       </td>
                     </tr>
                     {openDropdown === record.disease_id && (
                       <tr>
                         <td colSpan="7" className="px-0 py-0 bg-gray-50">
-                          <div className="px-4 py-4">
+                          <div className="px-6 py-4 border-t border-gray-200">
                             <VaccineDetailsDropdown
                               diseaseId={record.disease_id}
                               details={details[record.disease_id] || []}

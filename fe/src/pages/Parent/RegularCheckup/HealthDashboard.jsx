@@ -43,7 +43,6 @@ const HealthDashboard = () => {
         enqueueSnackbar("Không tìm thấy ID học sinh trong URL!", {
           variant: "error",
         });
-        navigate("/parent");
         return;
       }
 
@@ -59,7 +58,6 @@ const HealthDashboard = () => {
         enqueueSnackbar("Không thể tải thông tin học sinh!", {
           variant: "error",
         });
-        navigate("/parent");
       } finally {
         setLoading((prev) => ({ ...prev, fetch: false }));
       }

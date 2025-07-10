@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2, Heart } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import { getStudentInfo } from '../../../service/childenService';
 
@@ -179,7 +179,7 @@ const HealthRecord = () => {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="p-3 bg-blue-50 rounded-lg">
-              <Shield className="w-8 h-8 text-blue-600" />
+              <Heart className="w-8 h-8 text-blue-600" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Sức khỏe hằng ngày</h1>

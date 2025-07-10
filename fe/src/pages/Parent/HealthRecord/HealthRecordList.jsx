@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2, List } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import { useParams } from 'react-router-dom';
 import { getStudentInfo } from '../../../service/childenService';
@@ -93,9 +93,9 @@ const HealthRecordList = () => {
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="p-3 bg-blue-50 rounded-lg"><Shield className="w-8 h-8 text-blue-600" /></div>
+            <div className="p-3 bg-blue-50 rounded-lg"><List className="w-8 h-8 text-blue-600" /></div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Hồ sơ bệnh</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Danh sách bệnh</h1>
               <p className="text-gray-600">Theo dõi hồ sơ bệnh của con em tại trường</p>
               {child && <p className="text-sm font-medium text-gray-700 mt-2">Học sinh: HS{String(child.id).padStart(6, '0')}</p>}
             </div>

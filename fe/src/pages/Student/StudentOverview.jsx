@@ -52,49 +52,49 @@ const StudentOverview = () => {
   const tabs = [
     { 
       id: 'profile', 
-      label: 'Profile', 
+      label: 'Hồ sơ', 
       icon: User,
       component: <StudentProfile studentData={studentData} />,
       color: 'bg-blue-50 text-blue-600 border-blue-200'
     },
     { 
       id: 'dashboard', 
-      label: 'Health Dashboard', 
+      label: 'Dashboard', 
       icon: Activity,
       component: <HealthDashboard studentData={studentData} />,
       color: 'bg-green-50 text-green-600 border-green-200'
     },
     { 
       id: 'checkupHistory', 
-      label: 'Checkup History', 
+      label: 'Khám định kỳ', 
       icon: FileText,
       component: <CheckupHistoryInfo studentData={studentData} />,
       color: 'bg-purple-50 text-purple-600 border-purple-200'
     },
     { 
       id: 'recordList', 
-      label: 'Health Record List', 
+      label: 'Danh sách bệnh', 
       icon: List,
       component: <HealthRecordList/>,
       color: 'bg-orange-50 text-orange-600 border-orange-200'
     },
     { 
       id: 'declarationHistory', 
-      label: 'Declaration History', 
+      label: 'Lịch sử khai báo bệnh', 
       icon: Shield,
       component: <HealthDeclarationHistory studentData={studentData} />,
       color: 'bg-red-50 text-red-600 border-red-200'
     },
     { 
       id: 'healthRecord', 
-      label: 'Health Record', 
+      label: 'Hồ sơ sức khỏe', 
       icon: Heart,
       component: <HealthRecord studentData={studentData} />,
       color: 'bg-pink-50 text-pink-600 border-pink-200'
     },
     { 
       id: 'vaccineRecord', 
-      label: 'Vaccine Record', 
+      label: 'Hồ sơ tiêm chủng', 
       icon: Syringe,
       component: <VaccineRecordInfo />,
       color: 'bg-indigo-50 text-indigo-600 border-indigo-200'
@@ -108,14 +108,14 @@ const StudentOverview = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
           <div className="relative">
             <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
             <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-blue-100 mx-auto animate-pulse"></div>
           </div>
-          <p className="text-gray-600 font-medium">Loading student data...</p>
-          <p className="text-sm text-gray-400 mt-1">Please wait a moment</p>
+          <p className="text-gray-600 font-medium">Đang tải dữ liệu học sinh...</p>
+          <p className="text-sm text-gray-400 mt-1">Vui lòng đợi một chút</p>
         </div>
       </div>
     );
@@ -128,70 +128,71 @@ const StudentOverview = () => {
   const activeTabData = tabs.find((tab) => tab.id === activeTab);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header Section */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {studentData?.name || 'Student Overview'}
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">
-                  Comprehensive health and profile management
-                </p>
-              </div>
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-blue-200">
+              {studentData?.profile_img_url ? (
+                <img 
+                  src={studentData.profile_img_url} 
+                  alt={studentData.name || 'Học sinh'} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                  <User className="w-8 h-8 text-blue-600" />
+                </div>
+              )}
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-500">Active</span>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {studentData?.name || 'Tổng quan học sinh'}
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Quản lý hồ sơ và sức khỏe toàn diện
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tab Navigation - Modern Card Style */}
+        {/* Tab Navigation */}
         <div className="mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`
-                    group relative p-4 rounded-xl border-2 transition-all duration-200 text-center
-                    hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                    ${isActive 
-                      ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-transparent shadow-lg' 
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                    }
-                  `}
-                >
-                  <Icon className={`w-6 h-6 mx-auto mb-2 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-blue-500'}`} />
-                  <span className={`text-xs font-medium ${isActive ? 'text-white' : 'text-gray-700'}`}>
-                    {tab.label}
-                  </span>
-                  {isActive && (
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 opacity-20 animate-pulse"></div>
-                  )}
-                </button>
-              );
-            })}
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabChange(tab.id)}
+                    className={`
+                      group flex items-center space-x-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                      transition-all duration-200
+                      ${isActive 
+                        ? 'border-blue-600 text-blue-600' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }
+                    `}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
         </div>
 
         {/* Content Area */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
           {/* Content Header */}
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 {activeTabData && (
@@ -204,7 +205,7 @@ const StudentOverview = () => {
                         {activeTabData.label}
                       </h2>
                       <p className="text-sm text-gray-500">
-                        {studentData?.name && `${studentData.name}'s ${activeTabData.label.toLowerCase()}`}
+                        {studentData?.name && `${activeTabData.label.toLowerCase()} của ${studentData.name}`}
                       </p>
                     </div>
                   </>
@@ -221,8 +222,8 @@ const StudentOverview = () => {
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FileText className="w-8 h-8 text-gray-400" />
                 </div>
-                <p className="text-gray-600 font-medium">No content available</p>
-                <p className="text-sm text-gray-400 mt-1">Please select a tab to view details</p>
+                <p className="text-gray-600 font-medium">Không có nội dung</p>
+                <p className="text-sm text-gray-400 mt-1">Vui lòng chọn một mục để xem chi tiết</p>
               </div>
             )}
           </div>

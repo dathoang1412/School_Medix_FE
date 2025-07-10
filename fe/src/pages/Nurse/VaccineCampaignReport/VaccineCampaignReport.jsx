@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axiosClient from "../../../config/axiosClient";
 import { getUserRole } from "../../../service/authService";
 import { IoChevronBackOutline } from "react-icons/io5";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom"; // Added Link
 import { enqueueSnackbar } from "notistack";
 
 const VaccineCampaignReport = () => {
@@ -135,14 +135,18 @@ const VaccineCampaignReport = () => {
                     {student.student_id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {student.student_profile?.name || "N/A"}
+                    <Link
+                      to={`/${getUserRole()}/student-overview/${student.student_id}`}
+                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      {student.student_profile?.name || "N/A"}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {student.student_profile?.ismale ? "Nam" : "Nữ"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex items-center justify-center">
-                      {/* Chỉ hiển thị checkbox khi campaign chưa completed */}
                       {student.status === "PENDING" &&
                         vaccinationStatus !== "COMPLETED" && (
                           <input
@@ -172,14 +176,11 @@ const VaccineCampaignReport = () => {
                             }
                           />
                         )}
-
                       {student.status === "COMPLETED" && (
                         <span className="text-xs text-green-600 font-medium">
                           ✓ Đã tiêm
                         </span>
                       )}
-
-                      {/* Hiển thị trạng thái chưa tiêm khi campaign đã completed nhưng student chưa tiêm */}
                       {student.status === "PENDING" &&
                         vaccinationStatus === "COMPLETED" &&
                         !student.is_vaccinated && (
@@ -187,7 +188,6 @@ const VaccineCampaignReport = () => {
                             ✗ Chưa tiêm
                           </span>
                         )}
-
                       {updatingRecords.has(student.id) && (
                         <span className="ml-2 text-xs text-blue-600">
                           Đang cập nhật...
@@ -199,7 +199,6 @@ const VaccineCampaignReport = () => {
               ))}
             </tbody>
           </table>
-
           <div className="mt-4 text-sm text-gray-600">
             Tổng số học sinh: {studentList.length}
           </div>
