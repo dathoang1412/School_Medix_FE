@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { User, MapPin, Phone, Mail, Calendar, Users, GraduationCap, CheckCircle } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
+import { getStudentInfo } from '../../../service/childenService';
+import { useParams } from 'react-router-dom';
 
 const StudentProfile = () => {
   const [childData, setChildData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { student_id } = useParams();
 
   useEffect(() => {
     const fetchStudentProfile = async () => {
       try {
-        const student = localStorage.getItem("selectedChild");
-        const studentId = student ? JSON.parse(student).id : null;
-        console.log(studentId);
-
-        if (!studentId) {
-          throw new Error("No student ID found");
-        }
-
-        const response = await axiosClient.get(`/student/${studentId}`);
-        setChildData(response.data.data);
+        const response = await getStudentInfo(student_id);
+        // console.log("Child Info: ", response);
+        setChildData(response);
         setIsLoading(false);
       } catch (err) {
         console.error("Error fetching student profile:", err);

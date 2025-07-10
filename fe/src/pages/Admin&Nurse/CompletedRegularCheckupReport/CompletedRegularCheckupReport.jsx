@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import { ArrowLeft, Download, FileText } from "lucide-react";
 import { supabase, getSession } from "../../../config/Supabase";
 import PDFViewer from "../../../components/PDFViewer";
+import { getUserRole } from "../../../service/authService";
 
 const CompletedRegularCheckupReport = () => {
   const [generalHealthList, setGeneralHealthList] = useState([]);
@@ -17,8 +18,8 @@ const CompletedRegularCheckupReport = () => {
     bulkDownload: false, // Loading state for bulk report download
   });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showPDFModal, setShowPDFModal] = useState(false); // New state for PDF modal
-  const [selectedPDFUrl, setSelectedPDFUrl] = useState(null); // New state for selected PDF URL
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [selectedPDFUrl, setSelectedPDFUrl] = useState(null);
   const { campaign_id } = useParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -257,8 +258,14 @@ const CompletedRegularCheckupReport = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   #{item.register_id}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.student_name}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <Link
+                    to={`/${getUserRole()}/student-overview/${item.student_id}`}
+                    className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                    aria-label={`Xem thông tin chi tiết của học sinh ${item.student_name}`}
+                  >
+                    {item.student_name}
+                  </Link>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {item.class_name}
@@ -271,10 +278,7 @@ const CompletedRegularCheckupReport = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <button
                         onClick={() =>
-                          handleRecordDownload(
-                            item.record_url,
-                            item.register_id
-                          )
+                          handleRecordDownload(item.record_url, item.register_id)
                         }
                         disabled={
                           !item.record_url ||
@@ -285,9 +289,7 @@ const CompletedRegularCheckupReport = () => {
                           !item.record_url || loading.download[item.register_id]
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700"
-                        } ${
-                          loading.general ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
+                        } ${loading.general ? "opacity-50 cursor-not-allowed" : ""}`}
                         title={
                           loading.download[item.register_id]
                             ? "Đang tải..."
@@ -321,7 +323,7 @@ const CompletedRegularCheckupReport = () => {
                             <path
                               className="opacity-75"
                               fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z ¬"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                             ></path>
                           </svg>
                         ) : (
@@ -498,4 +500,3 @@ const CompletedRegularCheckupReport = () => {
 };
 
 export default CompletedRegularCheckupReport;
-  

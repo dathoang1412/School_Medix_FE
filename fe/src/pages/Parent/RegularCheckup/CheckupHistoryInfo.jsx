@@ -1,20 +1,18 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
-import { getSession } from "../../../config/Supabase";
-import { ChildContext } from "../../../layouts/ParentLayout";
+import { getStudentInfo } from "../../../service/childenService";
 import { Download, FileText, ChevronDown, X } from "lucide-react";
 import PDFViewer from "../../../components/PDFViewer";
 
 const CheckupHistoryInfo = () => {
-  const { selectedChild } = useContext(ChildContext);
+  const { student_id } = useParams();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState({
     fetch: false,
     download: {},
   });
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [selectedPDFUrl, setSelectedPDFUrl] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
@@ -22,51 +20,48 @@ const CheckupHistoryInfo = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const [selectedChild, setSelectedChild] = useState(null);
 
+  // Fetch student info
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data, error } = await getSession();
-      if (error || !data.session) {
-        enqueueSnackbar("Vui lòng đăng nhập để tiếp tục!", {
+    const fetchStudentInfo = async () => {
+      try {
+        const child = await getStudentInfo(student_id);
+        setSelectedChild(child);
+      } catch (error) {
+        enqueueSnackbar("Không thể tải thông tin học sinh!", {
           variant: "error",
         });
-        navigate("/login");
-        return;
       }
-      setIsAuthenticated(true);
     };
-    checkAuth();
-  }, [navigate, enqueueSnackbar]);
 
+    fetchStudentInfo();
+  }, [student_id, enqueueSnackbar]);
+
+  // Fetch health history when selectedChild is available
   useEffect(() => {
-    if (!isAuthenticated || !selectedChild?.id) return;
+    if (!selectedChild?.id) return; // Chỉ gọi API khi selectedChild.id tồn tại
 
     const fetchHistory = async () => {
       setLoading((prev) => ({ ...prev, fetch: true }));
       try {
-        const res = await axiosClient.get(
-          `/student/${selectedChild.id}/full-record`
-        );
+        const res = await axiosClient.get(`/student/${selectedChild.id}/full-record`);
         setList(res.data.data);
       } catch (error) {
-        enqueueSnackbar("Không thể tải lịch sử kiểm tra sức khỏe!", {
-          variant: "error",
-        });
+        console.error("Error fetching health history:", error); // Log lỗi để debug
+        enqueueSnackbar(
+          `Không thể tải lịch sử kiểm tra sức khỏe: ${error.response?.data?.message || error.message}`,
+          { variant: "error" }
+        );
       } finally {
         setLoading((prev) => ({ ...prev, fetch: false }));
       }
     };
 
     fetchHistory();
-  }, [isAuthenticated, selectedChild?.id, enqueueSnackbar]);
+  }, [selectedChild?.id, enqueueSnackbar]);
 
   const handleRecordDownload = async (recordUrl, id, type = "general") => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để tải file!", { variant: "error" });
-      navigate("/login");
-      return;
-    }
-
     if (!recordUrl) {
       enqueueSnackbar("Không có file kết quả cho bản ghi này!", {
         variant: "warning",
@@ -95,7 +90,7 @@ const CheckupHistoryInfo = () => {
 
       enqueueSnackbar("Tải file PDF thành công!", { variant: "success" });
     } catch (error) {
-      enqueueSnackbar("Không thể tải file PDF!", { variant: "error" });
+      enqueueSnackbar(`Không thể tải file PDF: ${error.message}`, { variant: "error" });
     } finally {
       setLoading((prev) => ({
         ...prev,
@@ -105,12 +100,6 @@ const CheckupHistoryInfo = () => {
   };
 
   const handleViewPDF = (recordUrl) => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để xem file!", { variant: "error" });
-      navigate("/login");
-      return;
-    }
-
     if (!recordUrl) {
       enqueueSnackbar("Không có file kết quả để xem!", { variant: "warning" });
       return;
@@ -476,15 +465,6 @@ const CheckupHistoryInfo = () => {
       )}
     </div>
   );
-
-  if (!isAuthenticated) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto text-center">
-        <div className="w-8 h-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent mx-auto mb-4" />
-        <p className="text-gray-600 text-sm">Đang kiểm tra đăng nhập...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

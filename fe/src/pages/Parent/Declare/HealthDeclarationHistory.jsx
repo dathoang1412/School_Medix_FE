@@ -1,62 +1,73 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { ChevronDown, ChevronUp, FileText, Calendar, Clock, Shield, Loader2, XCircle, CheckCircle, AlertCircle, Pill, User, MapPin, Activity } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
-import { ChildContext } from '../../../layouts/ParentLayout';
+import { getStudentInfo } from '../../../service/childenService';
 
 const HealthDeclarationHistory = () => {
-  const { handleSelectChild, children } = useContext(ChildContext);
+  const { student_id } = useParams();
   const [records, setRecords] = useState([]);
   const [filteredRecords, setFilteredRecords] = useState([]);
   const [diseaseMap, setDiseaseMap] = useState({});
+  const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedRows, setExpandedRows] = useState(new Set());
-  const [currChild, setCurrChild] = useState(null);
   const recordsPerPage = 10;
 
   useEffect(() => {
-    const selectedChild = children.find(c => c.id === JSON.parse(localStorage.getItem('selectedChild'))?.id) || JSON.parse(localStorage.getItem('selectedChild'));
-    if (selectedChild) {
-      setCurrChild(selectedChild);
-      handleSelectChild(selectedChild);
-    }
-  }, [children, handleSelectChild]);
+    const fetchData = async () => {
+      setLoading(true);
+      setError('');
 
-  useEffect(() => {
-    const fetchDiseases = async () => {
+      // Fetch student data
+      try {
+        if (!student_id) {
+          setError('Không tìm thấy ID học sinh.');
+          setLoading(false);
+          return;
+        }
+
+        const studentData = await getStudentInfo(student_id);
+        if (!studentData) {
+          setError('Không thể tải thông tin học sinh. Vui lòng thử lại.');
+          setLoading(false);
+          return;
+        }
+        setStudent(studentData);
+      } catch (error) {
+        console.error('Error fetching student:', error);
+        setError('Không thể tải thông tin học sinh. Vui lòng thử lại.');
+      }
+
+      // Fetch diseases
       try {
         const { data } = await axiosClient.get('/diseases');
         setDiseaseMap(data.reduce((acc, d) => ({ ...acc, [d.id]: d.name }), {}));
       } catch {
-        setError('Không thể tải danh sách bệnh');
+        setError('Không thể tải danh sách bệnh.');
       }
-    };
-    fetchDiseases();
-  }, []);
 
-  useEffect(() => {
-    if (!currChild) return;
-    const fetchRecords = async () => {
-      setLoading(true);
+      // Fetch records
       try {
-        const { data } = await axiosClient.get(`/disease-record/${currChild.id}/requestsHistory`);
+        const { data } = await axiosClient.get(`/disease-record/${student_id}/requestsHistory`);
         if (!data.error && data.data?.rows) {
           setRecords(data.data.rows);
           setFilteredRecords(data.data.rows);
         } else {
-          setError(data.message || 'Không thể tải lịch sử khai báo bệnh');
+          setError(data.message || 'Không thể tải lịch sử khai báo bệnh.');
         }
       } catch {
-        setError('Không thể tải lịch sử khai báo bệnh');
+        setError('Không thể tải lịch sử khai báo bệnh.');
       } finally {
         setLoading(false);
       }
     };
-    fetchRecords();
-  }, [currChild]);
+    fetchData();
+  }, [student_id]);
 
   useEffect(() => {
     let filtered = records.filter(r => statusFilter === 'All' || r.pending === statusFilter);
@@ -115,9 +126,9 @@ const HealthDeclarationHistory = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Lịch sử khai báo bệnh</h1>
               <p className="text-gray-600">Xem trạng thái và chi tiết các đơn khai báo bệnh</p>
-              {currChild && (
+              {student && (
                 <p className="text-sm font-medium text-gray-700 mt-2">
-                  Học sinh: {currChild.name || getStudentDisplay(currChild.id)}
+                  Học sinh: {student.name || getStudentDisplay(student.id)}
                 </p>
               )}
             </div>
@@ -154,6 +165,8 @@ const HealthDeclarationHistory = () => {
                 <th className="p-4 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => handleSort('created_at')}>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" /> Ngày Tạo
+                   
+
                     {sortConfig.key === 'created_at' && (sortConfig.direction === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
                   </div>
                 </th>
@@ -180,7 +193,7 @@ const HealthDeclarationHistory = () => {
               ) : currentRecords.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="p-12 text-center">
-                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                    <FileText className="w-12 h-12 Get X AI text-gray-400 mx-auto mb-2" />
                     <p className="text-gray-900 text-lg font-semibold">Không tìm thấy hồ sơ</p>
                   </td>
                 </tr>
@@ -208,7 +221,7 @@ const HealthDeclarationHistory = () => {
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700">
                             <div className="space-y-2">
                               <h4 className="font-semibold flex items-center gap-2"><User className="w-4 h-4 text-blue-600" />Thông tin cơ bản</h4>
-                              <p><span className="font-medium">Họ và tên:</span> {currChild?.name || 'Không xác định'}</p>
+                              <p><span className="font-medium">Họ và tên:</span> {student?.name || 'Không xác định'}</p>
                               <p><span className="font-medium">Ngày phát hiện:</span> {formatDate(record.detect_date)}</p>
                               <p><span className="font-medium">Ngày tạo:</span> {formatDate(record.created_at)}</p>
                             </div>

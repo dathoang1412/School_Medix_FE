@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2, List } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
-import { ChildContext } from '../../../layouts/ParentLayout';
+import { useParams } from 'react-router-dom';
+import { getStudentInfo } from '../../../service/childenService';
 
 const HealthRecordList = () => {
-  const { handleSelectChild, children } = useContext(ChildContext);
   const [recs, setRecs] = useState([]);
   const [filtRecs, setFiltRecs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -15,6 +15,7 @@ const HealthRecordList = () => {
   const [page, setPage] = useState(1);
   const recsPerPage = 10;
   const [child, setChild] = useState(null);
+  const { student_id } = useParams();
 
   const fmtDate = (d, forInput = false) => {
     if (!d) return forInput ? '' : 'Chưa xác định';
@@ -29,12 +30,14 @@ const HealthRecordList = () => {
   const isToday = (d) => d ? new Date(d).toDateString() === new Date().toDateString() : false;
 
   useEffect(() => {
-    const selChild = children.find(c => c.id === JSON.parse(localStorage.getItem("selectedChild"))?.id) || JSON.parse(localStorage.getItem("selectedChild"));
-    if (selChild) {
-      setChild(selChild);
-      handleSelectChild(selChild);
+    const fc = async () => {
+      const selChild = await getStudentInfo(student_id);
+      if (selChild) {
+        setChild(selChild);
+      }
     }
-  }, [children, handleSelectChild]);
+    fc();
+  }, [student_id]);
 
   useEffect(() => {
     if (!child) return;
@@ -90,9 +93,9 @@ const HealthRecordList = () => {
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="p-3 bg-blue-50 rounded-lg"><Shield className="w-8 h-8 text-blue-600" /></div>
+            <div className="p-3 bg-blue-50 rounded-lg"><List className="w-8 h-8 text-blue-600" /></div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Hồ sơ bệnh</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Danh sách bệnh</h1>
               <p className="text-gray-600">Theo dõi hồ sơ bệnh của con em tại trường</p>
               {child && <p className="text-sm font-medium text-gray-700 mt-2">Học sinh: HS{String(child.id).padStart(6, '0')}</p>}
             </div>

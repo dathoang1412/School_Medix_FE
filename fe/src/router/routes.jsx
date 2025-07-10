@@ -51,6 +51,7 @@ import DeclarationManagement from "../pages/Admin&Nurse/HealthDeclarationManagem
 import HealthDashboard from "../pages/Parent/RegularCheckup/HealthDashboard";
 import CheckupHistoryInfo from "../pages/Parent/RegularCheckup/CheckupHistoryInfo";
 import ParentCheckupLayout from "../pages/Parent/RegularCheckup/ParentCheckupLayout";
+import StudentOverview from "../pages/Student/StudentOverview";
 
 const routes = createBrowserRouter([
   {
@@ -205,6 +206,10 @@ const routes = createBrowserRouter([
           {
             path: "completed-vaccine-campaign-report/:campaign_id",
             element: <CompletedVaccineReport />,
+          },
+          {
+            path: "student-overview/:student_id",
+            element: <StudentOverview />,
           }
         ],
       },
@@ -373,6 +378,10 @@ const routes = createBrowserRouter([
           {
             path: "DeclarationManagement",
             element: <DeclarationManagement />,
+          },
+          {
+            path: "student-overview/:student_id",
+            element: <StudentOverview />,
           },
         ],
       },

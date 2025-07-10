@@ -6,9 +6,10 @@ import { ChildContext } from "../../../layouts/ParentLayout";
 import StudentRegularCheckup from "./StudentRegularCheckup";
 import CheckupHistoryInfo from "./CheckupHistoryInfo";
 import HealthDashboard from "./HealthDashboard";
+import axiosClient from "../../../config/axiosClient";
 
 const ParentCheckupLayout = () => {
-  const { childId } = useParams();
+  const { student_id } = useParams();
   const { children, handleSelectChild } = useContext(ChildContext);
   const [currChild, setCurrChild] = useState(null);
   const [activeTab, setActiveTab] = useState("plans");
@@ -19,7 +20,8 @@ const ParentCheckupLayout = () => {
     const fetchChild = async () => {
       try {
         setLoading(true);
-        const child = children.find((c) => c.id === childId) || JSON.parse(localStorage.getItem("selectedChild"));
+        const res = await axiosClient.get('/student/' + student_id);
+        const child = res?.data.data;
         if (!child) {
           setError("Không tìm thấy thông tin học sinh");
           return;
@@ -35,7 +37,7 @@ const ParentCheckupLayout = () => {
       }
     };
     fetchChild();
-  }, [childId, children, handleSelectChild]);
+  }, [student_id, children, handleSelectChild]);
 
   if (loading) {
     return (
@@ -121,7 +123,7 @@ const ParentCheckupLayout = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6">
         {activeTab === "plans" && <StudentRegularCheckup currChild={currChild} />}
         {activeTab === "history" && <CheckupHistoryInfo />}
         {activeTab === "dashboard" && <HealthDashboard />}
