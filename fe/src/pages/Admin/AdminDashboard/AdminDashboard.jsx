@@ -392,22 +392,22 @@ const AdminDashboard = () => {
             ) : (
               <div className="space-y-4">
                 {/* Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-                    <p className="text-sm text-gray-500">Tham gia khám</p>
-                    <p className="text-2xl font-bold text-gray-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"> {/* Giảm gap từ 4 xuống 3 */}
+                  <div className="bg-white p-3 rounded-lg shadow border-l-4 border-blue-500"> {/* Giảm padding từ p-4 xuống p-3 */}
+                    <p className="text-xs text-gray-500">Tham gia khám</p> {/* Giảm từ text-sm xuống text-xs */}
+                    <p className="text-xl font-bold text-gray-800"> {/* Giảm từ text-2xl xuống text-xl */}
                       {heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs text-gray-600"> {/* Giảm từ text-sm xuống text-xs */}
                       Tỷ lệ: {heightWeightAvg.totalStudents ? ((heightWeightAvg.totalChecked / heightWeightAvg.totalStudents) * 100).toFixed(1) : 0}% 
                     </p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-pink-500">
-                    <p className="text-sm text-gray-500">Tỷ lệ nam/nữ</p>
-                    <p className="text-2xl font-bold text-gray-800">
+                  <div className="bg-white p-3 rounded-lg shadow border-l-4 border-pink-500"> {/* Giảm padding từ p-4 xuống p-3 */}
+                    <p className="text-xs text-gray-500">Tỷ lệ nam/nữ</p> {/* Giảm từ text-sm xuống text-xs */}
+                    <p className="text-xl font-bold text-gray-800"> {/* Giảm từ text-2xl xuống text-xl */}
                       {heightWeightAvg.maleCount || 0} / {heightWeightAvg.femaleCount || 0}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs text-gray-600"> {/* Giảm từ text-sm xuống text-xs */}
                       Nam: {heightWeightAvg.totalChecked ? ((heightWeightAvg.maleCount / heightWeightAvg.totalChecked) * 100).toFixed(1) : 0}% 
                     </p>
                   </div>
@@ -476,7 +476,7 @@ const AdminDashboard = () => {
                   </table>
                 </div>
                 {/* Grade Filter */}
-                <div className="mt-4">
+                <div className="mt-4 flex items-right justify-right ">
                   <select
                     className={`rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-full sm:w-48 ${!heightWeightAvg?.grades?.length ? 'text-gray-400' : ''}`}
                     onChange={(e) => setSelectedGradeId(e.target.value)}
