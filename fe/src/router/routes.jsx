@@ -210,7 +210,11 @@ const routes = createBrowserRouter([
           {
             path: "student-overview/:student_id",
             element: <StudentOverview />,
-          }
+          },
+          {
+            path: "vaccination-report/:campaign_id",
+            element: <VaccineCampaignReport />,
+          },
         ],
       },
     ],

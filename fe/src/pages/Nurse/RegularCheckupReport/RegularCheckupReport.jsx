@@ -100,6 +100,7 @@ const RegularCheckupReport = () => {
         `/health-record/campaign/${campaign_id}`
       );
       setGeneralHealthList(res.data.data);
+      console.log("General List: ", res.data.data);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu khám tổng quát:", error);
       enqueueSnackbar("Không thể tải danh sách khám tổng quát!", {

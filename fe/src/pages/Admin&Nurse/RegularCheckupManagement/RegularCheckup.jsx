@@ -45,10 +45,6 @@ const RegularCheckup = () => {
       const campaigns = res.data.data || [];
       console.log("Checkup campaigns:", campaigns);
       setCampaignList(campaigns);
-      const ids = campaigns.map((c) => c.id);
-      if (new Set(ids).size !== ids.length) {
-        console.error("Duplicate campaign IDs detected:", ids);
-      }
       setError(null);
     } catch (err) {
       setError("Không thể tải danh sách chiến dịch khám sức khỏe");
@@ -79,22 +75,20 @@ const RegularCheckup = () => {
   };
 
   const handleCampaignAction = async (campaignId, action) => {
+    if (userRole !== "admin") return;
     setLoadingActions((prev) => ({ ...prev, [campaignId]: true }));
     try {
-      let endpoint = `/checkup-campaign/${campaignId}/${action}`;
-      if (action === "send-register") {
-        endpoint = `/checkup/${campaignId}/send-register`;
-      }
+      const endpoint =
+        action === "send-register"
+          ? `/checkup/${campaignId}/send-register`
+          : `/checkup-campaign/${campaignId}/${action}`;
       const response = await (action === "send-register"
         ? axiosClient.post(endpoint)
         : axiosClient.patch(endpoint));
       await fetchCampaigns();
       enqueueSnackbar(response?.data.message || "Thành công!", { variant: "info" });
     } catch (error) {
-      console.error(
-        `Error performing ${action} on campaign ${campaignId}:`,
-        error.response?.data?.message || error.message
-      );
+      console.error(`Error performing ${action} on campaign ${campaignId}:`, error);
       enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", { variant: "error" });
     } finally {
       setLoadingActions((prev) => ({ ...prev, [campaignId]: false }));
@@ -125,86 +119,251 @@ const RegularCheckup = () => {
     }
   };
 
-  const getPrimaryActionConfig = (status, campaignId) => {
-    if (userRole === "nurse") {
+  const getActionButtons = (status, campaignId) => {
+    const buttons = [];
+
+    if (userRole === "admin") {
+      if (status === "DRAFTED") {
+        buttons.push(
+          <button
+            key="send-register"
+            onClick={() => handleCampaignAction(campaignId, "send-register")}
+            disabled={loadingActions[campaignId]}
+            className={`px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+              loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            {loadingActions[campaignId] ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang xử lý...</span>
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                <span>Gửi đơn</span>
+              </>
+            )}
+          </button>,
+          <button
+            key="edit"
+            onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/edit`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Pencil className="w-4 h-4" />
+            <span>Chỉnh sửa</span>
+          </button>,
+          <button
+            key="cancel"
+            onClick={() => handleCampaignAction(campaignId, "cancel")}
+            disabled={loadingActions[campaignId]}
+            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+              loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            <XCircle className="w-4 h-4" />
+            <span>Hủy chiến dịch</span>
+          </button>
+        );
+      } else if (status === "PREPARING") {
+        buttons.push(
+          <button
+            key="close"
+            onClick={() => handleCampaignAction(campaignId, "close")}
+            disabled={loadingActions[campaignId]}
+            className={`px-5 py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+              loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            <XCircle className="w-4 h-4" />
+            <span>Đóng đơn đăng ký</span>
+          </button>,
+          <button
+            key="view-register-list"
+            onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Users className="w-4 h-4" />
+            <span>Xem danh sách học sinh</span>
+          </button>,
+          <button
+            key="cancel"
+            onClick={() => handleCampaignAction(campaignId, "cancel")}
+            disabled={loadingActions[campaignId]}
+            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+              loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            <XCircle className="w-4 h-4" />
+            <span>Hủy chiến dịch</span>
+          </button>
+        );
+      } else if (status === "UPCOMING") {
+        buttons.push(
+          <button
+            key="start"
+            onClick={() => handleCampaignAction(campaignId, "start")}
+            disabled={loadingActions[campaignId]}
+            className={`px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+              loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            <span>Khởi động chiến dịch</span>
+          </button>,
+          <button
+            key="view-register-list"
+            onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Users className="w-4 h-4" />
+            <span>Xem danh sách học sinh</span>
+          </button>,
+          <button
+            key="cancel"
+            onClick={() => handleCampaignAction(campaignId, "cancel")}
+            disabled={loadingActions[campaignId]}
+            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+              loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            <XCircle className="w-4 h-4" />
+            <span>Hủy chiến dịch</span>
+          </button>
+        );
+      } else if (status === "ONGOING") {
+        buttons.push(
+          <button
+            key="finish"
+            onClick={() => handleCampaignAction(campaignId, "finish")}
+            disabled={loadingActions[campaignId]}
+            className={`px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+              loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            <CheckCircle className="w-4 h-4" />
+            <span>Hoàn thành chiến dịch</span>
+          </button>,
+          // <button
+          //   key="edit-report"
+          //   onClick={() => navigate(`/admin/regular-checkup-report/${campaignId}`)}
+          //   className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          // >
+          //   <Pencil className="w-4 h-4" />
+          //   <span>Chỉnh sửa báo cáo</span>
+          // </button>,
+          <button
+            key="view-register-list"
+            onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Users className="w-4 h-4" />
+            <span>Xem danh sách học sinh</span>
+          </button>
+        );
+      } else if (["DONE", "COMPLETED"].includes(status)) {
+        buttons.push(
+          <button
+            key="view-report"
+            onClick={() => navigate(`/admin/regular-checkup-report/${campaignId}`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <FileText className="w-4 h-4" />
+            <span>Xem báo cáo</span>
+          </button>,
+          <button
+            key="view-register-list"
+            onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Users className="w-4 h-4" />
+            <span>Xem danh sách học sinh</span>
+          </button>
+        );
+      } else if (status === "CANCELLED") {
+        buttons.push(
+          <button
+            key="view-register-list"
+            onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Users className="w-4 h-4" />
+            <span>Xem danh sách học sinh</span>
+          </button>
+        );
+      }
+    } else if (userRole === "nurse") {
+      if (["PREPARING", "UPCOMING", "ONGOING"].includes(status)) {
+        buttons.push(
+          <button
+            key="view-register-list"
+            onClick={() => navigate(`/nurse/checkup-campaign/${campaignId}/register-list`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Users className="w-4 h-4" />
+            <span>Xem danh sách học sinh</span>
+          </button>
+        );
+      }
       if (status === "ONGOING") {
-        return {
-          text: "Chỉnh sửa báo cáo",
-          action: "edit-report",
-          className: "bg-indigo-700 hover:bg-indigo-800 text-white",
-          disabled: false,
-          onClick: () => navigate(`/nurse/regular-checkup-report/${campaignId}`),
-        };
+        buttons.push(
+          <button
+            key="edit-report"
+            onClick={() => navigate(`/nurse/regular-checkup-report/${campaignId}`)}
+            className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Pencil className="w-4 h-4" />
+            <span>Chỉnh sửa báo cáo</span>
+          </button>
+        );
       }
-      if (["PREPARING", "UPCOMING"].includes(status)) {
-        return {
-          text: "Xem danh sách học sinh",
-          action: "view-register-list",
-          className: "bg-blue-600 hover:bg-blue-700 text-white",
-          disabled: false,
-          onClick: () => navigate(`/nurse/checkup-campaign/${campaignId}/register-list`),
-        };
+      if (["DONE", "COMPLETED"].includes(status)) {
+        buttons.push(
+          <button
+            key="view-report"
+            onClick={() => navigate(`/nurse/regular-checkup-report/${campaignId}`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <FileText className="w-4 h-4" />
+            <span>Xem báo cáo</span>
+          </button>,
+          <button
+            key="view-register-list"
+            onClick={() => navigate(`/nurse/checkup-campaign/${campaignId}/register-list`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Users className="w-4 h-4" />
+            <span>Xem danh sách học sinh</span>
+          </button>
+        );
       }
-      if (status === "DONE" || status === "COMPLETED") {
-        return {
-          text: "Xem báo cáo",
-          action: "view-report",
-          className: "bg-blue-600 hover:bg-blue-700 text-white",
-          disabled: false,
-          onClick: () => navigate(`/nurse/completed-regular-checkup-report/${campaignId}`),
-        };
+      if (status === "CANCELLED") {
+        buttons.push(
+          <button
+            key="view-register-list"
+            onClick={() => navigate(`/nurse/checkup-campaign/${campaignId}/register-list`)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium numbered-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Users className="w-4 h-4" />
+            <span>Xem danh sách học sinh</span>
+          </button>
+        );
       }
-      return null;
     }
 
-    switch (status) {
-      case "DRAFTED":
-        return {
-          text: "Gửi đơn",
-          action: "send-register",
-          className: "bg-blue-600 hover:bg-blue-700 text-white",
-          disabled: false,
-        };
-      case "PREPARING":
-        return {
-          text: "Đóng đơn đăng ký",
-          action: "close",
-          className: "bg-amber-700 hover:bg-amber-800 text-white",
-          disabled: false,
-        };
-      case "UPCOMING":
-        return {
-          text: "Khởi động chiến dịch",
-          action: "start",
-          className: "bg-indigo-700 hover:bg-indigo-800 text-white",
-          disabled: false,
-        };
-      case "ONGOING":
-        return {
-          text: "Hoàn thành chiến dịch",
-          action: "finish",
-          className: "bg-emerald-700 hover:bg-emerald-800 text-white",
-          disabled: false,
-        };
-      case "DONE":
-      case "COMPLETED":
-        return {
-          text: "Xem báo cáo",
-          action: "view-report",
-          className: "bg-blue-600 hover:bg-blue-700 text-white",
-          disabled: false,
-          onClick: () => navigate(`/admin/completed-regular-checkup-report/${campaignId}`),
-        };
-      case "CANCELLED":
-        return {
-          text: "Đã hủy bỏ",
-          action: null,
-          className: "bg-slate-400 text-white cursor-not-allowed",
-          disabled: true,
-        };
-      default:
-        return null;
-    }
+    // Always include "View Details" button
+    buttons.unshift(
+      <button
+        key="view-details"
+        onClick={() => navigate(`/${userRole}/checkup-campaign/${campaignId}`)}
+        className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200 flex itemsfirefox-center space-x-2"
+      >
+        <FileText className="w-4 h-4" />
+        <span>Xem chi tiết</span>
+      </button>
+    );
+
+    return buttons;
   };
 
   if (loading && !isRefreshing) {
@@ -249,7 +408,7 @@ const RegularCheckup = () => {
               </h1>
               <p className="text-slate-600 text-base">
                 {userRole === "admin"
-                  ? "Hệ thống quản lý và giám sát các chiến dịch khám sức khỏe"
+                  ? "Quản lý và giám sát các chiến dịch khám sức khỏe"
                   : "Theo dõi và cập nhật báo cáo chiến dịch khám sức khỏe"}
               </p>
             </div>
@@ -347,177 +506,110 @@ const RegularCheckup = () => {
         </div>
 
         <div className="space-y-4">
-          {campaignList.map((campaign) => {
-            const primaryAction = getPrimaryActionConfig(campaign.status, campaign.id);
-            const isLoading = loadingActions[campaign.id];
-
-            return (
+          {campaignList.map((campaign) => (
+            <div
+              key={campaign.id}
+              className={`bg-white rounded-lg border border-slate-200 border-l-4 ${getCardBorderColor(
+                campaign.status
+              )} shadow-sm hover:shadow-md transition-shadow duration-200`}
+            >
               <div
-                key={campaign.id}
-                className={`bg-white rounded-lg border border-slate-200 border-l-4 ${getCardBorderColor(
-                  campaign.status
-                )} shadow-sm hover:shadow-md transition-shadow duration-200`}
+                className="p-6 cursor-pointer hover:bg-slate-50 transition-colors duration-200"
+                onClick={(e) => toggleExpanded(campaign.id, e)}
               >
-                <div
-                  className="p-6 cursor-pointer hover:bg-slate-50 transition-colors duration-200"
-                  onClick={(e) => toggleExpanded(campaign.id, e)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                          campaign.status
-                        )}`}
-                      >
-                        {getStatusIcon(campaign.status)}
-                        <span>{getStatusText(campaign.status)}</span>
-                      </div>
-                      <h3 className="text-lg font-semibold text-slate-900 max-w-2xl">
-                        {campaign.name}
-                      </h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div
+                      className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                        campaign.status
+                      )}`}
+                    >
+                      {getStatusIcon(campaign.status)}
+                      <span>{getStatusText(campaign.status)}</span>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <span className="text-sm text-slate-500 font-medium">Chi tiết</span>
-                      {expandedItems[campaign.id] ? (
-                        <ChevronUp className="w-5 h-5 text-slate-400" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-slate-400" />
-                      )}
-                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900 max-w-2xl">
+                      {campaign.name}
+                    </h3>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm text-slate-500 font-medium">Chi tiết</span>
+                    {expandedItems[campaign.id] ? (
+                      <ChevronUp className="w-5 h-5 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-slate-400" />
+                    )}
                   </div>
                 </div>
+              </div>
 
-                {expandedItems[campaign.id] && (
-                  <div className="px-6 pb-6 border-t border-slate-100 bg-slate-50/50">
-                    <div className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="flex items-start space-x-4">
-                          <div className="p-2 bg-indigo-100 rounded-lg">
-                            <Calendar className="w-5 h-5 text-indigo-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-700 mb-1">
-                              Thời gian bắt đầu
-                            </p>
-                            <p className="text-base text-slate-900">{formatDate(campaign.start_date)}</p>
-                          </div>
+              {expandedItems[campaign.id] && (
+                <div className="px-6 pb-6 border-t border-slate-100 bg-slate-50/50">
+                  <div className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="p-2 bg-indigo-100 rounded-lg">
+                          <Calendar className="w-5 h-5 text-indigo-600" />
                         </div>
-                        <div className="flex items-start space-x-4">
-                          <div className="p-2 bg-red-100 rounded-lg">
-                            <Calendar className="w-5 h-5 text-red-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-700 mb-1">
-                              Thời gian kết thúc
-                            </p>
-                            <p className="text-base text-slate-900">{formatDate(campaign.end_date)}</p>
-                          </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700 mb-1">
+                            Thời gian bắt đầu
+                          </p>
+                          <p className="text-base text-slate-900">
+                            {formatDate(campaign.start_date)}
+                          </p>
                         </div>
                       </div>
-                      <div className="space-y-4">
-                        <div className="flex items-start space-x-4">
-                          <div className="p-2 bg-emerald-100 rounded-lg">
-                            <MapPin className="w-5 h-5 text-emerald-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-700 mb-1">
-                              Địa điểm thực hiện
-                            </p>
-                            <p className="text-base text-slate-900">{campaign.location || "Chưa xác định"}</p>
-                          </div>
+                      <div className="flex items-start space-x-4">
+                        <div className="p-2 bg-red-100 rounded-lg">
+                          <Calendar className="w-5 h-5 text-red-600" />
                         </div>
-                        <div className="flex items-start space-x-4">
-                          <div className="p-2 bg-violet-100 rounded-lg">
-                            <Users className="w-5 h-5 text-violet-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-700 mb-1">
-                              Số khám chuyên khoa
-                            </p>
-                            <p className="text-base text-slate-900">
-                              {campaign.specialist_exams?.length || 0}
-                            </p>
-                          </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700 mb-1">
+                            Thời gian kết thúc
+                          </p>
+                          <p className="text-base text-slate-900">
+                            {formatDate(campaign.end_date)}
+                          </p>
                         </div>
                       </div>
                     </div>
-
-                    <div className="mt-6 pt-6 border-t border-slate-200 flex flex-wrap gap-3">
-                      <button
-                        className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200"
-                        onClick={() =>
-                          navigate(`/${getUserRole()}/checkup-campaign/${campaign.id}`)
-                        }
-                      >
-                        <FileText className="w-4 h-4 inline mr-2" /> Xem chi tiết
-                      </button>
-
-                      {userRole === "admin" && campaign.status === "DRAFTED" && (
-                        <button
-                          onClick={() => navigate(`/admin/checkup-campaign/${campaign.id}/edit`)}
-                          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
-                        >
-                          <Pencil className="w-4 h-4" />
-                          <span>Chỉnh sửa</span>
-                        </button>
-                      )}
-
-                      {primaryAction && (
-                        <button
-                          onClick={
-                            primaryAction.onClick ||
-                            (() => {
-                              if (primaryAction.action) {
-                                handleCampaignAction(campaign.id, primaryAction.action);
-                              }
-                            })
-                          }
-                          disabled={primaryAction.disabled || isLoading}
-                          className={`px-5 py-2.5 font-medium rounded-lg transition-colors duration-200 ${primaryAction.className} ${
-                            isLoading ? "opacity-75 cursor-not-allowed" : ""
-                          } flex items-center space-x-2`}
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              <span>Đang xử lý...</span>
-                            </>
-                          ) : (
-                            <>
-                              {primaryAction.action === "send-register" && (
-                                <Send className="w-4 h-4" />
-                              )}
-                              {primaryAction.action === "finish" && (
-                                <CheckCircle className="w-4 h-4" />
-                              )}
-                              {primaryAction.action === "view-register-list" && (
-                                <Users className="w-4 h-4" />
-                              )}
-                              <span>{primaryAction.text}</span>
-                            </>
-                          )}
-                        </button>
-                      )}
-
-                      {userRole === "admin" &&
-                        ["DRAFTED", "PREPARING", "UPCOMING"].includes(campaign.status) && (
-                          <button
-                            onClick={() => handleCampaignAction(campaign.id, "cancel")}
-                            disabled={isLoading}
-                            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 ${
-                              isLoading ? "opacity-75 cursor-not-allowed" : ""
-                            } flex items-center space-x-2`}
-                          >
-                            <XCircle className="w-4 h-4" />
-                            <span>Hủy chiến dịch</span>
-                          </button>
-                        )}
+                    <div className="space-y-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="p-2 bg-emerald-100 rounded-lg">
+                          <MapPin className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700 mb-1">
+                            Địa điểm thực hiện
+                          </p>
+                          <p className="text-base text-slate-900">
+                            {campaign.location || "Chưa xác định"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-4">
+                        <div className="p-2 bg-violet-100 rounded-lg">
+                          <Users className="w-5 h-5 text-violet-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700 mb-1">
+                            Số khám chuyên khoa
+                          </p>
+                          <p className="text-base text-slate-900">
+                            {campaign.specialist_exams?.length || 0}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  <div className="mt-6 pt-6 border-t border-slate-200 flex flex-wrap gap-3">
+                    {getActionButtons(campaign.status, campaign.id)}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
         {campaignList.length === 0 && (
