@@ -378,13 +378,26 @@ const VaccineCampaignInfo = () => {
                               Chi tiết
                             </button>
                             
-                            {statusInfo.canSurvey && !campaign.isSurveyed && (
+                            {statusInfo.canSurvey && (
                               <button
                                 onClick={() => handleSurvey(campaign.campaign_id)}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                  campaign.isSurveyed
+                                    ? 'bg-green-600 text-white hover:bg-green-700'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
                               >
-                                <ClipboardList className="w-4 h-4" />
-                                Tham gia khảo sát
+                                {campaign.isSurveyed ? (
+                                  <>
+                                    <CheckCircle className="w-4 h-4" />
+                                    Đã khảo sát
+                                  </>
+                                ) : (
+                                  <>
+                                    <ClipboardList className="w-4 h-4" />
+                                    Tham gia khảo sát
+                                  </>
+                                )}
                               </button>
                             )}
                           </div>
