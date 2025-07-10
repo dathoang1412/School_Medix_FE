@@ -42,7 +42,7 @@ const VaccineDeclarationHistory = ({ student_id }) => {
 
       // Fetch vaccination records
       try {
-        const { data } = await axiosClient.get(`/vaccination-record/${student_id}/requestsHistory`);
+        const { data } = await axiosClient.get(`/vaccination-record/${student_id}/requests/history`);
         if (!data.error && data.data?.rows) {
           setRecords(data.data.rows);
           setFilteredRecords(data.data.rows);

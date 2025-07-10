@@ -51,7 +51,7 @@ const DiseaseDeclarationHistory = ({ student_id }) => {
 
       // Fetch records
       try {
-        const { data } = await axiosClient.get(`/disease-record/${student_id}/requestsHistory`);
+        const { data } = await axiosClient.get(`/disease-record/${student_id}/requests/history`);
         if (!data.error && data.data?.rows) {
           setRecords(data.data.rows);
           setFilteredRecords(data.data.rows);
