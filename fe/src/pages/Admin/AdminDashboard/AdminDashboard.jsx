@@ -11,6 +11,12 @@ import {
   Users, Heart, AlertTriangle, Thermometer, Activity, Shield, TrendingUp, Calendar, Pill
 } from 'lucide-react';
 import PropTypes from 'prop-types';
+import {
+  getStatusColor,
+  getCardBorderColor,
+  getStatusText,
+  formatDate,
+} from "../../../utils/campaignUtils";
 
 const CurrentTimeDisplay = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -177,17 +183,6 @@ const AdminDashboard = () => {
     fetchHealthPlans();
   }, []);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'DRAFTED': return 'bg-gray-100 text-gray-800';
-      case 'PREPARING': return 'bg-yellow-100 text-yellow-800';
-      case 'UPCOMING': return 'bg-orange-100 text-orange-800';
-      case 'ONGOING': return 'bg-blue-100 text-blue-800';
-      case 'COMPLETED': return 'bg-green-100 text-green-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const getAccidentComparison = (recent, previous) => {
     const diff = recent - previous;
@@ -198,6 +193,12 @@ const AdminDashboard = () => {
     } else {
       return 'Không thay đổi so với tuần trước';
     }
+  };
+
+  // Handle navigation for plan items
+  const handlePlanClick = (planID) => {
+    const plan_type = planID !== null ? 'regular-checkup' : 'vaccine-campaign';
+    navigate(plan_type);
   };
 
   return (
@@ -227,12 +228,6 @@ const AdminDashboard = () => {
           ) : summaryError ? (
             <div className="col-span-full bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-600">{summaryError}</p>
-              <button
-                className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                onClick={() => fetchSummary()}
-              >
-                Thử lại
-              </button>
             </div>
           ) : (
             <>
@@ -364,13 +359,17 @@ const AdminDashboard = () => {
         {/* Health Status + Plans */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Health Status */}
-          <ChartCard title="Tình trạng sức khỏe tổng quát" icon={<TrendingUp className="text-blue-500" />}>
+          <ChartCard
+            title={`Tình trạng sức khỏe tổng quát${heightWeightAvg.isAllGrades ? ' (Tất cả khối lớp)' : ''}`}
+            icon={<TrendingUp className="text-blue-500" />}
+            className="min-h-[620px]"
+          >
             {heightWeightLoading ? (
-              <div className="h-64 flex items-center justify-center">
+              <div className="h-full flex items-center justify-center">
                 <p>Đang tải dữ liệu sức khỏe...</p>
               </div>
             ) : heightWeightError ? (
-              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
+              <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
                 <p className="text-red-600">{heightWeightError}</p>
               </div>
             ) : (
@@ -436,7 +435,7 @@ const AdminDashboard = () => {
                 {/* Grade Filter */}
                 <div className="mt-4">
                   <select
-                    className="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-full sm:w-48"
+                    className={`rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-full sm:w-48 ${!heightWeightAvg?.grades?.length ? 'text-gray-400' : ''}`}
                     onChange={(e) => setSelectedGradeId(e.target.value)}
                     value={selectedGradeId || ''}
                   >
@@ -446,7 +445,7 @@ const AdminDashboard = () => {
                         <option key={g.id} value={g.id}>{g.name}</option>
                       ))
                     ) : (
-                      <option value="">Không có dữ liệu</option>
+                      <option value="" disabled>Không có khối lớp</option>
                     )}
                   </select>
                 </div>
@@ -456,38 +455,37 @@ const AdminDashboard = () => {
 
           {/* Health Plans */}
           <div className="lg:col-span-2">
-            <ChartCard title="Kế hoạch y tế nhà trường" icon={<Calendar className="text-purple-500" />}>
+            <ChartCard
+              title="Kế hoạch y tế sắp tới"
+              icon={<Calendar className="text-purple-500" />}
+              className="min-h-[620px]"
+            >
               {plansLoading ? (
-                <div className="h-64 flex items-center justify-center">
+                <div className="h-full flex items-center justify-center">
                   <p>Đang tải dữ liệu kế hoạch...</p>
                 </div>
               ) : plansError ? (
-                <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
+                <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
                   <p className="text-red-600">{plansError}</p>
-                  <button
-                    className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                    onClick={() => {
-                      delete cache.healthPlanUpcoming;
-                      setPlansLoading(true);
-                      setPlansError(null);
-                      fetchHealthPlans();
-                    }}
-                  >
-                    Thử lại
-                  </button>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar">
                   {healthPlanUpcoming.length > 0 ? (
                     healthPlanUpcoming.map((plan) => (
-                      <div key={plan.id} className="flex justify-between border p-3 rounded-md">
+                      <div
+                        key={plan.id}
+                        className="flex justify-between border p-3 rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => handlePlanClick(plan.checkup_id)}
+                      >
                         <div>
                           <h4 className="font-semibold">{plan.name}</h4>
                           <p className="text-sm text-gray-500">{plan.date}</p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status)}`}>
-                          {plan.status}
-                        </span>
+                        <div className="flex items-center">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status)}`}>
+                            {getStatusText(plan.status)}
+                          </span>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -524,13 +522,13 @@ const SummaryCard = ({ icon, label, value, color, navigateTo, children }) => {
   return (
     <div
       className={`bg-white p-5 rounded-xl shadow border-l-4 ${classes} cursor-pointer hover:shadow-lg transition-shadow duration-200`}
-      onClick={() => navigateTo && navigate(navigateTo)} // Điều hướng khi click vào card
+      onClick={() => navigateTo && navigate(navigateTo)}
     >
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-500">{label}</p>
           <p className="text-2xl font-bold text-gray-800">{value}</p>
-          {children} {/* Hiển thị nội dung tùy chỉnh, như button */}
+          {children}
         </div>
         <div className={classes}>{icon}</div>
       </div>
@@ -547,8 +545,8 @@ SummaryCard.propTypes = {
   children: PropTypes.node,
 };
 
-const ChartCard = ({ title, icon, select, children }) => (
-  <div className="bg-white p-6 rounded-xl shadow">
+const ChartCard = ({ title, icon, select, children, className }) => (
+  <div className={`bg-white p-6 rounded-xl shadow ${className}`}>
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center">
         {icon}
@@ -563,7 +561,33 @@ const ChartCard = ({ title, icon, select, children }) => (
 ChartCard.propTypes = {
   title: PropTypes.string.isRequired,
   icon: PropTypes.element.isRequired,
+  select: PropTypes.element,
   children: PropTypes.node.isRequired,
+  className: PropTypes.string
 };
+
+// Custom scrollbar styles
+const styles = `
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+`;
+
+// Inject custom scrollbar styles
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);
 
 export default AdminDashboard;
