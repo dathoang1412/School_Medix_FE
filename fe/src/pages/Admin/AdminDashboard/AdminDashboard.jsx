@@ -384,100 +384,6 @@ const AdminDashboard = () => {
 
         {/* Health Status + Plans */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Health Status */}
-          <ChartCard
-            title={`Tình trạng sức khỏe tổng quát${heightWeightAvg.isAllGrades ? ' (Tất cả khối lớp)' : ''}`}
-            icon={<TrendingUp className="text-black-500" />}
-            className="min-h-[620px]"
-          >
-            {heightWeightLoading ? (
-              <div className="h-full flex items-center justify-center">
-                <p>Đang tải dữ liệu sức khỏe...</p>
-              </div>
-            ) : heightWeightError ? (
-              <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
-                <p className="text-red-600">{heightWeightError}</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-                    <p className="text-sm text-gray-500">Tham gia khám</p>
-                    <p className="text-2xl font-bold text-gray-800">
-                      {heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Tỷ lệ: {heightWeightAvg.totalStudents ? ((heightWeightAvg.totalChecked / heightWeightAvg.totalStudents) * 100).toFixed(1) : 0}% 
-                    </p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-pink-500">
-                    <p className="text-sm text-gray-500">Tỷ lệ nam/nữ</p>
-                    <p className="text-2xl font-bold text-gray-800">
-                      {heightWeightAvg.maleCount || 0} / {heightWeightAvg.femaleCount || 0}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Nam: {heightWeightAvg.totalChecked ? ((heightWeightAvg.maleCount / heightWeightAvg.totalChecked) * 100).toFixed(1) : 0}% 
-                    </p>
-                  </div>
-                </div>
-                {/* Detailed Table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-black-600">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="p-2 text-left">Thông số</th>
-                        <th className="p-2 text-left">Giá trị</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="p-2 border-t">Tên đợt khám</td>
-                        <td className="p-2 border-t">{heightWeightAvg.checkupName || 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Ngày khám</td>
-                        <td className="p-2 border-t">{heightWeightAvg.latestCheckupDate || 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Chiều cao TB nam</td>
-                        <td className="p-2 border-t">{heightWeightAvg.maleHeightAvg ? `${heightWeightAvg.maleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Cân nặng TB nam</td>
-                        <td className="p-2 border-t">{heightWeightAvg.maleWeightAvg ? `${heightWeightAvg.maleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Chiều cao TB nữ</td>
-                        <td className="p-2 border-t">{heightWeightAvg.femaleHeightAvg ? `${heightWeightAvg.femaleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Cân nặng TB nữ</td>
-                        <td className="p-2 border-t">{heightWeightAvg.femaleWeightAvg ? `${heightWeightAvg.femaleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                {/* Grade Filter */}
-                <div className="mt-4">
-                  <select
-                    className={`rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-full sm:w-48 ${!heightWeightAvg?.grades?.length ? 'text-gray-400' : ''}`}
-                    onChange={(e) => setSelectedGradeId(e.target.value)}
-                    value={selectedGradeId || ''}
-                  >
-                    <option value="">Tất cả khối lớp</option>
-                    {heightWeightAvg?.grades?.length > 0 ? (
-                      heightWeightAvg.grades.map(g => (
-                        <option key={g.id} value={g.id}>{g.name}</option>
-                      ))
-                    ) : (
-                      <option value="" disabled>Không có khối lớp</option>
-                    )}
-                  </select>
-                </div>
-              </div>
-            )}
-          </ChartCard>
 
           {/* Health Plans */}
           <div className="lg:col-span-2">
@@ -554,6 +460,127 @@ const AdminDashboard = () => {
               )}
             </ChartCard>
           </div>
+
+          {/* Health Status */}
+          <ChartCard
+            title={`Tình trạng sức khỏe tổng quát${heightWeightAvg.isAllGrades ? ' (Tất cả khối lớp)' : ''}`}
+            icon={<TrendingUp className="text-black-500" />}
+            className="min-h-[620px]"
+          >
+            {heightWeightLoading ? (
+              <div className="h-full flex items-center justify-center">
+                <p>Đang tải dữ liệu sức khỏe...</p>
+              </div>
+            ) : heightWeightError ? (
+              <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
+                <p className="text-red-600">{heightWeightError}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Metric Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
+                    <p className="text-sm text-gray-500">Tham gia khám</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Tỷ lệ: {heightWeightAvg.totalStudents ? ((heightWeightAvg.totalChecked / heightWeightAvg.totalStudents) * 100).toFixed(1) : 0}% 
+                    </p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow border-l-4 border-pink-500">
+                    <p className="text-sm text-gray-500">Tỷ lệ nam/nữ</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {heightWeightAvg.maleCount || 0} / {heightWeightAvg.femaleCount || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Nam: {heightWeightAvg.totalChecked ? ((heightWeightAvg.maleCount / heightWeightAvg.totalChecked) * 100).toFixed(1) : 0}% 
+                    </p>
+                  </div>
+                </div>
+                {/* Detailed Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-black-600">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="p-2 text-left">Thông số</th>
+                        <th className="p-2 text-left">Giá trị</th>
+                      </tr>
+                    </thead>
+                    {/* <tbody>
+                      <tr>
+                        <td className="p-2 border-t">Tên đợt khám</td>
+                        <td className="p-2 border-t">{heightWeightAvg.checkupName || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Ngày khám</td>
+                        <td className="p-2 border-t">{heightWeightAvg.latestCheckupDate || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Chiều cao TB nam</td>
+                        <td className="p-2 border-t">{heightWeightAvg.maleHeightAvg ? `${heightWeightAvg.maleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Cân nặng TB nam</td>
+                        <td className="p-2 border-t">{heightWeightAvg.maleWeightAvg ? `${heightWeightAvg.maleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Chiều cao TB nữ</td>
+                        <td className="p-2 border-t">{heightWeightAvg.femaleHeightAvg ? `${heightWeightAvg.femaleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border-t">Cân nặng TB nữ</td>
+                        <td className="p-2 border-t">{heightWeightAvg.femaleWeightAvg ? `${heightWeightAvg.femaleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
+                      </tr>
+                    </tbody> */}
+                    <tbody>
+                      <tr>
+                        <td className="p-2">Tên đợt khám</td>
+                        <td className="p-2">{heightWeightAvg.checkupName || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2">Ngày khám</td>
+                        <td className="p-2">{heightWeightAvg.latestCheckupDate || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2">Chiều cao TB nam</td>
+                        <td className="p-2">{heightWeightAvg.maleHeightAvg ? `${heightWeightAvg.maleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2">Cân nặng TB nam</td>
+                        <td className="p-2">{heightWeightAvg.maleWeightAvg ? `${heightWeightAvg.maleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2">Chiều cao TB nữ</td>
+                        <td className="p-2">{heightWeightAvg.femaleHeightAvg ? `${heightWeightAvg.femaleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2">Cân nặng TB nữ</td>
+                        <td className="p-2">{heightWeightAvg.femaleWeightAvg ? `${heightWeightAvg.femaleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                {/* Grade Filter */}
+                <div className="mt-4">
+                  <select
+                    className={`rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-full sm:w-48 ${!heightWeightAvg?.grades?.length ? 'text-gray-400' : ''}`}
+                    onChange={(e) => setSelectedGradeId(e.target.value)}
+                    value={selectedGradeId || ''}
+                  >
+                    <option value="">Tất cả khối lớp</option>
+                    {heightWeightAvg?.grades?.length > 0 ? (
+                      heightWeightAvg.grades.map(g => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
+                      ))
+                    ) : (
+                      <option value="" disabled>Không có khối lớp</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+            )}
+          </ChartCard>
         </div>
 
         {/* Placeholder for Khai báo */}
