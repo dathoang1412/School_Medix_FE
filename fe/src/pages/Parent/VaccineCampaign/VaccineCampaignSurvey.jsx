@@ -24,6 +24,7 @@ const VaccineCampaignSurvey = () => {
           `/student/${student_id}/vaccination-campaign/${campaign_id}/register`
         );
         const registerData = res.data.data[0];
+        console.log("REGISTER DATA: ", registerData);
         if (!registerData) {
           throw new Error("Không tìm thấy thông tin đăng ký");
         }
