@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Search, Filter, FileText, User, Pill, Activity, Eye, PenBoxIcon, Plus, X } from "lucide-react";
+import { Search, Filter, FileText, User, Pill, Activity, Eye, PenBoxIcon, Plus, X, Loader2 } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { useNavigate, useParams } from "react-router-dom";
 import { getStudentInfo } from "../../../service/childenService";
+import { enqueueSnackbar } from "notistack";
 
 const DrugTable = () => {
   const [drugs, setDrugs] = useState([]);
@@ -12,7 +13,6 @@ const DrugTable = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState({});
-  const [childClass, setChildClass] = useState(null);
   const [selectedDrug, setSelectedDrug] = useState(null);
   const { student_id } = useParams();
   const navigate = useNavigate();
@@ -20,13 +20,12 @@ const DrugTable = () => {
   // Prevent outer page scrolling when modal is open
   useEffect(() => {
     if (selectedDrug) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
-    // Cleanup on component unmount or modal close
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [selectedDrug]);
 
@@ -41,17 +40,21 @@ const DrugTable = () => {
       try {
         const child = await getStudentInfo(student_id);
         if (!child) {
-          setError("Vui lòng chọn một đứa trẻ để xem lịch sử gửi thuốc.");
+          setError("Vui lòng chọn một học sinh để xem lịch sử gửi thuốc.");
           return;
         }
         setCurrChild(child);
-        setChildClass(child.class_name || "N/A");
+
         const res = await axiosClient.get(`/student/${child.id}/send-drug-request`);
-        setDrugs(Array.isArray(res.data.data) ? res.data.data : []);
-        setFilteredDrugs(Array.isArray(res.data.data) ? res.data.data : []);
+        const fetchedDrugs = Array.isArray(res.data.data) ? res.data.data : [];
+        setDrugs(fetchedDrugs);
+        setFilteredDrugs(fetchedDrugs);
       } catch (error) {
-        console.error("Error fetching drug history or class:", error);
-        setError("Không thể tải lịch sử gửi thuốc hoặc thông tin lớp. Vui lòng thử lại sau.");
+        console.error("Error fetching drug history:", error);
+        setError(
+          error.response?.data?.message ||
+            "Không thể tải lịch sử gửi thuốc. Vui lòng thử lại sau."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -89,23 +92,25 @@ const DrugTable = () => {
   };
 
   const handleEdit = (drug) => {
-    alert(`Sửa đơn thuốc ${drug.id}`);
-    // Add edit logic here
+    enqueueSnackbar(`Chức năng chỉnh sửa đơn thuốc #${drug.id} đang được phát triển`, {
+      variant: "info",
+    });
+    // Placeholder for edit logic
   };
 
   const getStatusBadge = (status) => {
     const styles = {
-      PROCESSING: "bg-yellow-50 text-yellow-800 border-yellow-200",
-      ACCEPTED: "bg-green-50 text-green-800 border-green-200",
-      REFUSED: "bg-red-50 text-red-800 border-red-200",
-      DONE: "bg-blue-50 text-blue-800 border-blue-200",
-      CANCELLED: "bg-gray-50 text-gray-800 border-gray-200",
-      RECEIVED: "bg-purple-50 text-purple-800 border-purple-200",
+      PROCESSING: "bg-yellow-100 text-yellow-800 border-yellow-200",
+      ACCEPTED: "bg-green-100 text-green-800 border-green-200",
+      REFUSED: "bg-red-100 text-red-800 border-red-200",
+      DONE: "bg-blue-100 text-blue-800 border-blue-200",
+      CANCELLED: "bg-gray-100 text-gray-800 border-gray-200",
+      RECEIVED: "bg-purple-100 text-purple-800 border-purple-200",
     };
     return (
       <span
-        className={`px-2 py-1 text-xs font-medium rounded border ${
-          styles[status] || "bg-gray-50 text-gray-800 border-gray-200"
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+          styles[status] || "bg-gray-100 text-gray-800 border-gray-200"
         }`}
       >
         {status || "Chưa xác định"}
@@ -116,20 +121,23 @@ const DrugTable = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN");
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
 
-  // Enhanced Drug Request Info Component
   const DrugRequestInfo = ({ drug }) => (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Header Section */}
       <div className="border-b border-gray-200 pb-4">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-            <FileText className="w-4 h-4 text-gray-600" />
+          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+            <FileText className="w-5 h-5 text-gray-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Mã đơn #{drug.id}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Mã đơn #{drug.id}</h3>
             <p className="text-sm text-gray-500">Chi tiết đơn thuốc</p>
           </div>
         </div>
@@ -137,16 +145,20 @@ const DrugTable = () => {
           <div className="text-sm">
             <span className="text-gray-500">Trạng thái:</span> {getStatusBadge(drug.status)}
           </div>
+          <div className="text-sm">
+            <span className="text-gray-500">Ngày gửi:</span>{" "}
+            <span className="font-medium">{formatDate(drug.schedule_send_date)}</span>
+          </div>
         </div>
       </div>
 
       {/* Student Information */}
-      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+      <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
         <div className="flex items-center gap-2 mb-3">
-          <User className="w-4 h-4 text-gray-600" />
-          <h4 className="font-medium text-gray-900">Thông tin học sinh</h4>
+          <User className="w-5 h-5 text-gray-600" />
+          <h4 className="text-base font-medium text-gray-900">Thông tin học sinh</h4>
         </div>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-gray-500">Họ tên:</span>
             <p className="font-medium text-gray-900 mt-1">{currChild?.name || "N/A"}</p>
@@ -159,14 +171,14 @@ const DrugTable = () => {
       </div>
 
       {/* Medical Information */}
-      <div className="border border-gray-200 rounded-lg p-4">
+      <div className="border border-gray-200 rounded-lg p-5">
         <div className="flex items-center gap-2 mb-3">
-          <Activity className="w-4 h-4 text-gray-600" />
-          <h4 className="font-medium text-gray-900">Thông tin y tế</h4>
+          <Activity className="w-5 h-5 text-gray-600" />
+          <h4 className="text-base font-medium text-gray-900">Thông tin y tế</h4>
         </div>
-        <div className="space-y-3 text-sm">
+        <div className="space-y-4 text-sm">
           <div>
-            <span className="text-gray-500 block mb-1">Mô tả bệnh:</span>
+            <span className="text-gray-500 block mb-1">Chẩn đoán:</span>
             <p className="text-gray-900 bg-gray-50 p-3 rounded border border-gray-200">
               {drug.diagnosis || "Không có mô tả"}
             </p>
@@ -177,29 +189,59 @@ const DrugTable = () => {
               {drug.note || "Không có ghi chú"}
             </p>
           </div>
+          {drug.prescription_img_urls?.length > 0 && (
+            <div>
+              <span className="text-gray-500 block mb-1">Ảnh đơn thuốc:</span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {drug.prescription_img_urls.map((url, index) => (
+                  <a
+                    key={index}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <img
+                      src={url}
+                      alt={`Prescription ${index + 1}`}
+                      className="w-full h-24 object-cover rounded-md border border-gray-200 hover:opacity-80"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Drug List */}
-      <div className="border border-gray-200 rounded-lg p-4">
+      <div className="border border-gray-200 rounded-lg p-5">
         <div className="flex items-center gap-2 mb-3">
-          <Pill className="w-4 h-4 text-gray-600" />
-          <h4 className="font-medium text-gray-900">Danh sách thuốc</h4>
+          <Pill className="w-5 h-5 text-gray-600" />
+          <h4 className="text-base font-medium text-gray-900">Danh sách thuốc</h4>
         </div>
         {drug?.request_items?.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {drug.request_items.map((item, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-xs font-medium text-gray-600 border border-gray-300">
                     {index + 1}
                   </div>
                   <h5 className="font-medium text-gray-900">{item.name}</h5>
                 </div>
-                <div className="space-y-1 text-sm pl-8">
+                <div className="space-y-2 text-sm pl-8">
                   <div>
-                    <span className="text-gray-500">Số lượng:</span>
+                    <span className="text-gray-500">Cách sử dụng:</span>
                     <p className="text-gray-900">{item.dosage_usage}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Thời gian uống:</span>
+                    <p className="text-gray-900">
+                      {Array.isArray(item.intake_template_time)
+                        ? item.intake_template_time.join(", ")
+                        : item.intake_template_time || "N/A"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -216,27 +258,27 @@ const DrugTable = () => {
   );
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 p-6">
+    <div className="min-h-screen w-full bg-gray-50 p-6 sm:p-8">
       <div className="mx-auto max-w-7xl">
         {/* Header Section */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
           <div className="relative w-full sm:w-64">
             <input
               type="text"
-              placeholder="Tìm kiếm theo mô tả bệnh"
+              placeholder="Tìm kiếm theo chẩn đoán"
               value={searchTerm}
               onChange={handleSearch}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
             />
             <Search className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
           </div>
-          <div className="flex gap-4 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <div className="relative w-full sm:w-48">
               <Filter className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
               <select
                 value={statusFilter}
                 onChange={handleFilterChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
               >
                 <option>Tất cả trạng thái</option>
                 <option>PROCESSING</option>
@@ -249,7 +291,7 @@ const DrugTable = () => {
             </div>
             <button
               onClick={() => currChild?.id && navigate(`/parent/edit/${currChild.id}/send-drug-form`)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors duration-200"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors duration-200"
             >
               <Plus className="w-4 h-4" />
               Gửi thêm thuốc
@@ -259,18 +301,19 @@ const DrugTable = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md mb-4 text-sm">
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6 text-sm">
             {error}
           </div>
         )}
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="text-center py-12 bg-white rounded-md shadow-sm border border-gray-200">
-            <p className="text-gray-500 text-sm">Đang tải lịch sử gửi thuốc...</p>
+          <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+            <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
+            <p className="text-gray-500 text-sm mt-2">Đang tải lịch sử gửi thuốc...</p>
           </div>
         ) : (
-          <div className="bg-white shadow-sm border border-gray-200 overflow-hidden rounded-md">
+          <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead className="bg-gray-50">
@@ -302,7 +345,7 @@ const DrugTable = () => {
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       <div className="flex items-center gap-2">
                         <Activity size={14} />
-                        Mô Tả Bệnh
+                        Chẩn Đoán
                       </div>
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -380,8 +423,8 @@ const DrugTable = () => {
 
         {/* Modal */}
         {selectedDrug && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[95vh] overflow-hidden">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
               {/* Modal Header */}
               <div className="bg-white border-b border-gray-200 p-6 flex justify-between items-center">
                 <div>
@@ -392,20 +435,20 @@ const DrugTable = () => {
                   onClick={handleCloseModal}
                   className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
                 >
-                  <X size={18} />
+                  <X size={20} />
                 </button>
               </div>
 
               {/* Modal Content */}
-              <div className="p-6 max-h-[calc(95vh-180px)] overflow-y-auto">
+              <div className="p-6 max-h-[calc(90vh-180px)] overflow-y-auto">
                 <DrugRequestInfo drug={selectedDrug} />
               </div>
 
               {/* Modal Footer */}
-              <div className="bg-gray-50 px-6 py-6 flex justify-end border-t border-gray-200">
+              <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
                 <button
                   onClick={handleCloseModal}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 font-medium text-sm"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-sm"
                 >
                   Đóng
                 </button>

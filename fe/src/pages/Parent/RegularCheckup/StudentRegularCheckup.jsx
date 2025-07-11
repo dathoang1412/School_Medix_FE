@@ -253,7 +253,7 @@ const StudentRegularCheckup = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {campaignList.map((campaign) => {
+            {campaignList.filter((campaign) => campaign?.status !== "DRAFTED").map((campaign) => {
               const statusInfo = getCampaignStatus(campaign);
               const StatusIcon = statusInfo.icon;
 

@@ -45,6 +45,7 @@ const VaccineCampaignInfo = () => {
         return;
       }
       setIsAuthenticated(true);
+      setLoading(false);
     };
     checkAuth();
   }, [navigate, enqueueSnackbar]);
@@ -66,6 +67,11 @@ const VaccineCampaignInfo = () => {
         // Fetch vaccination campaigns
         const campaignRes = await axiosClient.get("/vaccination-campaign");
         let campaigns = campaignRes.data.data || [];
+
+        // Filter out DRAFTED campaigns
+        campaigns = campaigns.filter(
+          (campaign) => campaign.status?.toUpperCase() !== "DRAFTED"
+        );
 
         // Fetch registration status for each campaign
         const registerPromises = campaigns.map(async (campaign) => {
@@ -93,7 +99,7 @@ const VaccineCampaignInfo = () => {
         campaigns = campaigns.map((c) => ({
           ...c,
           campaign_id: c.campaign_id || c.id,
-          status: c.status || "DRAFTED",
+          status: c.status?.toUpperCase() || "UPCOMING",
           canSurvey: getCampaignStatus(c, newRegisterMap[c.campaign_id]).canSurvey,
           isSurveyed: newRegisterMap[c.campaign_id]?.isSurveyed || false,
         }));
@@ -154,7 +160,7 @@ const VaccineCampaignInfo = () => {
     if (new Date(campaign.end_date) < currentDate && status !== "COMPLETED") {
       return {
         status: "Đã hết hạn đăng ký",
-        className: "bg-gray-50 text-gray-700 border-gray-200",
+        className: "bg-gray-100 text-gray-800 border-gray-200",
         icon: XCircle,
         canSurvey: false,
       };
@@ -163,42 +169,42 @@ const VaccineCampaignInfo = () => {
       case "PREPARING":
         return {
           status: "Đang chuẩn bị",
-          className: "bg-amber-50 text-amber-700 border-amber-200",
+          className: "bg-yellow-100 text-yellow-800 border-yellow-200",
           icon: Clock,
           canSurvey: true,
         };
       case "ONGOING":
         return {
           status: "Đang diễn ra",
-          className: "bg-green-50 text-green-700 border-green-200",
+          className: "bg-green-100 text-green-800 border-green-200",
           icon: CheckCircle,
           canSurvey: false,
         };
       case "UPCOMING":
         return {
           status: "Đã đóng đơn",
-          className: "bg-purple-50 text-purple-700 border-purple-200",
+          className: "bg-purple-100 text-purple-800 border-purple-200",
           icon: Clock,
           canSurvey: false,
         };
       case "COMPLETED":
         return {
           status: "Hoàn thành",
-          className: "bg-blue-50 text-blue-700 border-blue-200",
+          className: "bg-blue-100 text-blue-800 border-blue-200",
           icon: CheckCircle,
           canSurvey: false,
         };
       case "CANCELLED":
         return {
           status: "Đã hủy",
-          className: "bg-red-50 text-red-700 border-red-200",
+          className: "bg-red-100 text-red-800 border-red-200",
           icon: XCircle,
           canSurvey: false,
         };
       default:
         return {
-          status: "Nháp",
-          className: "bg-gray-50 text-gray-700 border-gray-200",
+          status: "Không xác định",
+          className: "bg-gray-100 text-gray-800 border-gray-200",
           icon: Clock,
           canSurvey: false,
         };
@@ -210,7 +216,7 @@ const VaccineCampaignInfo = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Đang kiểm tra đăng nhập...</p>
+          <p className="text-gray-600 text-sm">Đang kiểm tra đăng nhập...</p>
         </div>
       </div>
     );
@@ -221,7 +227,7 @@ const VaccineCampaignInfo = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Đang tải dữ liệu...</p>
+          <p className="text-gray-600 text-sm">Đang tải dữ liệu...</p>
         </div>
       </div>
     );
@@ -230,13 +236,13 @@ const VaccineCampaignInfo = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full text-center">
+        <div className="bg-white rounded-lg shadow-sm p-6 max-w-md w-full text-center border border-gray-200">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Lỗi tải dữ liệu</h3>
-          <p className="text-red-700 mb-6">{error}</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Lỗi tải dữ liệu</h3>
+          <p className="text-gray-600 text-sm mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
           >
             Thử lại
           </button>
@@ -248,17 +254,19 @@ const VaccineCampaignInfo = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="p-3 bg-blue-50 rounded-lg">
               <Shield className="w-8 h-8 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-semibold text-gray-900">
                 Hệ thống quản lý tiêm chủng
               </h1>
-              <p className="text-gray-600">Theo dõi và đăng ký tham gia các chiến dịch tiêm chủng cho {currChild?.name}</p>
+              <p className="text-gray-600 text-sm mt-1">
+                Theo dõi và đăng ký tham gia các chiến dịch tiêm chủng cho {currChild?.name || "học sinh"}
+              </p>
             </div>
           </div>
 
@@ -266,10 +274,10 @@ const VaccineCampaignInfo = () => {
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
             <button
               onClick={() => setHistoryView(false)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                 !historyView
                   ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }`}
             >
               <Calendar className="w-4 h-4" />
@@ -277,10 +285,10 @@ const VaccineCampaignInfo = () => {
             </button>
             <button
               onClick={() => setHistoryView(true)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                 historyView
                   ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }`}
             >
               <History className="w-4 h-4" />
@@ -291,18 +299,22 @@ const VaccineCampaignInfo = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {historyView ? (
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <VaccineRecordInfo />
           </div>
         ) : (
           <>
             {campaignList.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
                 <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Chưa có chiến dịch tiêm chủng</h3>
-                <p className="text-gray-600">Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay lại sau để cập nhật thông tin mới nhất.</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Chưa có chiến dịch tiêm chủng
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay lại sau để cập nhật thông tin mới nhất.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -313,93 +325,94 @@ const VaccineCampaignInfo = () => {
                   return (
                     <div
                       key={campaign.campaign_id}
-                      className={`bg-white border rounded-lg p-6 hover:shadow-md transition-all duration-200 ${
-                        !campaign.isSurveyed && statusInfo.canSurvey 
-                          ? "border-blue-200 ring-1 ring-blue-100" 
+                      className={`bg-white border rounded-lg p-6 hover:shadow-md transition-shadow duration-200 ${
+                        !campaign.isSurveyed && statusInfo.canSurvey
+                          ? "border-blue-200 ring-1 ring-blue-100"
                           : "border-gray-200"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         {/* Left Section - Campaign Info */}
                         <div className="flex items-center gap-4 flex-1">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                              <Shield className="w-6 h-6 text-blue-600" />
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                {campaign.vaccine_name || `Chiến dịch tiêm chủng #${campaign.campaign_id}`}
-                              </h3>
-                              <p className="text-sm text-gray-500">Mã chiến dịch: {campaign.campaign_id}</p>
-                            </div>
+                          <div className="p-2 bg-blue-50 rounded-lg">
+                            <Shield className="w-6 h-6 text-blue-600" />
                           </div>
-
-                          {/* Campaign Details */}
-                          <div className="flex items-center gap-6 ml-4">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-600">
-                                {formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}
-                              </span>
-                            </div>
-                            
-                            {campaign.location && (
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">{campaign.location}</span>
-                              </div>
-                            )}
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {campaign.vaccine_name || `Chiến dịch tiêm chủng #${campaign.campaign_id}`}
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">Mã chiến dịch: {campaign.campaign_id}</p>
                           </div>
                         </div>
 
-                        {/* Right Section - Status and Actions */}
-                        <div className="flex items-center gap-4">
-                          {/* Survey Status */}
-                          {campaign.isSurveyed && (
-                            <div className="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm">
-                              <CheckCircle className="w-4 h-4" />
-                              <span>Đã đăng ký</span>
+                        {/* Right Section - Details, Status, and Actions */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+                          {/* Campaign Details */}
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-gray-400" />
+                              <span>
+                                {formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}
+                              </span>
                             </div>
-                          )}
-
-                          {/* Campaign Status */}
-                          <div className={`flex items-center gap-2 px-3 py-1 border rounded-full text-sm ${statusInfo.className}`}>
-                            <StatusIcon className="w-4 h-4" />
-                            <span>{statusInfo.status}</span>
+                            {campaign.location && (
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-gray-400" />
+                                <span>{campaign.location}</span>
+                              </div>
+                            )}
                           </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleViewDetails(campaign.campaign_id)}
-                              className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                            >
-                              <FileText className="w-4 h-4" />
-                              Chi tiết
-                            </button>
-                            
-                            {statusInfo.canSurvey && (
-                              <button
-                                onClick={() => handleSurvey(campaign.campaign_id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                  campaign.isSurveyed
-                                    ? 'bg-green-600 text-white hover:bg-green-700'
-                                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                                }`}
-                              >
-                                {campaign.isSurveyed ? (
-                                  <>
-                                    <CheckCircle className="w-4 h-4" />
-                                    Đã khảo sát
-                                  </>
-                                ) : (
-                                  <>
-                                    <ClipboardList className="w-4 h-4" />
-                                    Tham gia khảo sát
-                                  </>
-                                )}
-                              </button>
+                          {/* Status and Actions */}
+                          <div className="flex items-center gap-4">
+                            {/* Survey Status */}
+                            {campaign.isSurveyed && (
+                              <div className="flex items-center gap-2 px-2.5 py-1 bg-green-100 text-green-800 border border-green-200 rounded-full text-sm">
+                                <CheckCircle className="w-4 h-4" />
+                                <span>Đã đăng ký</span>
+                              </div>
                             )}
+
+                            {/* Campaign Status */}
+                            <div
+                              className={`flex items-center gap-2 px-2.5 py-1 border rounded-full text-sm ${statusInfo.className}`}
+                            >
+                              <StatusIcon className="w-4 h-4" />
+                              <span>{statusInfo.status}</span>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleViewDetails(campaign.campaign_id)}
+                                className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm font-medium"
+                              >
+                                <FileText className="w-4 h-4" />
+                                Chi tiết
+                              </button>
+                              {statusInfo.canSurvey && (
+                                <button
+                                  onClick={() => handleSurvey(campaign.campaign_id)}
+                                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                                    campaign.isSurveyed
+                                      ? "bg-green-600 text-white hover:bg-green-700"
+                                      : "bg-blue-600 text-white hover:bg-blue-700"
+                                  }`}
+                                >
+                                  {campaign.isSurveyed ? (
+                                    <>
+                                      <CheckCircle className="w-4 h-4" />
+                                      Đã khảo sát
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ClipboardList className="w-4 h-4" />
+                                      Tham gia khảo sát
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
