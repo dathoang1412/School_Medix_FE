@@ -78,9 +78,11 @@ const VaccineDeclarationHistory = ({ student_id }) => {
   }));
 
   const toggleRowExpansion = id => {
-    const newExpandedRows = new Set(expandedRows);
-    newExpandedRows.has(id) ? newExpandedRows.delete(id) : newExpandedRows.add(id);
-    setExpandedRows(newExpandedRows);
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+      return newSet;
+    });
   };
 
   const getBadge = (type, value) => {
