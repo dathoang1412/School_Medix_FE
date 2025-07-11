@@ -44,7 +44,7 @@ const AddRecordPage = () => {
       };
       console.log("Health record POST: ", payload)
       await axiosClient.post('/daily-health-record', payload);
-      navigate('/daily-health-record', { state: { success: 'Hồ sơ y tế đã được tạo thành công!' } });
+      navigate( '/'  + getUserRole() +'/daily-health', { state: { success: 'Hồ sơ y tế đã được tạo thành công!' } });
     } catch (error) {
       setError(error.response?.data?.message || 'Không thể tạo hồ sơ y tế');
       console.error(error);
