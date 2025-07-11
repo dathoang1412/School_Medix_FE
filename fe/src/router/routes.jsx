@@ -52,6 +52,7 @@ import CheckupHistoryInfo from "../pages/Parent/RegularCheckup/CheckupHistoryInf
 import ParentCheckupLayout from "../pages/Parent/RegularCheckup/ParentCheckupLayout";
 import StudentOverview from "../pages/Student/StudentOverview";
 import UpdateVaccineCampaign from "../pages/Admin/VaccineCampaign/UpdateVaccineCampaign";
+import VaccineForStudentEligible from "../pages/Admin&Nurse/VaccineManagement/VaccineForStudentEligible";
 
 const routes = createBrowserRouter([
   {
@@ -217,8 +218,12 @@ const routes = createBrowserRouter([
           },
           {
             path: "vaccine-campaign/:campaign_id/edit",
-            element: <UpdateVaccineCampaign/>
-          }
+            element: <UpdateVaccineCampaign />,
+          },
+          {
+            path: "vaccine/:id/students",
+            element: <VaccineForStudentEligible />,
+          },
         ],
       },
     ],
@@ -297,8 +302,8 @@ const routes = createBrowserRouter([
           },
           {
             path: "send-drug-form/:request_id",
-            element: <SendDrugForm/>
-          }
+            element: <SendDrugForm />,
+          },
         ],
       },
     ],
@@ -394,6 +399,10 @@ const routes = createBrowserRouter([
           {
             path: "student-overview/:student_id",
             element: <StudentOverview />,
+          },
+          {
+            path: "vaccine/:id/students",
+            element: <VaccineForStudentEligible />,
           },
         ],
       },

@@ -141,7 +141,7 @@ const HealthRecord = () => {
   const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
 
   const getStudentDisplay = (studentId) => {
-    return `HS${String(studentId).padStart(6, '0')}`;
+    return `${String(studentId).padStart(6, '0')}`;
   };
 
   const getStatusBadge = (record) => {
