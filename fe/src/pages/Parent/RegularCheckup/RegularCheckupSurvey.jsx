@@ -127,7 +127,7 @@ const RegularCheckupSurvey = () => {
         navigate(`/parent/edit/${student_id}/regular-checkup`, { state: { childId: student_id } });
       }
     } catch (err) {
-      enqueueSnackbar("Không thể gửi đăng ký. Vui lòng thử lại.", { variant: "error" });
+      {err && enqueueSnackbar("Không thể gửi đăng ký. Vui lòng thử lại.", { variant: "error" })};
     } finally {
       setSubmitting(false);
     }

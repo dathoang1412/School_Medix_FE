@@ -16,10 +16,9 @@ import axiosClient from "../../../config/axiosClient";
 import { getStudentInfo } from "../../../service/childenService";
 import { getSession } from "../../../config/Supabase";
 import { useSnackbar } from "notistack";
-import CheckupHistoryInfo from "./CheckupHistoryInfo";
 
 const StudentRegularCheckup = () => {
-  const { student_id } = useParams(); // Đổi tên từ childId thành student_id để thống nhất
+  const { student_id } = useParams();
   const [campaignList, setCampaignList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,19 +63,20 @@ const StudentRegularCheckup = () => {
         const campaignRes = await axiosClient.get("/checkup-campaign");
         let campaigns = campaignRes.data.data || [];
 
-        // Fetch survey status for each campaign (giả sử có API để kiểm tra)
+        // Fetch survey status for each campaign
         campaigns = await Promise.all(
           campaigns.map(async (c) => {
             try {
-              // TODO: Thay thế bằng API thực tế để kiểm tra trạng thái khảo sát
-              // Ví dụ: const surveyRes = await axiosClient.get(`/survey/status/${c.campaign_id}/${student_id}`);
-              const surveyRes = {}; // Placeholder
+              const surveyRes = await axiosClient.get(
+                `/checkup-register/campaign/${c.campaign_id || c.id}/student/${student_id}/status`
+              );
+              const registerStatus = surveyRes.data.data?.status || "NONE";
               return {
                 ...c,
                 campaign_id: c.campaign_id || c.id,
                 status: c.status || "DRAFTED",
                 canSurvey: getCampaignStatus(c).canSurvey,
-                isSurveyed: surveyRes?.data?.isSurveyed || false, // Cập nhật dựa trên API
+                isSurveyed: registerStatus === "SUBMITTED",
               };
             } catch (error) {
               console.error(
@@ -261,7 +261,7 @@ const StudentRegularCheckup = () => {
                 <div
                   key={campaign.campaign_id}
                   className={`bg-white border rounded-lg p-6 hover:shadow-md transition-all duration-200 ${
-                    !campaign.isSurveyed && statusInfo.canSurvey
+                    statusInfo.canSurvey
                       ? "border-blue-200 ring-1 ring-blue-100"
                       : "border-gray-200"
                   }`}
@@ -327,19 +327,23 @@ const StudentRegularCheckup = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleViewDetails(campaign.campaign_id)}
-                          className=" cursor-pointer flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                          className="cursor-pointer flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                         >
                           <FileText className="w-4 h-4" />
                           Chi tiết
                         </button>
 
-                        {statusInfo.canSurvey && !campaign.isSurveyed && (
+                        {statusInfo.canSurvey && (
                           <button
                             onClick={() => handleSurvey(campaign.campaign_id)}
-                            className=" cursor-pointer flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                            className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium ${
+                              campaign.isSurveyed
+                                ? "bg-yellow-500 hover:bg-yellow-600"
+                                : "bg-blue-600 hover:bg-blue-700"
+                            } transition-colors`}
                           >
                             <ClipboardList className="w-4 h-4" />
-                            Tham gia khảo sát
+                            {campaign.isSurveyed ? "Đã khảo sát" : "Tham gia khảo sát"}
                           </button>
                         )}
                       </div>

@@ -5,7 +5,6 @@ import { getStudentInfo } from "../../../service/childenService";
 import StudentRegularCheckup from "./StudentRegularCheckup";
 import CheckupHistoryInfo from "./CheckupHistoryInfo";
 import HealthDashboard from "./HealthDashboard";
-import axiosClient from "../../../config/axiosClient";
 
 const ParentCheckupLayout = () => {
   const { student_id } = useParams();
