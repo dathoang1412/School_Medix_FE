@@ -102,6 +102,20 @@ const RegularCheckupDetails = () => {
     }
   };
 
+  const handleBack = () => {
+    const { from, childId } = location.state || {};
+    if (from) {
+      navigate(from, { state: { childId } });
+    } else {
+      const backRoutes = {
+        admin: "/admin/regular-checkup",
+        nurse: "/nurse/regular-checkup",
+        parent: "/parent/student-regular-checkup",
+      };
+      navigate(backRoutes[userRole] || "/parent/student-regular-checkup", { state: { childId } });
+    }
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
       case "DRAFTED":
@@ -122,20 +136,6 @@ const RegularCheckupDetails = () => {
     }
   };
 
-  const handleBack = () => {
-    const { from, childId } = location.state || {};
-    if (from) {
-      navigate(from, { state: { childId } });
-    } else {
-      const backRoutes = {
-        admin: "/admin/regular-checkup",
-        nurse: "/nurse/regular-checkup",
-        parent: "/parent/student-regular-checkup",
-      };
-      navigate(backRoutes[userRole] || "/parent/student-regular-checkup", { state: { childId } });
-    }
-  };
-
   const getActionButtons = (status, campaignId) => {
     const buttons = [];
 
@@ -146,7 +146,7 @@ const RegularCheckupDetails = () => {
             key="send-register"
             onClick={() => handleCampaignAction("send-register")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -165,7 +165,7 @@ const RegularCheckupDetails = () => {
           <button
             key="edit"
             onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/edit`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Pencil className="w-4 h-4 mr-2" />
             <span>Chỉnh sửa</span>
@@ -174,7 +174,7 @@ const RegularCheckupDetails = () => {
             key="cancel"
             onClick={() => handleCampaignAction("cancel")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -188,7 +188,7 @@ const RegularCheckupDetails = () => {
             key="close"
             onClick={() => handleCampaignAction("close")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -198,7 +198,7 @@ const RegularCheckupDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -207,7 +207,7 @@ const RegularCheckupDetails = () => {
             key="cancel"
             onClick={() => handleCampaignAction("cancel")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -221,7 +221,7 @@ const RegularCheckupDetails = () => {
             key="start"
             onClick={() => handleCampaignAction("start")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -231,7 +231,7 @@ const RegularCheckupDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -240,7 +240,7 @@ const RegularCheckupDetails = () => {
             key="cancel"
             onClick={() => handleCampaignAction("cancel")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -254,25 +254,17 @@ const RegularCheckupDetails = () => {
             key="finish"
             onClick={() => handleCampaignAction("finish")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
             <CheckCircle className="w-4 h-4 mr-2" />
             <span>Hoàn thành chiến dịch</span>
           </button>,
-          // <button
-          //   key="edit-report"
-          //   onClick={() => navigate(`/admin/regular-checkup-report/${campaignId}`)}
-          //   className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          // >
-          //   <Pencil className="w-4 h-4 mr-2" />
-          //   <span>Chỉnh sửa báo cáo</span>
-          // </button>,
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -283,7 +275,7 @@ const RegularCheckupDetails = () => {
           <button
             key="view-report"
             onClick={() => navigate(`/admin/completed-regular-checkup-report/${campaignId}`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <FileText className="w-4 h-4 mr-2" />
             <span>Xem báo cáo</span>
@@ -291,7 +283,7 @@ const RegularCheckupDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -302,7 +294,7 @@ const RegularCheckupDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -315,7 +307,7 @@ const RegularCheckupDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/checkup-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -327,7 +319,7 @@ const RegularCheckupDetails = () => {
           <button
             key="edit-report"
             onClick={() => navigate(`/nurse/regular-checkup-report/${campaignId}`)}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
           >
             <Pencil className="w-4 h-4 mr-2" />
             <span>Chỉnh sửa báo cáo</span>
@@ -339,7 +331,7 @@ const RegularCheckupDetails = () => {
           <button
             key="view-report"
             onClick={() => navigate(`/nurse/completed-regular-checkup-report/${campaignId}`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <FileText className="w-4 h-4 mr-2" />
             <span>Xem báo cáo</span>
@@ -347,7 +339,7 @@ const RegularCheckupDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/checkup-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -359,7 +351,7 @@ const RegularCheckupDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/checkup-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -373,7 +365,7 @@ const RegularCheckupDetails = () => {
       <button
         key="view-details"
         onClick={() => navigate(`/${userRole}/checkup-campaign/${campaignId}`)}
-        className="flex items-center px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors"
+        className="flex items-center px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors cursor-pointer"
       >
         <FileText className="w-4 h-4 mr-2" />
         <span>Xem chi tiết</span>
@@ -403,7 +395,7 @@ const RegularCheckupDetails = () => {
           <p className="text-gray-600">{error}</p>
           <button
             onClick={handleBack}
-            className="mt-4 flex items-center justify-center mx-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="mt-4 flex items-center justify-center mx-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             <span>Quay lại</span>
@@ -419,7 +411,7 @@ const RegularCheckupDetails = () => {
         <div className="mb-8">
           <button
             onClick={handleBack}
-            className="flex items-center text-blue-600 hover:text-blue-800 mb-4 transition-colors"
+            className="flex items-center text-blue-600 hover:text-blue-800 mb-4 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             <span>Quay lại danh sách</span>

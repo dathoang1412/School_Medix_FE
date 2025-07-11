@@ -133,7 +133,7 @@ const VaccineStudentList = () => {
       <div className="mb-6 flex justify-between items-center">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <ArrowLeft className="w-4 h-4" />
           Quay lại
@@ -141,7 +141,7 @@ const VaccineStudentList = () => {
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className={`flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 ${
+          className={`cursor-pointer flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 ${
             isRefreshing ? "opacity-75 cursor-not-allowed" : ""
           }`}
         >
@@ -232,7 +232,7 @@ const VaccineStudentList = () => {
                       <div className="flex items-center">
                         <button
                           onClick={() => navigate(`/${getUserRole()}/student-overview/${student.student_id}`)}
-                          className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                          className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
                         >
                           {student.name || "N/A"}
                         </button>

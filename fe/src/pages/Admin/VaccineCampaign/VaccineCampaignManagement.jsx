@@ -132,7 +132,7 @@ const VaccineCampaignManagement = () => {
             key="send-register"
             onClick={() => handleCampaignAction(campaignId, "send-register")}
             disabled={loadingActions[campaignId]}
-            className={`px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+            className={`px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer ${
               loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -151,7 +151,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="edit"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/edit`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Pencil className="w-4 h-4" />
             <span>Chỉnh sửa</span>
@@ -160,7 +160,7 @@ const VaccineCampaignManagement = () => {
             key="cancel"
             onClick={() => handleCampaignAction(campaignId, "cancel")}
             disabled={loadingActions[campaignId]}
-            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer ${
               loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -174,7 +174,7 @@ const VaccineCampaignManagement = () => {
             key="close-register"
             onClick={() => handleCampaignAction(campaignId, "close-register")}
             disabled={loadingActions[campaignId]}
-            className={`px-5 py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+            className={`px-5 py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer ${
               loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -184,7 +184,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
             <span>Xem danh sách học sinh</span>
@@ -193,7 +193,7 @@ const VaccineCampaignManagement = () => {
             key="cancel"
             onClick={() => handleCampaignAction(campaignId, "cancel")}
             disabled={loadingActions[campaignId]}
-            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer ${
               loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -207,7 +207,7 @@ const VaccineCampaignManagement = () => {
             key="start"
             onClick={() => handleCampaignAction(campaignId, "start")}
             disabled={loadingActions[campaignId]}
-            className={`px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+            className={`px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer ${
               loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -217,7 +217,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
             <span>Xem danh sách học sinh</span>
@@ -226,7 +226,7 @@ const VaccineCampaignManagement = () => {
             key="cancel"
             onClick={() => handleCampaignAction(campaignId, "cancel")}
             disabled={loadingActions[campaignId]}
-            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+            className={`px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer ${
               loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -240,25 +240,17 @@ const VaccineCampaignManagement = () => {
             key="complete"
             onClick={() => handleCampaignAction(campaignId, "complete")}
             disabled={loadingActions[campaignId]}
-            className={`px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+            className={`px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer ${
               loadingActions[campaignId] ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
             <CheckCircle className="w-4 h-4" />
             <span>Hoàn thành chiến dịch</span>
           </button>,
-          // <button
-          //   key="edit-report"
-          //   onClick={() => navigate(`/admin/vaccination-report/${campaignId}`)}
-          //   className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
-          // >
-          //   <Pencil className="w-4 h-4" />
-          //   <span>Chỉnh sửa báo cáo</span>
-          // </button>,
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
             <span>Xem danh sách học sinh</span>
@@ -269,7 +261,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="view-report"
             onClick={() => navigate(`/admin/vaccination-report/${campaignId}`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <FileText className="w-4 h-4" />
             <span>Xem báo cáo</span>
@@ -277,7 +269,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
             <span>Xem danh sách học sinh</span>
@@ -288,7 +280,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
             <span>Xem danh sách học sinh</span>
@@ -301,7 +293,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
             <span>Xem danh sách học sinh</span>
@@ -313,7 +305,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="edit-report"
             onClick={() => navigate(`/nurse/vaccination-report/${campaignId}`)}
-            className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Pencil className="w-4 h-4" />
             <span>Chỉnh sửa báo cáo</span>
@@ -325,7 +317,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="view-report"
             onClick={() => navigate(`/nurse/vaccination-report/${campaignId}`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <FileText className="w-4 h-4" />
             <span>Xem báo cáo</span>
@@ -333,7 +325,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
             <span>Xem danh sách học sinh</span>
@@ -345,7 +337,7 @@ const VaccineCampaignManagement = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
             <span>Xem danh sách học sinh</span>
@@ -359,7 +351,7 @@ const VaccineCampaignManagement = () => {
       <button
         key="view-details"
         onClick={() => navigate(`/${userRole}/vaccine-campaign/${campaignId}`)}
-        className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+        className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
       >
         <FileText className="w-4 h-4" />
         <span>Xem chi tiết</span>
@@ -391,7 +383,7 @@ const VaccineCampaignManagement = () => {
           <p className="text-slate-600 mb-4">{error}</p>
           <button
             onClick={handleRefresh}
-            className="w-full bg-slate-900 text-white py-2 px-4 rounded-lg hover:bg-slate-800 transition-colors"
+            className="w-full bg-slate-900 text-white py-2 px-4 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
           >
             Thử lại
           </button>
@@ -419,7 +411,7 @@ const VaccineCampaignManagement = () => {
               {userRole === "admin" && (
                 <button
                   onClick={handleAddNewCampaign}
-                  className="flex items-center space-x-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm"
+                  className="flex items-center space-x-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm cursor-pointer"
                 >
                   <Plus className="w-5 h-5" />
                   <span>Tạo chiến dịch mới</span>
@@ -428,7 +420,7 @@ const VaccineCampaignManagement = () => {
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className={`flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 ${
+                className={`flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 cursor-pointer ${
                   isRefreshing ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >
@@ -629,7 +621,7 @@ const VaccineCampaignManagement = () => {
             {userRole === "admin" && (
               <button
                 onClick={handleAddNewCampaign}
-                className="flex items-center space-x-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors duration-200 mx-auto"
+                className="flex items-center space-x-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors duration-200 cursor-pointer"
               >
                 <Plus className="w-5 h-5" />
                 <span>Tạo chiến dịch đầu tiên</span>

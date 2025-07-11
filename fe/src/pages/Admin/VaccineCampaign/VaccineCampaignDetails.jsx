@@ -148,7 +148,7 @@ const VaccineCampaignDetails = () => {
             key="send-register"
             onClick={() => handleCampaignAction("send-register")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -167,7 +167,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="edit"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/edit`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Pencil className="w-4 h-4 mr-2" />
             <span>Chỉnh sửa</span>
@@ -176,7 +176,7 @@ const VaccineCampaignDetails = () => {
             key="cancel"
             onClick={() => handleCampaignAction("cancel")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -190,7 +190,7 @@ const VaccineCampaignDetails = () => {
             key="close-register"
             onClick={() => handleCampaignAction("close-register")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -200,7 +200,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -209,7 +209,7 @@ const VaccineCampaignDetails = () => {
             key="cancel"
             onClick={() => handleCampaignAction("cancel")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -223,7 +223,7 @@ const VaccineCampaignDetails = () => {
             key="start"
             onClick={() => handleCampaignAction("start")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -233,7 +233,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -242,7 +242,7 @@ const VaccineCampaignDetails = () => {
             key="cancel"
             onClick={() => handleCampaignAction("cancel")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -256,7 +256,7 @@ const VaccineCampaignDetails = () => {
             key="complete"
             onClick={() => handleCampaignAction("complete")}
             disabled={loadingAction}
-            className={`flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors ${
+            className={`flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -266,7 +266,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -277,7 +277,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-report"
             onClick={() => navigate(`/admin/completed-vaccine-campaign-report/${campaignId}`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <FileText className="w-4 h-4 mr-2" />
             <span>Xem báo cáo</span>
@@ -285,7 +285,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -296,7 +296,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -309,7 +309,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -320,7 +320,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="edit-report"
             onClick={() => navigate(`/nurse/vaccination-report/${campaignId}`)}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
           >
             <Pencil className="w-4 h-4 mr-2" />
             <span>Chỉnh sửa báo cáo</span>
@@ -328,7 +328,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -339,7 +339,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-report"
             onClick={() => navigate(`/nurse/completed-vaccine-campaign-report/${campaignId}`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <FileText className="w-4 h-4 mr-2" />
             <span>Xem báo cáo</span>
@@ -347,7 +347,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -358,7 +358,7 @@ const VaccineCampaignDetails = () => {
           <button
             key="view-register-list"
             onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Users className="w-4 h-4 mr-2" />
             <span>Xem danh sách học sinh</span>
@@ -390,7 +390,7 @@ const VaccineCampaignDetails = () => {
           <p className="text-gray-600">{error}</p>
           <button
             onClick={handleBack}
-            className="mt-4 flex items-center justify-center mx-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="mt-4 flex items-center justify-center mx-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại
@@ -406,7 +406,7 @@ const VaccineCampaignDetails = () => {
         <div className="mb-8">
           <button
             onClick={handleBack}
-            className="flex items-center text-blue-600 hover:text-blue-800 mb-4 transition-colors"
+            className="flex items-center text-blue-600 hover:text-blue-800 mb-4 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Quay lại danh sách
