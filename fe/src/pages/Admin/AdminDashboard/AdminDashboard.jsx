@@ -61,6 +61,8 @@ const AdminDashboard = () => {
     proccessingDrug: 0,
     pendingDrug: 0,
     percent: 0.0,
+    emailUnconfirmedStudentCount: 0,
+    emailUnconfirmedUserCount: 0,
   });
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [summaryError, setSummaryError] = useState(null);
@@ -106,7 +108,6 @@ const AdminDashboard = () => {
         setSummary(response.data.data);
       } catch (err) {
         console.error("Error fetching summary:", err);
-        setSummaryError("Không thể tải dữ liệu tổng quan.");
         setSummaryError("Không thể tải dữ liệu tổng quan.");
       } finally {
         setSummaryLoading(false);
@@ -258,10 +259,6 @@ const AdminDashboard = () => {
     navigate(plan_type);
   };
 
-  // const handlePendingRecordsClick = () => {
-  //   navigate(`/${getUserRole()}/pending-records`);
-  // };
-
   return (
     <div className="min-h-screen bg-gray-100 p-6 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -300,10 +297,11 @@ const AdminDashboard = () => {
                 icon={<Heart className="w-5 h-5" />}
                 label="Tổng số học sinh"
                 value={summary.totalStudents}
+                noti={summary.emailUnconfirmedUserCount}
                 color="green"
                 navigateTo={`/${getUserRole()}/user-manage`}
               >
-                <p className="text-xs">{0} chưa xác thực</p>
+                <p className="text-xs">{summary.emailUnconfirmedStudentCount} học sinh chưa xác thực</p>
               </SummaryCard>
               <SummaryCard
                 icon={<AlertTriangle className="w-5 h-5" />}
