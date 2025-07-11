@@ -196,19 +196,19 @@ const AdminDashboard = () => {
         const thirtyDaysFromNow = new Date(today);
         thirtyDaysFromNow.setDate(today.getDate() + 30);
 
-        const vaccineCount = plans.filter(
-          (plan) =>
-            plan.type === "vaccine" &&
-            new Date(plan.date) >= today &&
-            new Date(plan.date) <= thirtyDaysFromNow
-        ).length;
-        const regularCount = plans.filter(
-          (plan) =>
-            plan.type === "regular" &&
-            new Date(plan.date) >= today &&
-            new Date(plan.date) <= thirtyDaysFromNow
-        ).length;
-
+        let vaccineCount = 0;
+        let regularCount = 0;
+        
+        plans.forEach(plan => {
+          const planDate = new Date(plan.date);
+          if (planDate > today && planDate < thirtyDaysFromNow) {
+            if(plan.checkup_id !== null) {
+              regularCount++;
+            } else {
+              vaccineCount++;
+            }
+          }
+        });
         setPlanStats({ vaccineCount, regularCount });
       } catch (err) {
         console.error("Error fetching upcoming plans:", err);
