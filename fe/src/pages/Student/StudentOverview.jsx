@@ -1,24 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useSnackbar } from 'notistack';
-import { Loader2, User, Activity, FileText, List, Shield, Heart, Syringe, ChevronRight, ArrowLeft } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import StudentProfile from '../Parent/StudentProfile/StudentProfile';
-import HealthDashboard from '../Parent/RegularCheckup/HealthDashboard';
-import CheckupHistoryInfo from '../Parent/RegularCheckup/CheckupHistoryInfo';
-import HealthRecordList from '../Parent/HealthRecord/HealthRecordList';
-import HealthDeclarationHistory from '../Parent/Declare/HealthDeclarationHistory';
-import HealthRecord from '../Parent/DailyHealth/HealthRecord';
-import VaccineRecordInfo from '../Parent/VaccineCampaign/VaccineRecordInfo';
-import DrugTable from '../Parent/SendDrug/DrugTable';
-import { getSession } from '../../config/Supabase';
-import { getStudentInfo } from '../../service/childenService';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useSnackbar } from "notistack";
+import {
+  Loader2,
+  User,
+  Activity,
+  FileText,
+  List,
+  Shield,
+  Heart,
+  Syringe,
+  ChevronRight,
+  ArrowLeft,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import StudentProfile from "../Parent/StudentProfile/StudentProfile";
+import HealthDashboard from "../Parent/RegularCheckup/HealthDashboard";
+import CheckupHistoryInfo from "../Parent/RegularCheckup/CheckupHistoryInfo";
+import HealthRecordList from "../Parent/HealthRecord/HealthRecordList";
+import HealthDeclarationHistory from "../Parent/Declare/HealthDeclarationHistory";
+import HealthRecord from "../Parent/DailyHealth/HealthRecord";
+import VaccineRecordInfo from "../Parent/VaccineCampaign/VaccineRecordInfo";
+import DrugTable from "../Parent/SendDrug/DrugTable";
+import { getSession } from "../../config/Supabase";
+import { getStudentInfo } from "../../service/childenService";
 
 const StudentOverview = () => {
   const { student_id } = useParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState("profile");
+  const [activeCheckupTab, setActiveCheckupTab] = useState("dashboard"); // Sub-tab state for "Kiểm tra sức khỏe"
   const [studentData, setStudentData] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -30,19 +42,23 @@ const StudentOverview = () => {
       try {
         const { data, error } = await getSession();
         if (error || !data.session) {
-          enqueueSnackbar('Vui lòng đăng nhập để tiếp tục!', { variant: 'error' });
-          navigate('/login');
+          enqueueSnackbar("Vui lòng đăng nhập để tiếp tục!", {
+            variant: "error",
+          });
+          navigate("/login");
           return;
         }
         setIsAuthenticated(true);
 
         const student = await getStudentInfo(student_id);
         if (!student?.id) {
-          throw new Error('Không tìm thấy thông tin học sinh');
+          throw new Error("Không tìm thấy thông tin học sinh");
         }
         setStudentData(student);
       } catch (error) {
-        enqueueSnackbar('Không tải được dữ liệu: ' + error.message, { variant: 'error' });
+        enqueueSnackbar("Không tải được dữ liệu: " + error.message, {
+          variant: "error",
+        });
       } finally {
         setLoading(false);
       }
@@ -53,67 +69,108 @@ const StudentOverview = () => {
 
   // Tab configuration with icons
   const tabs = [
-    { 
-      id: 'profile', 
-      label: 'Hồ sơ', 
+    {
+      id: "profile",
+      label: "Hồ sơ",
       icon: User,
       component: <StudentProfile studentData={studentData} />,
-      color: 'bg-blue-50 text-blue-600 border-blue-200'
+      color: "bg-blue-50 text-blue-600 border-blue-200",
     },
-    { 
-      id: 'dashboard', 
-      label: 'Biểu đồ', 
-      icon: Activity,
-      component: <HealthDashboard studentData={studentData} />,
-      color: 'bg-green-50 text-green-600 border-green-200'
-    },
-    { 
-      id: 'checkupHistory', 
-      label: 'Khám định kỳ', 
+    {
+      id: "checkup",
+      label: "Kiểm tra định kỳ",
       icon: FileText,
-      component: <CheckupHistoryInfo studentData={studentData} />,
-      color: 'bg-teal-50 text-teal-600 border-teal-200'
+      component: (
+        <div className="space-y-6">
+          {/* Sub-tab Navigation */}
+          <div className="bg-gray-100 rounded-lg p-1 flex space-x-1">
+            <button
+              onClick={() => setActiveCheckupTab("dashboard")}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 ${
+                activeCheckupTab === "dashboard"
+                  ? "bg-white text-green-600 shadow-sm"
+                  : "text-gray-600 hover:text-green-600 hover:bg-gray-50"
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              Biểu đồ
+            </button>
+            <button
+              onClick={() => setActiveCheckupTab("checkupHistory")}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 ${
+                activeCheckupTab === "checkupHistory"
+                  ? "bg-white text-teal-600 shadow-sm"
+                  : "text-gray-600 hover:text-teal-600 hover:bg-gray-50"
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Khám định kỳ
+            </button>
+          </div>
+          {/* Sub-tab Content */}
+          <AnimatePresence>
+            <motion.div
+              key={activeCheckupTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeCheckupTab === "dashboard" ? (
+                <HealthDashboard studentData={studentData} />
+              ) : (
+                <CheckupHistoryInfo studentData={studentData} />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      ),
+      color: "bg-green-50 text-green-600 border-green-200",
     },
-    { 
-      id: 'drugTable', 
-      label: 'Gửi thuốc', 
-      icon: List,
-      component: <DrugTable student_id={student_id} />,
-      color: 'bg-purple-50 text-purple-600 border-purple-200'
-    },
-    { 
-      id: 'recordList', 
-      label: 'Danh sách bệnh', 
-      icon: List,
-      component: <HealthRecordList student_id={student_id} />,
-      color: 'bg-orange-50 text-orange-600 border-orange-200'
-    },
-    { 
-      id: 'declarationHistory', 
-      label: 'Lịch sử khai báo bệnh', 
-      icon: Shield,
-      component: <HealthDeclarationHistory studentData={studentData} />,
-      color: 'bg-red-50 text-red-600 border-red-200'
-    },
-    { 
-      id: 'healthRecord', 
-      label: 'Sức khỏe hằng ngày', 
-      icon: Heart,
-      component: <HealthRecord studentData={studentData} />,
-      color: 'bg-pink-50 text-pink-600 border-pink-200'
-    },
-    { 
-      id: 'vaccineRecord', 
-      label: 'Tiêm chủng', 
+    {
+      id: "vaccineRecord",
+      label: "Tiêm chủng",
       icon: Syringe,
       component: <VaccineRecordInfo />,
-      color: 'bg-indigo-50 text-indigo-600 border-indigo-200'
+      color: "bg-indigo-50 text-indigo-600 border-indigo-200",
+    },
+    {
+      id: "drugTable",
+      label: "Gửi thuốc",
+      icon: List,
+      component: <DrugTable student_id={student_id} />,
+      color: "bg-purple-50 text-purple-600 border-purple-200",
+    },
+    {
+      id: "recordList",
+      label: "Danh sách bệnh",
+      icon: List,
+      component: <HealthRecordList student_id={student_id} />,
+      color: "bg-orange-50 text-orange-600 border-orange-200",
+    },
+    {
+      id: "declarationHistory",
+      label: "Lịch sử khai báo bệnh",
+      icon: Shield,
+      component: <HealthDeclarationHistory studentData={studentData} />,
+      color: "bg-red-50 text-red-600 border-red-200",
+    },
+    {
+      id: "healthRecord",
+      label: "Sức khỏe hằng ngày",
+      icon: Heart,
+      component: <HealthRecord studentData={studentData} />,
+      color: "bg-pink-50 text-pink-600 border-pink-200",
     },
   ];
 
   // Handle tab change
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
+    // Reset sub-tab to 'dashboard' when switching to 'checkup' tab
+    if (tabId === "checkup") {
+      setActiveCheckupTab("dashboard");
+    }
   };
 
   // Handle back navigation
@@ -129,7 +186,9 @@ const StudentOverview = () => {
             <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
             <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-blue-100 mx-auto animate-pulse"></div>
           </div>
-          <p className="text-gray-600 text-sm font-medium">Đang tải dữ liệu học sinh...</p>
+          <p className="text-gray-600 text-sm font-medium">
+            Đang tải dữ liệu học sinh...
+          </p>
           <p className="text-sm text-gray-400 mt-1">Vui lòng đợi một chút</p>
         </div>
       </div>
@@ -151,9 +210,9 @@ const StudentOverview = () => {
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 rounded-full overflow-hidden shadow-sm border-2 border-blue-200">
                 {studentData?.profile_img_url ? (
-                  <img 
-                    src={studentData.profile_img_url} 
-                    alt={studentData.name || 'Học sinh'} 
+                  <img
+                    src={studentData.profile_img_url}
+                    alt={studentData.name || "Học sinh"}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -164,7 +223,7 @@ const StudentOverview = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-gray-900">
-                  {studentData?.name || 'Tổng quan học sinh'}
+                  {studentData?.name || "Tổng quan học sinh"}
                 </h1>
                 <p className="text-sm text-gray-600 mt-1">
                   Quản lý hồ sơ và sức khỏe toàn diện
@@ -186,11 +245,14 @@ const StudentOverview = () => {
         {/* Tab Navigation */}
         <div className="mb-6">
           <div className="border-b border-gray-200 bg-white rounded-t-lg shadow-sm">
-            <nav className="flex space-x-2 overflow-x-auto px-4 py-3" aria-label="Tabs">
+            <nav
+              className="flex space-x-2 overflow-x-auto px-4 py-3"
+              aria-label="Tabs"
+            >
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
-                
+
                 return (
                   <button
                     key={tab.id}
@@ -198,13 +260,20 @@ const StudentOverview = () => {
                     className={`
                       group flex items-center space-x-2 whitespace-nowrap px-3 py-2 rounded-md text-sm font-medium
                       transition-colors duration-200
-                      ${isActive 
-                        ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' 
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                      ${
+                        isActive
+                          ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
+                          : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
                       }
                     `}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-600'}`} />
+                    <Icon
+                      className={`w-4 h-4 ${
+                        isActive
+                          ? "text-blue-600"
+                          : "text-gray-500 group-hover:text-blue-600"
+                      }`}
+                    />
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -229,7 +298,9 @@ const StudentOverview = () => {
                 <div className="flex items-center space-x-3">
                   {activeTabData && (
                     <>
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${activeTabData.color}`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${activeTabData.color}`}
+                      >
                         <activeTabData.icon className="w-4 h-4" />
                       </div>
                       <div>
@@ -237,7 +308,10 @@ const StudentOverview = () => {
                           {activeTabData.label}
                         </h2>
                         <p className="text-sm text-gray-600">
-                          {studentData?.name && `${activeTabData.label.toLowerCase()} của ${studentData.name}`}
+                          {studentData?.name &&
+                            `${activeTabData.label.toLowerCase()} của ${
+                              studentData.name
+                            }`}
                         </p>
                       </div>
                     </>
@@ -254,8 +328,12 @@ const StudentOverview = () => {
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FileText className="w-8 h-8 text-gray-400" />
                   </div>
-                  <p className="text-gray-600 text-sm font-medium">Không có nội dung</p>
-                  <p className="text-sm text-gray-400 mt-1">Vui lòng chọn một mục để xem chi tiết</p>
+                  <p className="text-gray-600 text-sm font-medium">
+                    Không có nội dung
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Vui lòng chọn một mục để xem chi tiết
+                  </p>
                 </div>
               )}
             </div>

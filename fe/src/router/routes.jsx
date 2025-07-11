@@ -295,6 +295,10 @@ const routes = createBrowserRouter([
             path: "disease-declare",
             element: <DiseaseDeclarationForm />,
           },
+          {
+            path: "send-drug-form/:request_id",
+            element: <SendDrugForm/>
+          }
         ],
       },
     ],

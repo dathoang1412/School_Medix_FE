@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Plus, X, Loader2, Image as ImageIcon } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
-import { getUser } from "../../../service/authService";
-import { useNavigate, useParams } from "react-router-dom";
+import { getUserRole } from "../../../service/childenService";
 import { getChildClass, getStudentInfo } from "../../../service/childenService";
 import { enqueueSnackbar } from "notistack";
+import { useNavigate, useParams } from "react-router-dom";
 
 const SendDrugForm = () => {
   const navigate = useNavigate();
-  const { student_id } = useParams();
+  const { student_id, request_id } = useParams();
   const [formData, setFormData] = useState({
     student_id: "",
     create_by: "",
@@ -21,40 +21,84 @@ const SendDrugForm = () => {
     prescription_img_urls: [],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState({});
   const [currUser, setCurrUser] = useState({});
   const [childClass, setChildClass] = useState(null);
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [isEditMode, setIsEditMode] = useState(!!request_id);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const user = getUser();
-      if (!user?.id) {
-        setError("Vui lòng đăng nhập để gửi đơn thuốc.");
-        return;
+      setIsLoading(true);
+      try {
+        const role = getUserRole();
+        if (!role) {
+          setError("Vui lòng đăng nhập để gửi đơn thuốc.");
+          setIsLoading(false);
+          return;
+        }
+        setUserRole(role);
+
+        const child = await getStudentInfo(student_id);
+        if (!child) {
+          setError("Vui lòng chọn một học sinh để gửi đơn thuốc.");
+          setIsLoading(false);
+          return;
+        }
+        setCurrChild(child);
+
+        const clas = await getChildClass();
+        setChildClass(clas);
+
+        setCurrUser({ id: child.parent_id || "unknown", name: "Phụ huynh" });
+
+        if (request_id) {
+          try {
+            const response = await axiosClient.get(`/send-drug-request/${request_id}`);
+            if (response.data.error) {
+              throw new Error(response.data.message);
+            }
+            const requestData = response.data.data;
+            setFormData({
+              student_id: requestData.student_id || "",
+              create_by: requestData.create_by || child.parent_id || "",
+              diagnosis: requestData.diagnosis || "",
+              schedule_send_date: requestData.schedule_send_date ? requestData.schedule_send_date.split('T')[0] : "",
+              intake_date: requestData.intake_date ? requestData.intake_date.split('T')[0] : "",
+              note: requestData.note || "",
+              status: requestData.status || "PROCESSING",
+              request_items: requestData.request_items.length > 0
+                ? requestData.request_items.map(item => ({
+                    name: item.name || "",
+                    intake_template_time: Array.isArray(item.intake_template_time) ? item.intake_template_time : [],
+                    dosage_usage: item.dosage_usage || "",
+                  }))
+                : [{ name: "", intake_template_time: [], dosage_usage: "" }],
+              prescription_img_urls: requestData.prescription_img_urls || [],
+            });
+            setPreviews(requestData.prescription_img_urls || []);
+          } catch (error) {
+            setError("Không thể tải dữ liệu đơn thuốc: " + (error.message || "Vui lòng thử lại."));
+          }
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            student_id: child.id || "",
+            create_by: child.parent_id || "",
+          }));
+        }
+      } catch (error) {
+        setError("Lỗi khi tải dữ liệu: " + (error.message || "Vui lòng thử lại."));
+      } finally {
+        setIsLoading(false);
       }
-      setCurrUser(user);
-
-      const child = await getStudentInfo(student_id);
-      if (!child) {
-        setError("Vui lòng chọn một học sinh để gửi đơn thuốc.");
-        return;
-      }
-      setCurrChild(child);
-
-      const clas = await getChildClass();
-      setChildClass(clas);
-
-      setFormData((prev) => ({
-        ...prev,
-        student_id: child.id || "",
-        create_by: user?.id || "",
-      }));
     };
     fetchData();
-  }, [student_id]);
+  }, [student_id, request_id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,18 +112,21 @@ const SendDrugForm = () => {
     const newFiles = [...files, ...selectedFiles];
     setFiles(newFiles);
 
-    // Generate previews
     const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-    setPreviews(newPreviews);
-
-    // Reset the input field to allow re-selecting the same file
-    e.target.value = null;
+    setPreviews([...formData.prescription_img_urls, ...newPreviews]);
   };
 
   const handleRemoveFile = (index) => {
-    const newFiles = files.filter((_, i) => i !== index);
+    const isExistingUrl = index < formData.prescription_img_urls.length;
+    if (isExistingUrl) {
+      const newUrls = formData.prescription_img_urls.filter((_, i) => i !== index);
+      setFormData((prev) => ({ ...prev, prescription_img_urls: newUrls }));
+    } else {
+      const fileIndex = index - formData.prescription_img_urls.length;
+      const newFiles = files.filter((_, i) => i !== fileIndex);
+      setFiles(newFiles);
+    }
     const newPreviews = previews.filter((_, i) => i !== index);
-    setFiles(newFiles);
     setPreviews(newPreviews);
   };
 
@@ -131,23 +178,29 @@ const SendDrugForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    if (userRole !== "parent") {
+      enqueueSnackbar("Chỉ phụ huynh mới có quyền gửi hoặc cập nhật đơn thuốc.", {
+        variant: "error",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     setError(null);
 
-    // Validate required fields
     if (!formData.student_id || !formData.create_by) {
       setError("Thông tin học sinh hoặc người gửi không hợp lệ.");
-      setIsLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
     if (!formData.schedule_send_date || !formData.intake_date) {
       setError("Vui lòng nhập đầy đủ ngày hẹn gửi và ngày uống thuốc.");
-      setIsLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
-    // Validate request items
     const validRequestItems = formData.request_items
       .filter((item) => item.name.trim() && item.intake_template_time.length > 0)
       .map((item) => ({
@@ -158,11 +211,11 @@ const SendDrugForm = () => {
 
     if (validRequestItems.length === 0) {
       setError("Vui lòng nhập ít nhất một loại thuốc hợp lệ với thời gian uống.");
-      setIsLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
-    let prescriptionImgUrls = [];
+    let prescriptionImgUrls = formData.prescription_img_urls;
     if (files.length > 0) {
       try {
         const formDataFiles = new FormData();
@@ -173,10 +226,10 @@ const SendDrugForm = () => {
         if (uploadResponse.data.error) {
           throw new Error(uploadResponse.data.message);
         }
-        prescriptionImgUrls = uploadResponse.data.prescription_img_urls;
+        prescriptionImgUrls = [...prescriptionImgUrls, ...uploadResponse.data.prescription_img_urls];
       } catch (error) {
         setError("Lỗi khi tải lên ảnh đơn thuốc: " + (error.message || "Vui lòng thử lại."));
-        setIsLoading(false);
+        setIsSubmitting(false);
         return;
       }
     }
@@ -193,43 +246,61 @@ const SendDrugForm = () => {
     };
 
     try {
-      const response = await axiosClient.post("/send-drug-request", dataToSend);
+      const endpoint = isEditMode ? `/send-drug-request/${request_id}` : "/send-drug-request";
+      const method = isEditMode ? "patch" : "post";
+      const response = await axiosClient[method](endpoint, dataToSend);
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      enqueueSnackbar("Gửi đơn thuốc thành công!", { variant: "success" });
+      enqueueSnackbar(isEditMode ? "Cập nhật đơn thuốc thành công!" : "Gửi đơn thuốc thành công!", { variant: "success" });
       navigate(`/parent/edit/${currChild.id}/drug-table`);
     } catch (error) {
       console.error("Error submitting drug request:", error);
       setError(
         error.response?.data?.message ||
           error.message ||
-          "Không thể gửi đơn thuốc. Vui lòng thử lại sau."
+          "Không thể gửi/cập nhật đơn thuốc. Vui lòng thử lại sau."
       );
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  // Clean up object URLs to prevent memory leaks
   useEffect(() => {
     return () => {
-      previews.forEach((preview) => URL.revokeObjectURL(preview));
+      previews.forEach((preview) => {
+        if (!formData.prescription_img_urls.includes(preview)) {
+          URL.revokeObjectURL(preview);
+        }
+      });
     };
-  }, [previews]);
+  }, [previews, formData.prescription_img_urls]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600 text-sm font-medium">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          {/* Header */}
           <div className="px-6 py-6 sm:px-8 border-b border-gray-200">
-            <h1 className="text-2xl font-semibold text-gray-900">Đơn Thuốc Học Sinh</h1>
-            <p className="text-sm text-gray-600 mt-1">Vui lòng điền đầy đủ thông tin dưới đây</p>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              {isEditMode ? "Cập Nhật Đơn Thuốc" : "Đơn Thuốc Học Sinh"}
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Vui lòng điền đầy đủ thông tin dưới đây
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
-            {/* Thông tin học sinh */}
             <section>
               <h2 className="text-lg font-medium text-gray-900 mb-4">Thông tin học sinh</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -270,7 +341,6 @@ const SendDrugForm = () => {
               </div>
             </section>
 
-            {/* Thông tin người gửi */}
             <section className="hidden">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Thông tin người gửi</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -300,7 +370,6 @@ const SendDrugForm = () => {
               </div>
             </section>
 
-            {/* Thông tin đơn thuốc */}
             <section>
               <h2 className="text-lg font-medium text-gray-900 mb-4">Thông tin đơn thuốc</h2>
               <div className="space-y-4">
@@ -332,7 +401,7 @@ const SendDrugForm = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 glam">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Ngày cho uống thuốc <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -399,7 +468,6 @@ const SendDrugForm = () => {
               </div>
             </section>
 
-            {/* Danh sách thuốc */}
             <section>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-medium text-gray-900">Danh sách thuốc</h2>
@@ -498,14 +566,12 @@ const SendDrugForm = () => {
               </div>
             </section>
 
-            {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
                 <p className="text-sm text-red-800">{error}</p>
               </div>
             )}
 
-            {/* Action Buttons */}
             <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
               <button
                 type="button"
@@ -516,11 +582,16 @@ const SendDrugForm = () => {
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={isSubmitting || userRole !== "parent"}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-md border border-transparent flex items-center gap-2 transition-colors duration-200 ${
+                  isSubmitting || userRole !== "parent"
+                    ? "bg-blue-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+                title={userRole !== "parent" ? "Chỉ phụ huynh mới có quyền gửi/cập nhật đơn thuốc" : ""}
               >
-                {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isLoading ? "Đang gửi..." : "Gửi đơn thuốc"}
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isEditMode ? "Cập nhật đơn thuốc" : "Gửi đơn thuốc"}
               </button>
             </div>
           </form>

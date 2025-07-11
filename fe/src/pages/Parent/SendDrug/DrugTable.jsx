@@ -4,6 +4,7 @@ import axiosClient from "../../../config/axiosClient";
 import { useNavigate, useParams } from "react-router-dom";
 import { getStudentInfo } from "../../../service/childenService";
 import { enqueueSnackbar } from "notistack";
+import { getUserRole } from "../../../service/authService";
 
 const DrugTable = () => {
   const [drugs, setDrugs] = useState([]);
@@ -14,6 +15,7 @@ const DrugTable = () => {
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState({});
   const [selectedDrug, setSelectedDrug] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const { student_id } = useParams();
   const navigate = useNavigate();
 
@@ -38,6 +40,13 @@ const DrugTable = () => {
 
       setIsLoading(true);
       try {
+        const role = getUserRole();
+        if (!role) {
+          setError("Vui lòng đăng nhập để xem lịch sử gửi thuốc.");
+          return;
+        }
+        setUserRole(role); // getUserRole returns a string (e.g., "parent")
+
         const child = await getStudentInfo(student_id);
         if (!child) {
           setError("Vui lòng chọn một học sinh để xem lịch sử gửi thuốc.");
@@ -46,7 +55,9 @@ const DrugTable = () => {
         setCurrChild(child);
 
         const res = await axiosClient.get(`/student/${child.id}/send-drug-request`);
-        const fetchedDrugs = Array.isArray(res.data.data) ? res.data.data : [];
+        const fetchedDrugs = Array.isArray(res.data.data)
+          ? res.data.data.filter(drug => drug.status !== "DRAFTED") // Filter out DRAFTED
+          : [];
         setDrugs(fetchedDrugs);
         setFilteredDrugs(fetchedDrugs);
       } catch (error) {
@@ -92,10 +103,13 @@ const DrugTable = () => {
   };
 
   const handleEdit = (drug) => {
-    enqueueSnackbar(`Chức năng chỉnh sửa đơn thuốc #${drug.id} đang được phát triển`, {
-      variant: "info",
-    });
-    // Placeholder for edit logic
+    if (userRole !== "parent") {
+      enqueueSnackbar("Chỉ phụ huynh mới có quyền chỉnh sửa đơn thuốc.", {
+        variant: "error",
+      });
+      return;
+    }
+    navigate(`/parent/edit/${student_id}/send-drug-form/${drug.id}`);
   };
 
   const getStatusBadge = (status) => {
@@ -404,9 +418,14 @@ const DrugTable = () => {
                               <Eye size={18} />
                             </button>
                             <button
-                              className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors duration-200"
+                              className={`p-1 rounded transition-colors duration-200 ${
+                                userRole === "parent"
+                                  ? "text-green-600 hover:text-green-800 hover:bg-green-50"
+                                  : "text-gray-400 cursor-not-allowed"
+                              }`}
                               onClick={() => handleEdit(drug)}
-                              title="Chỉnh sửa"
+                              disabled={userRole !== "parent"}
+                              title={userRole === "parent" ? "Chỉnh sửa" : "Chỉ phụ huynh mới có quyền chỉnh sửa"}
                             >
                               <PenBoxIcon size={18} />
                             </button>
