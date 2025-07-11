@@ -24,14 +24,10 @@ const useSendDrugManagement = () => {
     const fetchDrugHistory = async () => {
       try {
         setError(null);
-        const user = getUser();
-        if (!user?.id) {
-          setError("Vui lòng đăng nhập để xem danh sách đơn thuốc");
-          return;
-        }
 
         // Gọi endpoint lấy tất cả drug requests
         const res = await axiosClient.get("/send-drug-request");
+        console.log("Drug request list: ", res.data.data);
         const drugData = res.data.data || [];
 
         // Lấy danh sách class_id duy nhất từ drug requests
