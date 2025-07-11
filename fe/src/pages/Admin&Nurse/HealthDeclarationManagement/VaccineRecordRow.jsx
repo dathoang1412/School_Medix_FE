@@ -9,7 +9,7 @@ const VaccineRecordRow = ({ record, onUpdate }) => {
   const [error, setError] = useState('');
 
   const formatDate = date => date ? new Date(date).toLocaleDateString('vi-VN') : 'Chưa xác định';
-  const getStudentDisplay = id => `HS${String(id).padStart(6, '0')}`;
+  const getStudentDisplay = id => `${String(id).padStart(6, '0')}`;
 
   const getBadge = (type, value) => {
     const config = {

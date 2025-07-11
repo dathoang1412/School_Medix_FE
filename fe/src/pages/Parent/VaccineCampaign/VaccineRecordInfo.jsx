@@ -236,7 +236,7 @@ const VaccineRecordInfo = () => {
                         {index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        HS{String(currChild?.id || "").padStart(6, "0")}
+                        {String(currChild?.id || "").padStart(6, "0")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {record.disease_name}

@@ -227,7 +227,7 @@ const VaccineCampaignDetails = () => {
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
-            <Activity className="w-4 h-4 mr-2" />
+            <Syringe className="w-4 h-4 mr-2" />
             <span>Khởi động chiến dịch</span>
           </button>,
           <button
@@ -263,14 +263,6 @@ const VaccineCampaignDetails = () => {
             <CheckCircle className="w-4 h-4 mr-2" />
             <span>Hoàn thành chiến dịch</span>
           </button>,
-          // <button
-          //   key="edit-report"
-          //   onClick={() => navigate(`/admin/vaccination-report/${campaignId}`)}
-          //   className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          // >
-          //   <Pencil className="w-4 h-4 mr-2" />
-          //   <span>Chỉnh sửa báo cáo</span>
-          // </button>,
           <button
             key="view-register-list"
             onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
@@ -479,7 +471,12 @@ const VaccineCampaignDetails = () => {
                         <Syringe className="w-4 h-4 text-blue-600" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-2">{details.vaccine_name}</h3>
+                        <h3
+                          className="font-semibold text-gray-900 mb-2 cursor-pointer hover:text-blue-600 transition-colors"
+                          onClick={() => navigate(`/${userRole}/vaccine/${details.vaccine_id}/students`)}
+                        >
+                          {details.vaccine_name}
+                        </h3>
                         <p className="text-gray-600 text-sm leading-relaxed">
                           Vaccine #{details.vaccine_id} - Phòng ngừa{" "}
                           {details.disease_name || "Chưa xác định"}

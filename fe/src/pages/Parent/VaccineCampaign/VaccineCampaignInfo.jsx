@@ -367,7 +367,7 @@ const VaccineCampaignInfo = () => {
                           <div className="flex items-center gap-4">
                             {/* Survey Status */}
                             {campaign.isSurveyed && (
-                              <div className="flex items-center gap-2 px-2.5 py-1 bg-green-100 text-green-800 border border-green-200 rounded-full text-sm">
+                              <div className=" cursor-pointer flex items-center gap-2 px-2.5 py-1 bg-green-100 text-green-800 border border-green-200 rounded-full text-sm">
                                 <CheckCircle className="w-4 h-4" />
                                 <span>Đã đăng ký</span>
                               </div>
@@ -385,7 +385,7 @@ const VaccineCampaignInfo = () => {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleViewDetails(campaign.campaign_id)}
-                                className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm font-medium"
+                                className=" cursor-pointer flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm font-medium"
                               >
                                 <FileText className="w-4 h-4" />
                                 Chi tiết
@@ -393,7 +393,7 @@ const VaccineCampaignInfo = () => {
                               {statusInfo.canSurvey && (
                                 <button
                                   onClick={() => handleSurvey(campaign.campaign_id)}
-                                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                                  className={` cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                                     campaign.isSurveyed
                                       ? "bg-green-600 text-white hover:bg-green-700"
                                       : "bg-blue-600 text-white hover:bg-blue-700"

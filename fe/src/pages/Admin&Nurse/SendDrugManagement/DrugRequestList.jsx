@@ -66,7 +66,7 @@ const DrugRequestList = ({ drugs = [], handleAccept, handleRefuse, handleCancel,
 
   // Get student display name
   const getStudentDisplay = (studentId) => {
-    return `HS${String(studentId).padStart(6, "0")}`;
+    return `${String(studentId).padStart(6, "0")}`;
   };
 
   // Pagination
@@ -313,7 +313,7 @@ const DrugRequestList = ({ drugs = [], handleAccept, handleRefuse, handleCancel,
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
                           onClick={() => navigate(`/${getUserRole()}/student-overview/${drug.student_id}`)}
-                          className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                          className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
                         >
                           {drug.student_name || "N/A"}
                         </button>

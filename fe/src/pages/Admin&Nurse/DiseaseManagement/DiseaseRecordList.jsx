@@ -76,7 +76,7 @@ const DiseaseRecordList = ({ records }) => {
 
   // Get student display name
   const getStudentDisplay = (studentId) => {
-    return `HS${String(studentId).padStart(6, "0")}`;
+    return `${String(studentId).padStart(6, "0")}`;
   };
 
   // Handle name click to navigate

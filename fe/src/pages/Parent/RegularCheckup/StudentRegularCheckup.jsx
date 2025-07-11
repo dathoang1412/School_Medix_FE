@@ -327,7 +327,7 @@ const StudentRegularCheckup = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleViewDetails(campaign.campaign_id)}
-                          className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                          className=" cursor-pointer flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                         >
                           <FileText className="w-4 h-4" />
                           Chi tiết
@@ -336,7 +336,7 @@ const StudentRegularCheckup = () => {
                         {statusInfo.canSurvey && !campaign.isSurveyed && (
                           <button
                             onClick={() => handleSurvey(campaign.campaign_id)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                            className=" cursor-pointer flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                           >
                             <ClipboardList className="w-4 h-4" />
                             Tham gia khảo sát
