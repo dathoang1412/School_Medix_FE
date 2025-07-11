@@ -434,7 +434,7 @@ const AdminDashboard = () => {
               heightWeightAvg.isAllGrades ? " (Tất cả khối lớp)" : ""
             }`}
             icon={<TrendingUp className="w-5 h-5 text-gray-600" />}
-            className="h-[600px] flex flex-col" // Changed min-h to h for exact height
+            className="h-[600px] flex flex-col cursor-pointer hover:shadow-md transition-shadow" // Changed min-h to h for exact height
           >
             {heightWeightLoading ? (
               <div className="flex-1 flex items-center justify-center">
