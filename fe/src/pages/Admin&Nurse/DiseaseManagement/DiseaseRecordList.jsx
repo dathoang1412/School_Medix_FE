@@ -152,7 +152,7 @@ const DiseaseRecordList = ({ records }) => {
                           onClick={() => handleNameClick(record.student_id)}
                           className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
                         >
-                          {record.name || "N/A"}
+                          {record.student_name || "N/A"}
                         </button>
                       </div>
                     </td>

@@ -13,7 +13,7 @@ export const getChildClass = async (id) => {
 export const getStudentInfo = async (id) => {
     try {
         const res = await axiosClient.get('/student/' + id)
-        console.log("Child Info: ", res?.data.data);
+        // console.log("Child Info: ", res?.data.data);
         return res?.data.data;
     } catch (error) {
         console.log(error)
