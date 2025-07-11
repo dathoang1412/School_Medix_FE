@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Shield, Calendar, MapPin, AlertCircle, Loader2, ChevronLeft, FileText } from "lucide-react";
+import { Shield, Calendar, MapPin, AlertCircle, Loader2, ChevronLeft, FileText, CheckCircle } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { enqueueSnackbar } from "notistack";
 
@@ -10,6 +10,7 @@ const RegularCheckupSurvey = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedExams, setSelectedExams] = useState([]);
+  const [waitingExams, setWaitingExams] = useState([]); // New state for previously registered exams
   const [reason, setReason] = useState("");
   const [registerId, setRegisterId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -62,6 +63,17 @@ const RegularCheckupSurvey = () => {
             status: "CANNOT_ATTACH",
           }));
           setSelectedExams(initialExams);
+        }
+
+        // Fetch previously registered (waiting) specialist exams
+        const waitingExamsResponse = await axiosClient.get(
+          `/checkup-register/${student_id}/${campaign_id}/specialist-exams/waiting`
+        );
+        if (waitingExamsResponse.data.error) {
+          console.error("Error fetching waiting specialist exams:", waitingExamsResponse.data.message);
+          setWaitingExams([]);
+        } else {
+          setWaitingExams(waitingExamsResponse.data.data || []);
         }
       } catch (err) {
         setError("Không thể tải dữ liệu. Vui lòng kiểm tra kết nối.");
@@ -127,7 +139,7 @@ const RegularCheckupSurvey = () => {
         navigate(`/parent/edit/${student_id}/regular-checkup`, { state: { childId: student_id } });
       }
     } catch (err) {
-      {err && enqueueSnackbar("Không thể gửi đăng ký. Vui lòng thử lại.", { variant: "error" })};
+      enqueueSnackbar("Không thể gửi đăng ký. Vui lòng thử lại.", { variant: "error" });
     } finally {
       setSubmitting(false);
     }
@@ -242,10 +254,30 @@ const RegularCheckupSurvey = () => {
             </div>
           </div>
 
+          {/* Previously Registered Exams */}
+          {waitingExams.length > 0 && (
+            <div className="p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Các hạng mục khám đã đăng ký
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {waitingExams.map((examName, index) => (
+                  <span
+                    key={index}
+                    className="flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    {examName}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Exam Selection */}
           <div className="p-6 border-b">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Chọn hạng mục khám</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{campaign?.specialist_exams?.length > 0 ? 'Chọn lại': 'Chọn'} hạng mục cần khám</h3>
               <span className="text-sm text-gray-500">
                 Đã chọn: {selectedCount}/{campaign?.specialist_exams?.length || 0}
               </span>
@@ -335,4 +367,4 @@ const RegularCheckupSurvey = () => {
   );
 };
 
-export default RegularCheckupSurvey;
+export default RegularCheckupSurvey;  

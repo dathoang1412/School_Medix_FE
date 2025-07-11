@@ -343,7 +343,7 @@ const StudentRegularCheckup = () => {
                             } transition-colors`}
                           >
                             <ClipboardList className="w-4 h-4" />
-                            {campaign.isSurveyed ? "Đã khảo sát" : "Tham gia khảo sát"}
+                            {campaign.isSurveyed ? "Chỉnh sửa khảo sát" : "Tham gia khảo sát"}
                           </button>
                         )}
                       </div>
