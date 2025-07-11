@@ -8,6 +8,7 @@ import { enqueueSnackbar } from "notistack";
 
 const SendDrugForm = () => {
   const navigate = useNavigate();
+  const { student_id } = useParams();
   const [formData, setFormData] = useState({
     student_id: "",
     create_by: "",
@@ -16,13 +17,13 @@ const SendDrugForm = () => {
     intake_date: "",
     note: "",
     status: "PROCESSING",
-    request_items: [{ name: "", intake_template_time: "", dosage_usage: "" }],
+    request_items: [{ name: "", intake_template_time: [], dosage_usage: "" }],
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState({});
   const [currUser, setCurrUser] = useState({});
-  const { student_id } = useParams();
+  const [childClass, setChildClass] = useState();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +41,9 @@ const SendDrugForm = () => {
       }
       setCurrChild(child);
 
+      const clas = await getChildClass();
+      setChildClass(clas);
+
       setFormData((prev) => ({
         ...prev,
         student_id: child.id || "",
@@ -47,17 +51,39 @@ const SendDrugForm = () => {
       }));
     };
     fetchData();
-  }, []);
+  }, [student_id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleRequestItemChange = (index, e) => {
-    const { name, value } = e.target;
+  const handleRequestItemChange = (index, field, value) => {
     const newRequestItems = [...formData.request_items];
-    newRequestItems[index][name] = value;
+    newRequestItems[index][field] = value;
+    setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
+  };
+
+  const handleAddIntakeTime = (index) => {
+    const newRequestItems = [...formData.request_items];
+    newRequestItems[index].intake_template_time = [
+      ...newRequestItems[index].intake_template_time,
+      "",
+    ];
+    setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
+  };
+
+  const handleRemoveIntakeTime = (itemIndex, timeIndex) => {
+    const newRequestItems = [...formData.request_items];
+    newRequestItems[itemIndex].intake_template_time = newRequestItems[
+      itemIndex
+    ].intake_template_time.filter((_, i) => i !== timeIndex);
+    setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
+  };
+
+  const handleIntakeTimeChange = (itemIndex, timeIndex, value) => {
+    const newRequestItems = [...formData.request_items];
+    newRequestItems[itemIndex].intake_template_time[timeIndex] = value;
     setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
   };
 
@@ -66,7 +92,7 @@ const SendDrugForm = () => {
       ...prev,
       request_items: [
         ...prev.request_items,
-        { name: "", intake_template_time: "", dosage_usage: "Chưa nhập" },
+        { name: "", intake_template_time: [], dosage_usage: "" },
       ],
     }));
   };
@@ -98,15 +124,15 @@ const SendDrugForm = () => {
 
     // Validate request items
     const validRequestItems = formData.request_items
-      .filter((item) => item.name.trim())
+      .filter((item) => item.name.trim() && item.intake_template_time.length > 0)
       .map((item) => ({
         name: item.name.trim(),
-        intake_template_time: item.intake_template_time,
+        intake_template_time: item.intake_template_time.filter((time) => time.trim()),
         dosage_usage: item.dosage_usage.trim() || "Chưa nhập",
       }));
 
     if (validRequestItems.length === 0) {
-      setError("Vui lòng nhập ít nhất một loại thuốc hợp lệ.");
+      setError("Vui lòng nhập ít nhất một loại thuốc hợp lệ với thời gian uống.");
       setIsLoading(false);
       return;
     }
@@ -126,30 +152,19 @@ const SendDrugForm = () => {
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      enqueueSnackbar("Gửi đơn thuốc thành công!", {variant: "success"});
+      enqueueSnackbar("Gửi đơn thuốc thành công!", { variant: "success" });
       navigate(`/parent/edit/${currChild.id}/drug-table`);
     } catch (error) {
       console.error("Error submitting drug request:", error);
       setError(
         error.response?.data?.message ||
-        error.message ||
-        "Không thể gửi đơn thuốc. Vui lòng thử lại sau."
+          error.message ||
+          "Không thể gửi đơn thuốc. Vui lòng thử lại sau."
       );
     } finally {
       setIsLoading(false);
     }
   };
-
-  const [childClass, setChildClass] = useState();
-
-  useEffect(() => {
-    const fetchClass = async () => {
-      const clas = await getChildClass();
-      setChildClass(clas);
-      console.log("CLASS: ", clas);
-    }
-    fetchClass();
-  }, [])
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">
@@ -348,44 +363,60 @@ const SendDrugForm = () => {
                         </label>
                         <input
                           type="text"
-                          name="name"
                           value={item.name}
-                          onChange={(e) => handleRequestItemChange(index, e)}
+                          onChange={(e) => handleRequestItemChange(index, "name", e.target.value)}
                           placeholder="Nhập tên thuốc"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           required
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Cách sử dụng <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            name="dosage_usage"
-                            value={item.dosage_usage}
-                            onChange={(e) => handleRequestItemChange(index, e)}
-                            placeholder="VD: Uống 1 viên/lần"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Cách sử dụng <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={item.dosage_usage}
+                          onChange={(e) => handleRequestItemChange(index, "dosage_usage", e.target.value)}
+                          placeholder="VD: Uống 1 viên/lần"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          required
+                        />
+                      </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Thời gian uống <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            name="intake_template_time"
-                            value={item.intake_template_time}
-                            onChange={(e) => handleRequestItemChange(index, e)}
-                            placeholder="VD: 8h, 12h, 18h"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
-                          />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Thời gian uống <span className="text-red-500">*</span>
+                        </label>
+                        <div className="space-y-2">
+                          {item.intake_template_time.map((time, timeIndex) => (
+                            <div key={timeIndex} className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={time}
+                                onChange={(e) => handleIntakeTimeChange(index, timeIndex, e.target.value)}
+                                placeholder="VD: Trước khi ăn sáng"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveIntakeTime(index, timeIndex)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => handleAddIntakeTime(index)}
+                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Thêm thời gian uống
+                          </button>
                         </div>
                       </div>
                     </div>

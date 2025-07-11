@@ -96,13 +96,6 @@ const SendDrugManagement = () => {
                 </select>
                 <Filter size={18} className="absolute left-3 top-2.5 text-gray-400" />
               </div>
-              <button
-                onClick={() => navigate("/admin/add-drug-request")}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
-              >
-                <Plus size={16} />
-                Thêm Đơn Thuốc
-              </button>
             </div>
           </div>
         </div>

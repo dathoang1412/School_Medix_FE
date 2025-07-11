@@ -320,8 +320,8 @@ const DailyHealthRecord = () => {
                     </td>
                   </tr>
                 ) : (
-                  currentRecords.map((record) => (
-                    <React.Fragment key={record.id}>
+                  currentRecords.map((record, index) => (
+                    <React.Fragment key={index}>
                       <tr className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">

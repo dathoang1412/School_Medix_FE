@@ -1,3 +1,9 @@
+import React, { useEffect, useState } from "react";
+import { MdOutlineSchool, MdOutlineMedicalInformation, MdMedicationLiquid } from "react-icons/md";
+import { RiHome9Line } from "react-icons/ri";
+import { BsTextIndentLeft } from "react-icons/bs";
+import { LuLayoutDashboard, LuNewspaper, LuSyringe } from "react-icons/lu";
+import { FaStethoscope, FaVial } from "react-icons/fa";
 import {
   Settings,
   Menu,
@@ -11,14 +17,6 @@ import {
   Newspaper,
   PencilLineIcon,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { MdOutlineSchool } from "react-icons/md";
-import { MdOutlineMedicalInformation } from "react-icons/md";
-import { RiHome9Line } from "react-icons/ri";
-import { BsTextIndentLeft } from "react-icons/bs";
-import { MdMedicationLiquid } from "react-icons/md";
-import { LuLayoutDashboard, LuNewspaper, LuSyringe } from "react-icons/lu";
-import { FaStethoscope, FaVial } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getUser, getUserRole, removeUser } from "../service/authService";
 import { enqueueSnackbar } from "notistack";
@@ -38,9 +36,7 @@ const Sidebar = () => {
       try {
         const user = await getUser();
         setUserData(user);
-        console.log("User DETAILS: ", user);
       } catch (error) {
-        console.error("Error fetching user data:", error);
         enqueueSnackbar("Không thể tải thông tin người dùng!", {
           variant: "error",
         });
@@ -48,7 +44,7 @@ const Sidebar = () => {
     };
 
     fetchUserData();
-  }, [enqueueSnackbar]);
+  }, []);
 
   // Handle responsive design
   useEffect(() => {
@@ -70,7 +66,8 @@ const Sidebar = () => {
     const role = getUserRole();
     if (role === "admin") {
       setAdminItems((prev) => {
-        if (!prev.some((item) => item.title === "Quản lý người dùng")) {
+        const hasUserManagement = prev.some((item) => item.title === "Quản lý người dùng");
+        if (!hasUserManagement) {
           return [
             ...prev,
             {
@@ -112,7 +109,7 @@ const Sidebar = () => {
     },
     {
       title: "Quản lý bệnh",
-      path: " ",
+      path: "disease-management",
       icon: <MdOutlineMedicalInformation />,
       hasDropdown: true,
       children: [
@@ -189,26 +186,36 @@ const Sidebar = () => {
     { title: "Đăng xuất", action: "logout", icon: <LogOut /> },
   ];
 
+  const toggleDropdown = (title) => {
+    setExpandedDropdowns((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  };
+
   const handleNavigation = (path, title, parentTitle = null) => {
     setActiveItem(title);
-
     if (parentTitle) {
       setExpandedDropdowns((prev) => ({
         ...prev,
         [parentTitle]: true,
       }));
     }
-
-    console.log(`Navigating to: ${path}`);
     navigate(path);
-
     if (isMobile) {
       setIsCollapsed(true);
     }
   };
 
-  const handleAction = (action) => {
-    console.log(`Action: ${action}`);
+  const handleAction = async (action) => {
+    if (action === "logout") {
+      removeUser();
+      await signOut();
+      enqueueSnackbar("Đăng xuất thành công", {
+        variant: "success",
+      });
+      navigate("/");
+    }
   };
 
   const toggleSidebar = () => {
@@ -229,10 +236,7 @@ const Sidebar = () => {
     const isActive = activeItem === item.title;
     const hasDropdown = item.hasDropdown && !isCollapsed;
     const isExpanded = expandedDropdowns[item.title];
-
-    const hasActiveChild =
-      item.children &&
-      item.children.some((child) => activeItem === child.title);
+    const hasActiveChild = item.children?.some((child) => activeItem === child.title);
     const shouldHighlightParent = isActive || hasActiveChild;
 
     return (
@@ -330,7 +334,7 @@ const Sidebar = () => {
     <>
       {isMobile && !isCollapsed && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsCollapsed(true)}
         />
       )}
@@ -393,26 +397,14 @@ const Sidebar = () => {
         {/* Bottom Actions */}
         <div className="p-2 border-t border-gray-100 bg-gray-50/50">
           <div className="space-y-1">
-            {bottomItems.map((item, index) => (
+            {bottomItems.map((item) => (
               <button
                 key={item.title}
-                onClick={async () => {
-                  handleAction(item.action);
-                  if (index === 1) {
-                    removeUser();
-                    await signOut();
-                    enqueueSnackbar("Đăng xuất thành công", {
-                      variant: "success",
-                    });
-                    navigate("/");
-                  }
-                }}
+                onClick={() => handleAction(item.action)}
                 className="w-full flex items-center gap-3 p-3 rounded-xl text-left text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-300 ease-out group transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-sm"
                 title={isCollapsed ? item.title : ""}
               >
-                <div className="flex-shrink-0">
-                  {item.icon}
-                </div>
+                <div className="flex-shrink-0">{item.icon}</div>
                 {!isCollapsed && (
                   <span className="font-medium text-sm truncate flex-1">{item.title}</span>
                 )}
