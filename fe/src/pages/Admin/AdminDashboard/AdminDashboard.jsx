@@ -4,8 +4,6 @@ import axiosClient from "../../../config/axiosClient";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   BarChart, Bar,
-  PieChart, Pie, Cell,
-  ResponsiveContainer
 } from 'recharts';
 import {
   Users, Heart, AlertTriangle, Thermometer, Activity, Shield, TrendingUp, Calendar, Pill, Syringe, Stethoscope
@@ -17,6 +15,7 @@ import {
   getStatusText,
   formatDate,
 } from "../../../utils/campaignUtils";
+import { getUserRole } from '../../../service/authService';
 
 const CurrentTimeDisplay = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -27,11 +26,11 @@ const CurrentTimeDisplay = () => {
   }, []);
 
   return (
-    <div className="text-right">
-      <div className="text-2xl font-bold text-black-600">
+    <div className="text-right space-y-1">
+      <div className="text-xl font-semibold text-gray-900">
         {currentTime.toLocaleTimeString('vi-VN')}
       </div>
-      <div className="text-gray-600">
+      <div className="text-sm text-gray-600">
         {currentTime.toLocaleDateString('vi-VN', {
           weekday: 'long',
           year: 'numeric',
@@ -44,9 +43,8 @@ const CurrentTimeDisplay = () => {
 };
 
 const AdminDashboard = () => {
-  const navigate = useNavigate(); // Hook để điều hướng
-  
-  // Summary data
+  const navigate = useNavigate();
+
   const [summary, setSummary] = useState({
     totalStudents: 0,
     healthyStudents: 0,
@@ -61,13 +59,11 @@ const AdminDashboard = () => {
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [summaryError, setSummaryError] = useState(null);
 
-  // Accident stats
   const [accidentStats, setAccidentStats] = useState([]);
   const [accidentLoading, setAccidentLoading] = useState(true);
   const [accidentError, setAccidentError] = useState(null);
   const [maxAccidentCases, setMaxAccidentCases] = useState(0);
 
-  // Disease stats
   const [diseaseStats, setDiseaseStats] = useState([]);
   const [diseaseLoading, setDiseaseLoading] = useState(true);
   const [diseaseError, setDiseaseError] = useState(null);
@@ -75,7 +71,6 @@ const AdminDashboard = () => {
   const [selectedDiseaseId, setSelectedDiseaseId] = useState('');
   const [maxDiseaseCases, setMaxDiseaseCases] = useState(0);
 
-  // Health plans
   const [healthPlanUpcoming, setHealthPlanUpcoming] = useState([]);
   const [plansLoading, setPlansLoading] = useState(true);
   const [plansError, setPlansError] = useState(null);
@@ -84,23 +79,21 @@ const AdminDashboard = () => {
     regularCount: 0,
   });
 
-  // Height weight data
   const [heightWeightAvg, setHeightWeightAvg] = useState({});
   const [heightWeightLoading, setHeightWeightLoading] = useState(true);
   const [heightWeightError, setHeightWeightError] = useState(null);
   const [selectedGradeId, setSelectedGradeId] = useState('');
 
-  // Fetch summary data
   useEffect(() => {
     const fetchSummary = async () => {
       setSummaryLoading(true);
       setSummaryError(null);
       try {
         const response = await axiosClient.get('/dashboard/summary');
-        setSummary(response.data.data); 
+        setSummary(response.data.data);
       } catch (err) {
         console.error('Error fetching summary:', err);
-        setSummaryError('Không thể tải dữ liệu tổng quan. Vui lòng thử lại sau.');
+        setSummaryError('Không thể tải dữ liệu tổng quan.');
       } finally {
         setSummaryLoading(false);
       }
@@ -108,7 +101,6 @@ const AdminDashboard = () => {
     fetchSummary();
   }, []);
 
-  // Fetch accident stats
   useEffect(() => {
     const fetchAccidentStats = async () => {
       setAccidentLoading(true);
@@ -119,7 +111,7 @@ const AdminDashboard = () => {
         setMaxAccidentCases(response.data.maxAccidentCases || 0);
       } catch (err) {
         console.error('Error fetching accident stats:', err);
-        setAccidentError('Không thể tải dữ liệu tai nạn. Vui lòng thử lại sau.');
+        setAccidentError('Không thể tải dữ liệu tai nạn.');
       } finally {
         setAccidentLoading(false);
       }
@@ -127,7 +119,6 @@ const AdminDashboard = () => {
     fetchAccidentStats();
   }, []);
 
-  // Fetch disease stats
   useEffect(() => {
     const fetchDiseaseStats = async () => {
       setDiseaseLoading(true);
@@ -141,7 +132,7 @@ const AdminDashboard = () => {
         setAvailableDiseases(response.data.availableDiseases || []);
       } catch (err) {
         console.error('Error fetching disease stats:', err);
-        setDiseaseError('Không thể tải dữ liệu dịch bệnh. Vui lòng thử lại sau.');
+        setDiseaseError('Không thể tải dữ liệu dịch bệnh.');
       } finally {
         setDiseaseLoading(false);
       }
@@ -149,8 +140,6 @@ const AdminDashboard = () => {
     fetchDiseaseStats();
   }, [selectedDiseaseId]);
 
-  // Fetch health stats
-  // Fetch height weight data
   useEffect(() => {
     const fetchHeightWeight = async () => {
       setHeightWeightLoading(true);
@@ -161,7 +150,7 @@ const AdminDashboard = () => {
         setHeightWeightAvg(data);
       } catch (err) {
         console.error('Error fetching height weight:', err);
-        setHeightWeightError(err.response?.data?.message || 'Không thể tải dữ liệu chiều cao cân nặng. Vui lòng thử lại sau.');
+        setHeightWeightError(err.response?.data?.message || 'Không thể tải dữ liệu chiều cao cân nặng.');
       } finally {
         setHeightWeightLoading(false);
       }
@@ -169,7 +158,6 @@ const AdminDashboard = () => {
     fetchHeightWeight();
   }, [selectedGradeId]);
 
-  // Fetch health plans
   useEffect(() => {
     const fetchHealthPlans = async () => {
       setPlansLoading(true);
@@ -179,7 +167,6 @@ const AdminDashboard = () => {
         const plans = Array.isArray(response.data.data) ? response.data.data : [];
         setHealthPlanUpcoming(plans);
 
-        // Tính số kế hoạch trong 30 ngày tới
         const today = new Date();
         const thirtyDaysFromNow = new Date(today);
         thirtyDaysFromNow.setDate(today.getDate() + 30);
@@ -200,14 +187,13 @@ const AdminDashboard = () => {
         setPlanStats({ vaccineCount, regularCount });
       } catch (err) {
         console.error('Error fetching upcoming plans:', err);
-        setPlansError(err.response?.data?.message || 'Không thể tải dữ liệu kế hoạch y tế. Vui lòng thử lại sau.');
+        setPlansError(err.response?.data?.message || 'Không thể tải dữ liệu kế hoạch y tế.');
       } finally {
         setPlansLoading(false);
       }
     };
     fetchHealthPlans();
   }, []);
-
 
   const getAccidentComparison = (recent, previous) => {
     const diff = recent - previous;
@@ -220,77 +206,76 @@ const AdminDashboard = () => {
     }
   };
 
-  // Handle navigation for plan items
   const handlePlanClick = (planID) => {
     const plan_type = planID !== null ? 'regular-checkup' : 'vaccine-campaign';
     navigate(plan_type);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-100 p-6 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-200">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard Quản Lý Y Tế Học Đường</h1>
-              <p className="text-gray-600">Trường TH - THPT MedixFPT</p>
+              <h1 className="text-2xl font-bold text-gray-900">Dashboard Quản Lý Y Tế</h1>
+              <p className="text-sm text-gray-600 mt-1">Trường TH - THPT MedixFPT</p>
             </div>
             <CurrentTimeDisplay />
           </div>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {summaryLoading ? (
-            <div className="col-span-full text-center py-4 flex items-center justify-center">
+            <div className="col-span-full flex items-center justify-center py-6 bg-white rounded-2xl shadow-sm">
               <svg className="animate-spin h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
-              <p>Đang tải dữ liệu tổng quan...</p>
+              <p className="text-gray-600">Đang tải dữ liệu...</p>
             </div>
           ) : summaryError ? (
-            <div className="col-span-full bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-600">{summaryError}</p>
+            <div className="col-span-full bg-red-50 border border-red-200 rounded-2xl p-4">
+              <p className="text-red-600 text-sm">{summaryError}</p>
             </div>
           ) : (
             <>
               <SummaryCard
-                icon={<Heart />}
+                icon={<Heart className="w-6 h-6" />}
                 label="Học sinh khỏe mạnh"
                 value={summary.healthyStudents}
                 color="green"
-                navigateTo="/admin/healthy-students"
+                navigateTo={`/${getUserRole()}/healthy-students`}
               >
-                {summary.percent}% học sinh khỏe mạnh
+                <p className="text-sm text-gray-600">{summary.percent}% học sinh khỏe mạnh</p>
               </SummaryCard>
               <SummaryCard
-                icon={<AlertTriangle />}
+                icon={<AlertTriangle className="w-6 h-6" />}
                 label="Tai nạn tuần này"
                 value={summary.recentAccidents}
                 color="orange"
-                navigateTo="/admin/daily-health"
+                navigateTo={`/${getUserRole()}/daily-health`}
               >
-                {getAccidentComparison(summary.recentAccidents, summary.previousAccidents)}
+                <p className="text-sm text-gray-600">{getAccidentComparison(summary.recentAccidents, summary.previousAccidents)}</p>
               </SummaryCard>
               <SummaryCard
-                icon={<Thermometer />}
+                icon={<Thermometer className="w-6 h-6" />}
                 label="Ca bệnh theo dõi"
                 value={summary.monitoredCases}
                 color="red"
-                navigateTo="/admin/disease"
+                navigateTo={`/${getUserRole()}/disease`}
               >
-                +{summary.newCases} ca trong tuần này 
+                <p className="text-sm text-gray-600">+{summary.newCases} ca trong tuần này</p>
               </SummaryCard>
               <SummaryCard
-                icon={<Pill />}
+                icon={<Pill className="w-6 h-6" />}
                 label="Đơn thuốc đang tiến hành"
                 value={summary.proccessingDrug}
                 color="blue"
-                navigateTo="/admin/send-drug"
+                navigateTo={`/${getUserRole()}/send-drug`}
               >
-                {summary.pendingDrug} đang chờ duyệt
+                <p className="text-sm text-gray-600">{summary.pendingDrug} đang chờ duyệt</p>
               </SummaryCard>
             </>
           )}
@@ -298,54 +283,46 @@ const AdminDashboard = () => {
 
         {/* Health Status + Plans */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-
           {/* Health Plans */}
           <div className="lg:col-span-2">
             <ChartCard
               title="Kế hoạch y tế nhà trường"
-              icon={<Calendar className="text-black-500" />}
-              className="min-h-[620px]"
+              icon={<Calendar className="w-5 h-5 text-gray-600" />}
+              className="min-h-[600px]"
             >
               {plansLoading ? (
                 <div className="h-full flex items-center justify-center">
-                  <p>Đang tải dữ liệu kế hoạch...</p>
+                  <p className="text-gray-600">Đang tải dữ liệu kế hoạch...</p>
                 </div>
               ) : plansError ? (
-                <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
-                  <p className="text-red-600">{plansError}</p>
+                <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded-2xl">
+                  <p className="text-red-600 text-sm">{plansError}</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {/* Thống kê kế hoạch */}
-                  <div className="bg-gray-100 p-3 rounded-md flex justify-between items-center">
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-xl flex justify-between items-center">
                     <div>
-                      <p className="text-sm font-semibold text-gray-700">
-                        Kế hoạch trong 30 ngày tới
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Vaccine: {planStats.vaccineCount} | Khám định kỳ: {planStats.regularCount}
-                      </p>
+                      <p className="text-sm font-semibold text-gray-700">Kế hoạch trong 30 ngày tới</p>
+                      <p className="text-sm text-gray-600">Vaccine: {planStats.vaccineCount} | Khám định kỳ: {planStats.regularCount}</p>
                     </div>
                     <div className="flex space-x-2">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         <Stethoscope className="w-4 h-4 mr-1" />
                         Khám định kỳ
                       </span>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
                         <Syringe className="w-4 h-4 mr-1" />
                         Vaccine
                       </span>
                     </div>
                   </div>
-                  {/* Danh sách kế hoạch */}
-                  <div className="max-h-[540px] overflow-y-auto custom-scrollbar">
+                  <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
                     {healthPlanUpcoming.length > 0 ? (
                       healthPlanUpcoming.map((plan) => (
                         <div
                           key={plan.id}
-                          className={`flex justify-between border-b p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                            plan.checkup_id !== null ? 'border-gray-500' : 'border-gray-500'
-                          }`}
+                          className="flex justify-between items-center p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer"
+                          style={{ cursor: 'pointer' }}
                           onClick={() => handlePlanClick(plan.checkup_id)}
                         >
                           <div className="flex items-center">
@@ -355,19 +332,17 @@ const AdminDashboard = () => {
                               <Syringe className="w-5 h-5 text-pink-500 mr-2" />
                             )}
                             <div>
-                              <h4 className="font-semibold">{plan.name}</h4>
-                              <p className="text-sm text-gray-500">{formatDate(plan.date)}</p>
+                              <h4 className="text-sm font-semibold text-gray-800">{plan.name}</h4>
+                              <p className="text-xs text-gray-500">{formatDate(plan.date)}</p>
                             </div>
                           </div>
-                          <div className="flex items-center">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status)}`}>
-                              {getStatusText(plan.status)}
-                            </span>
-                          </div>
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status)}`}>
+                            {getStatusText(plan.status)}
+                          </span>
                         </div>
                       ))
                     ) : (
-                      <p className="text-gray-500 text-center py-8">Không có kế hoạch y tế nào</p>
+                      <p className="text-gray-500 text-center py-8 text-sm">Không có kế hoạch y tế nào</p>
                     )}
                   </div>
                 </div>
@@ -378,107 +353,74 @@ const AdminDashboard = () => {
           {/* Health Status */}
           <ChartCard
             title={`Tình trạng sức khỏe tổng quát${heightWeightAvg.isAllGrades ? ' (Tất cả khối lớp)' : ''}`}
-            icon={<TrendingUp className="text-black-500" />}
-            className="min-h-[620px]"
+            icon={<TrendingUp className="w-5 h-5 text-gray-600" />}
+            className="min-h-[600px]"
           >
             {heightWeightLoading ? (
               <div className="h-full flex items-center justify-center">
-                <p>Đang tải dữ liệu sức khỏe...</p>
+                <p className="text-gray-600">Đang tải dữ liệu sức khỏe...</p>
               </div>
             ) : heightWeightError ? (
-              <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
-                <p className="text-red-600">{heightWeightError}</p>
+              <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded-2xl">
+                <p className="text-red-600 text-sm">{heightWeightError}</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"> {/* Giảm gap từ 4 xuống 3 */}
-                  <div className="bg-white p-3 rounded-lg shadow border-l-4 border-blue-500"> {/* Giảm padding từ p-4 xuống p-3 */}
-                    <p className="text-xs text-gray-500">Tham gia khám</p> {/* Giảm từ text-sm xuống text-xs */}
-                    <p className="text-xl font-bold text-gray-800"> {/* Giảm từ text-2xl xuống text-xl */}
-                      {heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}
-                    </p>
-                    <p className="text-xs text-gray-600"> {/* Giảm từ text-sm xuống text-xs */}
-                      Tỷ lệ: {heightWeightAvg.totalStudents ? ((heightWeightAvg.totalChecked / heightWeightAvg.totalStudents) * 100).toFixed(1) : 0}% 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
+                    <p className="text-xs text-gray-500">Tham gia khám</p>
+                    <p className="text-lg font-bold text-gray-800">{heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}</p>
+                    <p className="text-xs text-gray-600">
+                      Tỷ lệ: {heightWeightAvg.totalStudents ? ((heightWeightAvg.totalChecked / heightWeightAvg.totalStudents) * 100).toFixed(1) : 0}%
                     </p>
                   </div>
-                  <div className="bg-white p-3 rounded-lg shadow border-l-4 border-pink-500"> {/* Giảm padding từ p-4 xuống p-3 */}
-                    <p className="text-xs text-gray-500">Tỷ lệ nam/nữ</p> {/* Giảm từ text-sm xuống text-xs */}
-                    <p className="text-xl font-bold text-gray-800"> {/* Giảm từ text-2xl xuống text-xl */}
-                      {heightWeightAvg.maleCount || 0} / {heightWeightAvg.femaleCount || 0}
-                    </p>
-                    <p className="text-xs text-gray-600"> {/* Giảm từ text-sm xuống text-xs */}
-                      Nam: {heightWeightAvg.totalChecked ? ((heightWeightAvg.maleCount / heightWeightAvg.totalChecked) * 100).toFixed(1) : 0}% 
+                  <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-pink-500">
+                    <p className="text-xs text-gray-500">Tỷ lệ nam/nữ</p>
+                    <p className="text-lg font-bold text-gray-800">{heightWeightAvg.maleCount || 0} / {heightWeightAvg.femaleCount || 0}</p>
+                    <p className="text-xs text-gray-600">
+                      Nam: {heightWeightAvg.totalChecked ? ((heightWeightAvg.maleCount / heightWeightAvg.totalChecked) * 100).toFixed(1) : 0}%
                     </p>
                   </div>
                 </div>
-                {/* Detailed Table */}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-black-600">
+                  <table className="w-full text-sm text-gray-700">
                     <thead>
-                      <tr className="bg-gray-100">
-                        <th className="p-2 text-left">Thông số</th>
-                        <th className="p-2 text-left">Giá trị</th>
+                      <tr className="bg-gray-50">
+                        <th className="p-3 text-left text-xs font-semibold text-gray-700">Thông số</th>
+                        <th className="p-3 text-left text-xs font-semibold text-gray-700">Giá trị</th>
                       </tr>
                     </thead>
-                    {/* <tbody>
-                      <tr>
-                        <td className="p-2 border-t">Tên đợt khám</td>
-                        <td className="p-2 border-t">{heightWeightAvg.checkupName || 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Ngày khám</td>
-                        <td className="p-2 border-t">{heightWeightAvg.latestCheckupDate || 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Chiều cao TB nam</td>
-                        <td className="p-2 border-t">{heightWeightAvg.maleHeightAvg ? `${heightWeightAvg.maleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Cân nặng TB nam</td>
-                        <td className="p-2 border-t">{heightWeightAvg.maleWeightAvg ? `${heightWeightAvg.maleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Chiều cao TB nữ</td>
-                        <td className="p-2 border-t">{heightWeightAvg.femaleHeightAvg ? `${heightWeightAvg.femaleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-t">Cân nặng TB nữ</td>
-                        <td className="p-2 border-t">{heightWeightAvg.femaleWeightAvg ? `${heightWeightAvg.femaleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
-                      </tr>
-                    </tbody> */}
                     <tbody>
-                      <tr>
-                        <td className="p-2">Tên đợt khám</td>
-                        <td className="p-2">{heightWeightAvg.checkupName || 'N/A'}</td>
+                      <tr className="border-t">
+                        <td className="p-3">Tên đợt khám</td>
+                        <td className="p-3">{heightWeightAvg.checkupName || 'N/A'}</td>
                       </tr>
-                      <tr>
-                        <td className="p-2">Ngày khám</td>
-                        <td className="p-2">{heightWeightAvg.latestCheckupDate || 'N/A'}</td>
+                      <tr className="border-t">
+                        <td className="p-3">Ngày khám</td>
+                        <td className="p-3">{heightWeightAvg.latestCheckupDate || 'N/A'}</td>
                       </tr>
-                      <tr>
-                        <td className="p-2">Chiều cao TB nam</td>
-                        <td className="p-2">{heightWeightAvg.maleHeightAvg ? `${heightWeightAvg.maleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
+                      <tr className="border-t">
+                        <td className="p-3">Chiều cao TB nam</td>
+                        <td className="p-3">{heightWeightAvg.maleHeightAvg ? `${heightWeightAvg.maleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
                       </tr>
-                      <tr>
-                        <td className="p-2">Cân nặng TB nam</td>
-                        <td className="p-2">{heightWeightAvg.maleWeightAvg ? `${heightWeightAvg.maleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
+                      <tr className="border-t">
+                        <td className="p-3">Cân nặng TB nam</td>
+                        <td className="p-3">{heightWeightAvg.maleWeightAvg ? `${heightWeightAvg.maleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
                       </tr>
-                      <tr>
-                        <td className="p-2">Chiều cao TB nữ</td>
-                        <td className="p-2">{heightWeightAvg.femaleHeightAvg ? `${heightWeightAvg.femaleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
+                      <tr className="border-t">
+                        <td className="p-3">Chiều cao TB nữ</td>
+                        <td className="p-3">{heightWeightAvg.femaleHeightAvg ? `${heightWeightAvg.femaleHeightAvg.toFixed(1)} cm` : 'N/A'}</td>
                       </tr>
-                      <tr>
-                        <td className="p-2">Cân nặng TB nữ</td>
-                        <td className="p-2">{heightWeightAvg.femaleWeightAvg ? `${heightWeightAvg.femaleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
+                      <tr className="border-t">
+                        <td className="p-3">Cân nặng TB nữ</td>
+                        <td className="p-3">{heightWeightAvg.femaleWeightAvg ? `${heightWeightAvg.femaleWeightAvg.toFixed(1)} kg` : 'N/A'}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                {/* Grade Filter */}
-                <div className="mt-4 flex items-right justify-right ">
+                <div className="mt-4">
                   <select
-                    className={`rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-full sm:w-48 ${!heightWeightAvg?.grades?.length ? 'text-gray-400' : ''}`}
+                    className="w-full sm:w-48 h-9 rounded-md border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
                     onChange={(e) => setSelectedGradeId(e.target.value)}
                     value={selectedGradeId || ''}
                   >
@@ -499,94 +441,95 @@ const AdminDashboard = () => {
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Accident Chart */}
-          <ChartCard title="Tần suất tai nạn y tế" icon={<Activity className="text-black-500" />}>
+          <ChartCard title="Tần suất tai nạn y tế" icon={<Activity className="w-5 h-5 text-gray-600" />}>
             {accidentLoading ? (
               <div className="h-64 flex items-center justify-center">
-                <p>Đang tải dữ liệu tai nạn...</p>
+                <p className="text-gray-600">Đang tải dữ liệu tai nạn...</p>
               </div>
             ) : accidentError ? (
-              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
-                <p className="text-red-600">{accidentError}</p>
+              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded-2xl">
+                <p className="text-red-600 text-sm">{accidentError}</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={accidentStats}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
+              <div className="h-64">
+                <BarChart width={500} height={250} data={accidentStats}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                   <YAxis
-                    domain={[0, Math.max(4, maxAccidentCases)]} // Minimum upper bound of 5, or maxCases if higher
-                    tickCount={Math.max(6, maxAccidentCases + 1)} // Ensure enough ticks for integers
-                    interval={0} // Show all ticks
-                    allowDecimals={false} // Integer ticks
+                    domain={[0, Math.max(4, maxAccidentCases)]}
+                    tickCount={Math.max(6, maxAccidentCases + 1)}
+                    interval={0}
+                    allowDecimals={false}
                     type="number"
-                    label={{ value: 'Số ca bệnh', angle: -90, position: 'insideLeft' }}
+                    tick={{ fontSize: 12 }}
+                    label={{ value: 'Số ca bệnh', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
                   />
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#fff', borderColor: '#e5e7eb', borderRadius: '8px' }}
+                    labelStyle={{ color: '#374151' }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="minor" stackId="a" fill="#facc15" name="Tai nạn nhẹ" />
                   <Bar dataKey="serious" stackId="a" fill="#ef4444" name="Tai nạn nặng" />
                 </BarChart>
-              </ResponsiveContainer>
+              </div>
             )}
           </ChartCard>
 
-          {/* Disease Chart */}
           <ChartCard
             title="Thống kê dịch bệnh theo năm"
-            icon={<Shield className="text-black-500" />}
+            icon={<Shield className="w-5 h-5 text-gray-600" />}
             select={(
               <select
                 id="diseaseSelect"
                 value={selectedDiseaseId}
                 onChange={(e) => setSelectedDiseaseId(e.target.value)}
-                className="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm h-8 w-48"
+                className="w-48 h-9 rounded-md border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
               >
                 <option value="">Tất cả các bệnh</option>
                 {availableDiseases.map(disease => (
-                  <option key={disease.id} value={disease.id}>
-                    {disease.name}
-                  </option>
+                  <option key={disease.id} value={disease.id}>{disease.name}</option>
                 ))}
               </select>
             )}
           >
             {diseaseLoading ? (
               <div className="h-64 flex items-center justify-center">
-                <p>Đang tải dữ liệu dịch bệnh...</p>
+                <p className="text-gray-600">Đang tải dữ liệu dịch bệnh...</p>
               </div>
             ) : diseaseError ? (
-              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded">
-                <p className="text-red-600">{diseaseError}</p>
+              <div className="h-64 flex items-center justify-center bg-red-50 border border-red-200 rounded-2xl">
+                <p className="text-red-600 text-sm">{diseaseError}</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={diseaseStats}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                  />
+              <div className="h-64">
+                <LineChart width={500} height={250} data={diseaseStats}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                   <YAxis
                     domain={[0, Math.max(5, maxDiseaseCases)]}
                     tickCount={Math.max(6, maxDiseaseCases + 1)}
                     interval={0}
                     allowDecimals={false}
                     type="number"
-                    label={{ value: 'Số ca bệnh', angle: -90, position: 'insideLeft' }}
+                    tick={{ fontSize: 12 }}
+                    label={{ value: 'Số ca bệnh', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
                   />
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#fff', borderColor: '#e5e7eb', borderRadius: '8px' }}
+                    labelStyle={{ color: '#374151' }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Line type="monotone" dataKey="cases" stroke="#3b82f6" strokeWidth={2} name="Ca bệnh" />
                 </LineChart>
-              </ResponsiveContainer>
+              </div>
             )}
           </ChartCard>
         </div>
 
-        {/* Placeholder for Khai báo */}
-        <div className="mt-6 p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-          <h3 className="text-lg font-semibold text-yellow-800">Mục "Quản lý khai báo" đang được phát triển</h3>
-          <p className="text-yellow-700 text-sm">Tính năng khai báo sẽ sớm có trong bản cập nhật tiếp theo.</p>
+        <div className="mt-6 p-6 bg-amber-50 border-l-4 border-amber-400 rounded-2xl">
+          <h3 className="text-lg font-semibold text-amber-800">Quản lý khai báo</h3>
+          <p className="text-amber-700 text-sm mt-1">Tính năng khai báo sẽ sớm có trong bản cập nhật tiếp theo.</p>
         </div>
       </div>
     </div>
@@ -604,17 +547,17 @@ const colorMap = {
 
 const SummaryCard = ({ icon, label, value, color, navigateTo, children }) => {
   const navigate = useNavigate();
-  const classes = colorMap[color] || 'border-gray-500 text-black-500';
+  const classes = colorMap[color] || 'border-gray-500 text-gray-500';
 
   return (
     <div
-      className={`bg-white p-5 rounded-xl shadow border-l-4 ${classes} cursor-pointer hover:shadow-lg transition-shadow duration-200`}
+      className={`bg-white p-5 rounded-2xl shadow-sm border-l-4 ${classes} cursor-pointer hover:shadow-md transition-shadow duration-200`}
       onClick={() => navigateTo && navigate(navigateTo)}
     >
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-500">{label}</p>
-          <p className="text-2xl font-bold text-gray-800">{value}</p>
+        <div className="space-y-1">
+          <p className="text-xs text-gray-500 font-medium">{label}</p>
+          <p className="text-xl font-bold text-gray-800">{value}</p>
           {children}
         </div>
         <div className={classes}>{icon}</div>
@@ -633,7 +576,7 @@ SummaryCard.propTypes = {
 };
 
 const ChartCard = ({ title, icon, select, children, className }) => (
-  <div className={`bg-white p-6 rounded-xl shadow ${className}`}>
+  <div className={`bg-white p-6 rounded-2xl shadow-sm border border-gray-200 ${className}`}>
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center">
         {icon}
@@ -653,25 +596,23 @@ ChartCard.propTypes = {
   className: PropTypes.string
 };
 
-// Custom scrollbar styles
 const styles = `
   .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 4px;
+    border-radius: 3px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
+    background: #9ca3af;
+    border-radius: 3px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #6b7280;
   }
 `;
 
-// Inject custom scrollbar styles
 const styleSheet = document.createElement("style");
 styleSheet.type = "text/css";
 styleSheet.innerText = styles;

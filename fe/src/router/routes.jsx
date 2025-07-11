@@ -34,7 +34,6 @@ import RegularCheckupDetails from "../pages/Admin&Nurse/RegularCheckupManagement
 import RegularCheckupRegisterList from "../pages/Admin&Nurse/RegularCheckupManagement/RegularCheckupRegisterList";
 import VaccineManagement from "../pages/Admin&Nurse/VaccineManagement/VaccineManagement";
 import SendDrugManagement from "../pages/Admin&Nurse/SendDrugManagement/SendDrugManagement";
-import NurseDashboard from "../pages/Nurse/NurseDashboard/NurseDashboard";
 import RegularCheckupReport from "../pages/Nurse/RegularCheckupReport/RegularCheckupReport";
 import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport/VaccineCampaignReport";
 import AuthFlow from "../pages/Auth/ResetPassword/AuthFlow";
@@ -314,7 +313,7 @@ const routes = createBrowserRouter([
 
           {
             path: "",
-            element: <NurseDashboard />,
+            element: <AdminDashboard />,
           },
           {
             path: "vaccine-campaign/:id/register-list",
