@@ -13,19 +13,9 @@ import {
   Bar,
 } from "recharts";
 import {
-  Users,
-  Heart,
-  AlertTriangle,
-  Thermometer,
-  Activity,
-  Shield,
-  TrendingUp,
-  Calendar,
-  Pill,
-  Syringe,
-  Stethoscope,
-} from "lucide-react";
-import PropTypes from "prop-types";
+  Users, Heart, AlertTriangle, Thermometer, Activity, Shield, TrendingUp, Calendar, Pill, Syringe, Stethoscope, FileText
+} from 'lucide-react';
+import PropTypes from 'prop-types';
 import {
   getStatusColor,
   getStatusText,
@@ -100,6 +90,13 @@ const AdminDashboard = () => {
   const [heightWeightError, setHeightWeightError] = useState(null);
   const [selectedGradeId, setSelectedGradeId] = useState("");
 
+  const [pendingRecords, setPendingRecords] = useState({
+    pendingDiseaseRecords: 0,
+    pendingVaccinationRecords: 0
+  });
+  const [pendingRecordsLoading, setPendingRecordsLoading] = useState(true);
+  const [pendingRecordsError, setPendingRecordsError] = useState(null);
+
   useEffect(() => {
     const fetchSummary = async () => {
       setSummaryLoading(true);
@@ -147,7 +144,7 @@ const AdminDashboard = () => {
           params: { diseaseId: selectedDiseaseId || undefined },
         });
         setDiseaseStats(response.data.data || []);
-        setMaxDiseaseCases(response.data.maxDiseaseCases || 0);
+        setMaxDiseaseCases(response.data.maxCases || 0);
         setAvailableDiseases(response.data.availableDiseases || []);
       } catch (err) {
         console.error("Error fetching disease stats:", err);
@@ -225,6 +222,26 @@ const AdminDashboard = () => {
     fetchHealthPlans();
   }, []);
 
+  useEffect(() => {
+    const fetchPendingRecords = async () => {
+      setPendingRecordsLoading(true);
+      setPendingRecordsError(null);
+      try {
+        const response = await axiosClient.get('/dashboard/pending-records');
+        setPendingRecords({
+          pendingDiseaseRecords: response.data.data.pendingDiseaseRecords || 0,
+          pendingVaccinationRecords: response.data.data.pendingVaccinationRecords || 0
+        });
+      } catch (err) {
+        console.error('Error fetching pending records:', err);
+        setPendingRecordsError('Không thể tải dữ liệu khai báo.');
+      } finally {
+        setPendingRecordsLoading(false);
+      }
+    };
+    fetchPendingRecords();
+  }, []);
+
   const getAccidentComparison = (recent, previous) => {
     const diff = recent - previous;
     if (diff > 0) {
@@ -240,6 +257,10 @@ const AdminDashboard = () => {
     const plan_type = planID !== null ? "regular-checkup" : "vaccine-campaign";
     navigate(plan_type);
   };
+
+  // const handlePendingRecordsClick = () => {
+  //   navigate(`/${getUserRole()}/pending-records`);
+  // };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 font-sans">
@@ -260,81 +281,67 @@ const AdminDashboard = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {summaryLoading ? (
-            <div className="col-span-full flex items-center justify-center py-6 bg-white rounded-2xl shadow-sm">
-              <svg
-                className="animate-spin h-5 w-5 mr-2 text-indigo-600"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z"
-                />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          {summaryLoading || pendingRecordsLoading ? (
+            <div className="col-span-full flex items-center justify-center py-4 bg-white rounded-2xl shadow-sm">
+              <svg className="animate-spin h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
               <p className="text-gray-600">Đang tải dữ liệu...</p>
             </div>
-          ) : summaryError ? (
+          ) : summaryError || pendingRecordsError ? (
             <div className="col-span-full bg-red-50 border border-red-200 rounded-2xl p-4">
-              <p className="text-red-600 text-sm">{summaryError}</p>
+              <p className="text-red-600 text-sm">{summaryError || pendingRecordsError}</p>
             </div>
           ) : (
             <>
               <SummaryCard
-                icon={<Heart className="w-6 h-6" />}
-                label="Học sinh khỏe mạnh"
-                value={summary.healthyStudents}
+                icon={<Heart className="w-5 h-5" />}
+                label="Tổng số học sinh"
+                value={summary.totalStudents}
                 color="green"
-                navigateTo={`/${getUserRole()}/healthy-students`}
+                navigateTo={`/${getUserRole()}/user-manage`}
               >
-                <p className="text-sm text-gray-600">
-                  {summary.percent}% học sinh khỏe mạnh
-                </p>
+                <p className="text-xs">{0} chưa xác thực</p>
               </SummaryCard>
               <SummaryCard
-                icon={<AlertTriangle className="w-6 h-6" />}
+                icon={<AlertTriangle className="w-5 h-5" />}
                 label="Tai nạn tuần này"
                 value={summary.recentAccidents}
                 color="orange"
                 navigateTo={`/${getUserRole()}/daily-health`}
               >
-                <p className="text-sm text-gray-600">
-                  {getAccidentComparison(
-                    summary.recentAccidents,
-                    summary.previousAccidents
-                  )}
-                </p>
+                <p className="text-xs">{getAccidentComparison(summary.recentAccidents, summary.previousAccidents)}</p>
               </SummaryCard>
               <SummaryCard
-                icon={<Thermometer className="w-6 h-6" />}
+                icon={<Thermometer className="w-5 h-5" />}
                 label="Ca bệnh theo dõi"
                 value={summary.monitoredCases}
                 color="red"
                 navigateTo={`/${getUserRole()}/disease`}
               >
-                <p className="text-sm text-gray-600">
-                  +{summary.newCases} ca trong tuần này
-                </p>
+                <p className="text-xs">+{summary.newCases} ca trong tuần này</p>
               </SummaryCard>
               <SummaryCard
-                icon={<Pill className="w-6 h-6" />}
-                label="Đơn thuốc đang tiến hành"
+                icon={<Pill className="w-5 h-5" />}
+                label="Đơn thuốc"
                 value={summary.proccessingDrug}
+                noti={summary.pendingDrug}
                 color="blue"
                 navigateTo={`/${getUserRole()}/send-drug`}
               >
-                <p className="text-sm text-gray-600">
-                  {summary.pendingDrug} đang chờ duyệt
-                </p>
+                <p className="text-xs">{summary.pendingDrug} chờ duyệt</p>
+              </SummaryCard>
+              <SummaryCard
+                icon={<FileText className="w-5 h-5" />}
+                label="Đơn khai báo"
+                value={pendingRecords.pendingDiseaseRecords + pendingRecords.pendingVaccinationRecords}
+                noti={pendingRecords.pendingDiseaseRecords + pendingRecords.pendingVaccinationRecords}
+                color="amber"
+                navigateTo={`/${getUserRole()}/DeclarationManagement`}
+              >
+                <p className="text-xs">Bệnh: {pendingRecords.pendingDiseaseRecords} | Vaccine: {pendingRecords.pendingVaccinationRecords}</p>
               </SummaryCard>
             </>
           )}
@@ -691,45 +698,84 @@ const AdminDashboard = () => {
           </ChartCard>
         </div>
 
-        <div className="mt-6 p-6 bg-amber-50 border-l-4 border-amber-400 rounded-2xl">
-          <h3 className="text-lg font-semibold text-amber-800">
-            Quản lý khai báo
-          </h3>
-          <p className="text-amber-700 text-sm mt-1">
-            Tính năng khai báo sẽ sớm có trong bản cập nhật tiếp theo.
-          </p>
-        </div>
+        {/* Pending Records (Detailed View) */}
+        {/* <ChartCard
+          title="Quản lý khai báo"
+          icon={<FileText className="w-5 h-5 text-gray-600" />}
+          className="mb-6"
+        >
+          {pendingRecordsLoading ? (
+            <div className="h-32 flex items-center justify-center">
+              <svg className="animate-spin h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              <p className="text-gray-600">Đang tải dữ liệu khai báo...</p>
+            </div>
+          ) : pendingRecordsError ? (
+            <div className="h-32 flex items-center justify-center bg-red-50 border border-red-200 rounded-2xl">
+              <p className="text-red-600 text-sm">{pendingRecordsError}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-white p-4 rounded-lg shadow border-l-4 border-amber-500">
+                  <p className="text-sm text-gray-500">Khai báo lịch sử bệnh</p>
+                  <p className="text-xl font-bold text-gray-800">{pendingRecords.pendingDiseaseRecords}</p>
+                  <p className="text-xs text-gray-500">Đang chờ duyệt</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow border-l-4 border-amber-500">
+                  <p className="text-sm text-gray-500">Khai báo lịch sử tiêm chủng</p>
+                  <p className="text-xl font-bold text-gray-800">{pendingRecords.pendingVaccinationRecords}</p>
+                  <p className="text-xs text-gray-500">Đang chờ duyệt</p>
+                </div>
+              </div>
+              <button
+                className="w-full sm:w-auto px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors"
+                onClick={handlePendingRecordsClick}
+              >
+                Xem và duyệt khai báo
+              </button>
+            </div>
+          )}
+        </ChartCard> */}
       </div>
     </div>
   );
 };
 
 const colorMap = {
-  blue: "border-blue-500 text-blue-500",
-  green: "border-green-500 text-green-500",
-  purple: "border-purple-500 text-purple-500",
-  red: "border-red-500 text-red-500",
-  indigo: "border-indigo-500 text-indigo-500",
-  orange: "border-orange-500 text-orange-500",
+  blue: 'border-blue-500 text-black-500',
+  green: 'border-green-500 text-black-500',
+  purple: 'border-purple-500 text-black-500',
+  red: 'border-red-500 text-black-500',
+  indigo: 'border-indigo-500 text-black-500',
+  orange: 'border-orange-500 text-black-500',
+  amber: 'border-amber-500 text-black-500'
 };
 
-const SummaryCard = ({ icon, label, value, color, navigateTo, children }) => {
+const SummaryCard = ({ icon, label, value, color, navigateTo, children, noti }) => {
   const navigate = useNavigate();
-  const classes = colorMap[color] || "border-gray-500 text-gray-500";
+  const classes = colorMap[color] || 'border-black-500 text-black-500';
 
   return (
     <div
-      className={`bg-white p-5 rounded-2xl shadow-sm border-l-4 ${classes} cursor-pointer hover:shadow-md transition-shadow duration-200`}
+      className={`bg-white p-3 rounded-lg shadow-sm border-l-4 ${classes} cursor-pointer hover:shadow-md transition-shadow duration-200 h-20 flex items-center relative`}
       onClick={() => navigateTo && navigate(navigateTo)}
     >
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <p className="text-xs text-gray-500 font-medium">{label}</p>
-          <p className="text-xl font-bold text-gray-800">{value}</p>
+      <div className="flex items-center justify-between w-full">
+        <div className="space-y-0.5">
+          <p className="text-[10px] text-gray-500 font-medium leading-tight">{label}</p>
+          <p className="text-lg font-bold text-gray-800">{value}</p>
           {children}
         </div>
         <div className={classes}>{icon}</div>
       </div>
+      {noti > 0 && (
+        <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
+          {noti}
+        </span>
+      )}
     </div>
   );
 };
