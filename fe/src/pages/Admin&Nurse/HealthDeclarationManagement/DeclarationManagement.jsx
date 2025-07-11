@@ -108,13 +108,28 @@ const DeclarationManagement = () => {
               <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 text-sm">
                 Tổng hồ sơ: <span className="font-medium text-blue-600">{viewMode === 'disease' ? diseaseRecords.length : vaccineRecords.length}</span>
               </div>
-              <button
-                onClick={() => setViewMode(viewMode === 'disease' ? 'vaccine' : 'disease')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm"
-              >
-                {viewMode === 'disease' ? <Syringe className="w-4 h-4" /> : <Pill className="w-4 h-4" />}
-                {viewMode === 'disease' ? 'Xem khai báo vaccine' : 'Xem khai báo bệnh'}
-              </button>
+              <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                <button
+                  onClick={() => setViewMode('disease')}
+                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                    viewMode === 'disease'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Pill className="w-4 h-4" /> Danh sách khai báo bệnh
+                </button>
+                <button
+                  onClick={() => setViewMode('vaccine')}
+                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                    viewMode === 'vaccine'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Syringe className="w-4 h-4" /> Danh sách khai báo vaccine
+                </button>
+              </div>
             </div>
             <select
               value={statusFilter}
