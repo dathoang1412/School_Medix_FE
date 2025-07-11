@@ -241,20 +241,21 @@ const DailyHealthRecord = () => {
             <div className="flex gap-3">
               <button
                 onClick={filterTodayRecords}
-                className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm font-medium"
+                className="flex cursor-pointer  items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm font-medium"
               >
                 <Clock size={16} />
                 Hôm nay
               </button>
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200 text-sm font-medium"
+                className="px-4 py-2 cursor-pointer  border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200 text-sm font-medium"
               >
                 Xóa bộ lọc
               </button>
               <button
                 onClick={() => navigate('/admin/add-record')}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
+                className=" cursor-pointer flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
+
               >
                 <Plus size={16} />
                 Thêm Hồ Sơ

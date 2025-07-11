@@ -56,7 +56,7 @@ const SpecialistExamManagement = () => {
                   setEditExam(null);
                   setShowAddForm(true);
                 }}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
+                className=" cursor-pointer flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
               >
                 <Plus size={16} />
                 Thêm Chuyên Khoa Mới
