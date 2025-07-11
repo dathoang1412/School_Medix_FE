@@ -12,18 +12,16 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dropdownRef = useRef(null);
-
   const user = getUser();
   const isLoggedIn = !!user;
   const userRole = getUserRole();
 
   const menuItems = [
-    { title: "Trang chủ", path: "/" },{
-      title: "Dashboard", path: "/" + getUserRole()
-    },
+    { title: "Trang chủ", path: "/" },
+    { title: "Dashboard", path: `/${userRole || 'admin'}` },
     { title: "Blog", path: "/blog" },
     { title: "Tiêm chủng", path: "/vaccination" },
-    { title: "Kiểm tra y tế", path: "/health-check" }
+    { title: "Kiểm tra y tế", path: "/health-check" },
   ];
 
   const userMenuItems = [
@@ -112,7 +110,7 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center">
             <div className="flex items-center bg-gray-50 rounded-lg p-1">
-              {menuItems.map((item, index) => (
+              {menuItems.map((item) => (
                 <button
                   key={item.title}
                   onClick={() => handleNavigation(item.path)}
@@ -149,10 +147,20 @@ const Header = () => {
                 <div className="flex items-center">
                   <button
                     onClick={handleUserClick}
-                    className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                    className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-full overflow-hidden shadow-sm border-2 border-blue-200">
+                      {user?.profile_img_url ? (
+                        <img
+                          src={user.profile_img_url}
+                          alt={user.name || "Người dùng"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                          <User className="w-4 h-4 text-blue-600" />
+                        </div>
+                      )}
                     </div>
                     <span className="text-sm font-medium hidden sm:block">
                       {user?.name || "Người dùng"}
@@ -175,8 +183,18 @@ const Header = () => {
                   {/* User Info Header */}
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-white" />
+                      <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border-2 border-blue-200">
+                        {user?.profile_img_url ? (
+                          <img
+                            src={user.profile_img_url}
+                            alt={user.name || "Người dùng"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                            <User className="w-5 h-5 text-blue-600" />
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1">
                         <div className="text-sm font-medium text-gray-900">
@@ -243,8 +261,18 @@ const Header = () => {
                 <div className="border-t border-gray-200 mt-3 pt-3">
                   {/* User Info */}
                   <div className="flex items-center gap-3 px-3 py-2 mb-2">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-full overflow-hidden shadow-sm border-2 border-blue-200">
+                      {user?.profile_img_url ? (
+                        <img
+                          src={user.profile_img_url}
+                          alt={user.name || "Người dùng"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                          <User className="w-4 h-4 text-blue-600" />
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1">
                       <div className="text-sm font-medium text-gray-900">

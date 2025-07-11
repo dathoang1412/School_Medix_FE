@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FileText, User, Pill, Activity, CheckCircle, Eye, EyeOff, Trash2, XCircle, TicketCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { getUserRole } from "../../../service/authService";
 
 const DrugRequestList = ({ drugs, handleAccept, handleRefuse, handleCancel, handleReceive, handleDone }) => {
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
+  const navigate = useNavigate();
 
   // Format date to DD/MM/YYYY
   const formatDate = (dateString) => {
@@ -74,6 +77,12 @@ const DrugRequestList = ({ drugs, handleAccept, handleRefuse, handleCancel, hand
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                 <div className="flex items-center gap-2">
                   <User size={14} />
+                  Họ Tên
+                </div>
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <User size={14} />
                   Lớp
                 </div>
               </th>
@@ -103,7 +112,7 @@ const DrugRequestList = ({ drugs, handleAccept, handleRefuse, handleCancel, hand
           <tbody className="bg-white divide-y divide-gray-200">
             {currentRecords.length === 0 ? (
               <tr>
-                <td colSpan="8" className="px-6 py-12 text-center">
+                <td colSpan="9" className="px-6 py-12 text-center">
                   <FileText size={40} className="mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-500 text-lg">
                     {drugs.length === 0 ? "Không có dữ liệu đơn thuốc." : "Không tìm thấy đơn thuốc phù hợp."}
@@ -123,6 +132,16 @@ const DrugRequestList = ({ drugs, handleAccept, handleRefuse, handleCancel, hand
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <span className="text-sm font-medium text-gray-900">{getStudentDisplay(drug.student_id)}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <button
+                          onClick={() => navigate(`/${getUserRole()}/student-overview/${drug.student_id}`)}
+                          className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                        >
+                          {drug.student_name || "N/A"}
+                        </button>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -207,7 +226,7 @@ const DrugRequestList = ({ drugs, handleAccept, handleRefuse, handleCancel, hand
                         transition={{ duration: 0.3, ease: "easeInOut" }}
                         className="bg-gray-50"
                       >
-                        <td colSpan="8" className="px-6 py-6">
+                        <td colSpan="9" className="px-6 py-6">
                           <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -223,6 +242,7 @@ const DrugRequestList = ({ drugs, handleAccept, handleRefuse, handleCancel, hand
                                 <div className="space-y-2 text-sm text-gray-600">
                                   <div><span className="font-medium">Mã đơn:</span> #{drug.id}</div>
                                   <div><span className="font-medium">Mã học sinh:</span> {getStudentDisplay(drug.student_id)}</div>
+                                  <div><span className="font-medium">Họ tên:</span> {drug.name || "N/A"}</div>
                                   <div><span className="font-medium">Lớp:</span> {drug.class_name || "N/A"}</div>
                                   <div><span className="font-medium">Ngày tạo:</span> {formatDate(drug.created_at)}</div>
                                 </div>

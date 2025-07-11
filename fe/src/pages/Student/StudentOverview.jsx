@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { Loader2, User, Activity, FileText, List, Shield, Heart, Syringe, ChevronRight } from 'lucide-react';
+import { Loader2, User, Activity, FileText, List, Shield, Heart, Syringe, ChevronRight, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import StudentProfile from '../Parent/StudentProfile/StudentProfile';
 import HealthDashboard from '../Parent/RegularCheckup/HealthDashboard';
 import CheckupHistoryInfo from '../Parent/RegularCheckup/CheckupHistoryInfo';
@@ -26,20 +27,18 @@ const StudentOverview = () => {
     const checkAuthAndFetchData = async () => {
       setLoading(true);
       try {
-        // Check authentication
         const { data, error } = await getSession();
         if (error || !data.session) {
-          enqueueSnackbar('Please log in to continue!', { variant: 'error' });
+          enqueueSnackbar('Vui lòng đăng nhập để tiếp tục!', { variant: 'error' });
           navigate('/login');
           return;
         }
         setIsAuthenticated(true);
 
-        // Fetch student data
         const student = await getStudentInfo(student_id);
         setStudentData(student);
       } catch (error) {
-        enqueueSnackbar('Failed to load data: ' + error.message, { variant: 'error' });
+        enqueueSnackbar('Không tải được dữ liệu: ' + error.message, { variant: 'error' });
       } finally {
         setLoading(false);
       }
@@ -59,7 +58,7 @@ const StudentOverview = () => {
     },
     { 
       id: 'dashboard', 
-      label: 'Biểu đồ phát triển', 
+      label: 'Biểu đồ', 
       icon: Activity,
       component: <HealthDashboard studentData={studentData} />,
       color: 'bg-green-50 text-green-600 border-green-200'
@@ -75,7 +74,7 @@ const StudentOverview = () => {
       id: 'recordList', 
       label: 'Danh sách bệnh', 
       icon: List,
-      component: <HealthRecordList/>,
+      component: <HealthRecordList student_id={student_id}/>,
       color: 'bg-orange-50 text-orange-600 border-orange-200'
     },
     { 
@@ -87,14 +86,14 @@ const StudentOverview = () => {
     },
     { 
       id: 'healthRecord', 
-      label: 'Hồ sơ sức khỏe', 
+      label: 'Sức khỏe hằng ngày', 
       icon: Heart,
       component: <HealthRecord studentData={studentData} />,
       color: 'bg-pink-50 text-pink-600 border-pink-200'
     },
     { 
       id: 'vaccineRecord', 
-      label: 'Hồ sơ tiêm chủng', 
+      label: 'Tiêm chủng', 
       icon: Syringe,
       component: <VaccineRecordInfo />,
       color: 'bg-indigo-50 text-indigo-600 border-indigo-200'
@@ -106,10 +105,15 @@ const StudentOverview = () => {
     setActiveTab(tabId);
   };
 
+  // Handle back navigation
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 text-center">
           <div className="relative">
             <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
             <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-blue-100 mx-auto animate-pulse"></div>
@@ -131,38 +135,47 @@ const StudentOverview = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header Section */}
       <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-blue-200">
-              {studentData?.profile_img_url ? (
-                <img 
-                  src={studentData.profile_img_url} 
-                  alt={studentData.name || 'Học sinh'} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-blue-100 flex items-center justify-center">
-                  <User className="w-8 h-8 text-blue-600" />
-                </div>
-              )}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-blue-200">
+                {studentData?.profile_img_url ? (
+                  <img 
+                    src={studentData.profile_img_url} 
+                    alt={studentData.name || 'Học sinh'} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                    <User className="w-8 h-8 text-blue-600" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {studentData?.name || 'Tổng quan học sinh'}
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                  Quản lý hồ sơ và sức khỏe toàn diện
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {studentData?.name || 'Tổng quan học sinh'}
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Quản lý hồ sơ và sức khỏe toàn diện
-              </p>
-            </div>
+            <button
+              onClick={handleBack}
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+            >
+              <ArrowLeft size={16} />
+              Quay lại
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Tab Navigation */}
-        <div className="mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+        <div className="mb-6">
+          <div className="border-b border-gray-200 bg-white rounded-t-lg shadow-sm">
+            <nav className="flex space-x-4 overflow-x-auto px-4 py-3" aria-label="Tabs">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -172,15 +185,15 @@ const StudentOverview = () => {
                     key={tab.id}
                     onClick={() => handleTabChange(tab.id)}
                     className={`
-                      group flex items-center space-x-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                      group flex items-center space-x-2 whitespace-nowrap px-3 py-2 rounded-md text-sm font-medium
                       transition-all duration-200
                       ${isActive 
-                        ? 'border-blue-600 text-blue-600' 
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' 
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                       }
                     `}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-600'}`} />
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -190,44 +203,53 @@ const StudentOverview = () => {
         </div>
 
         {/* Content Area */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          {/* Content Header */}
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {activeTabData && (
-                  <>
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${activeTabData.color}`}>
-                      <activeTabData.icon className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold text-gray-900">
-                        {activeTabData.label}
-                      </h2>
-                      <p className="text-sm text-gray-500">
-                        {studentData?.name && `${activeTabData.label.toLowerCase()} của ${studentData.name}`}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </div>
-          </div>
-
-          {/* Content Body */}
-          <div className="p-6">
-            {activeTabData?.component || (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FileText className="w-8 h-8 text-gray-400" />
+        <AnimatePresence>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden"
+          >
+            {/* Content Header */}
+            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  {activeTabData && (
+                    <>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${activeTabData.color}`}>
+                        <activeTabData.icon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          {activeTabData.label}
+                        </h2>
+                        <p className="text-sm text-gray-500">
+                          {studentData?.name && `${activeTabData.label.toLowerCase()} của ${studentData.name}`}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <p className="text-gray-600 font-medium">Không có nội dung</p>
-                <p className="text-sm text-gray-400 mt-1">Vui lòng chọn một mục để xem chi tiết</p>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+
+            {/* Content Body */}
+            <div className="p-4 sm:p-6">
+              {activeTabData?.component || (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 font-medium">Không có nội dung</p>
+                  <p className="text-sm text-gray-400 mt-1">Vui lòng chọn một mục để xem chi tiết</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -256,9 +256,9 @@ const VaccineCampaignInfo = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Hệ thống quản lý tiêm chủng - {currChild?.name || "Học sinh"}
+                Hệ thống quản lý tiêm chủng
               </h1>
-              <p className="text-gray-600">Theo dõi và đăng ký tham gia các chiến dịch tiêm chủng</p>
+              <p className="text-gray-600">Theo dõi và đăng ký tham gia các chiến dịch tiêm chủng cho {currChild?.name}</p>
             </div>
           </div>
 
