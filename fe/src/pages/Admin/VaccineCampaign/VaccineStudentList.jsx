@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../../config/axiosClient";
+import { getUserRole } from "../../../service/authService";
 
 const VaccineStudentList = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const VaccineStudentList = () => {
   const [statusList, setStatusList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false); // New state for refresh loading
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { id } = useParams();
 
@@ -131,7 +132,7 @@ const VaccineStudentList = () => {
       {/* Header with Back and Refresh Buttons */}
       <div className="mb-6 flex justify-between items-center">
         <button
-          onClick={() => navigate(-1  )}
+          onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -195,6 +196,9 @@ const VaccineStudentList = () => {
                   Mã học sinh
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Họ tên
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tình trạng tiêm chủng
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -225,8 +229,19 @@ const VaccineStudentList = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <button
+                          onClick={() => navigate(`/${getUserRole()}/student-overview/${student.student_id}`)}
+                          className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                        >
+                          {student.name || "N/A"}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${vaccinationInfo.bgColor} ${vaccinationInfo.textColor}`}
+                        className={`inlineneuro
+                        inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${vaccinationInfo.bgColor} ${vaccinationInfo.textColor}`}
                       >
                         {vaccinationInfo.icon}
                         {vaccinationInfo.status}

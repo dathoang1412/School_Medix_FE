@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, ChevronDown, ChevronUp, Search, FileText, CheckCircle, Calendar, Clock, MapPin, Pill, User, Activity } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
+import { getUserRole } from '../../../service/authService';
 
 const DailyHealthRecord = () => {
   const navigate = useNavigate();
@@ -69,6 +70,7 @@ const DailyHealthRecord = () => {
     let filtered = records.filter((record) => {
       const matchesSearch = 
         String(record.student_id).toString().includes(searchTerm.toLowerCase()) ||
+        (record.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (record.diagnosis || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (record.on_site_treatment || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (record.transferred_to || '').toLowerCase().includes(searchTerm.toLowerCase());
@@ -95,6 +97,10 @@ const DailyHealthRecord = () => {
     const sorted = [...filteredRecords].sort((a, b) => {
       if (key === 'student_id') {
         return direction === 'asc' ? a.student_id - b.student_id : b.student_id - a.student_id;
+      } else if (key === 'name') {
+        const nameA = (a.name || '').toLowerCase();
+        const nameB = (b.name || '').toLowerCase();
+        return direction === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
       } else if (key === 'detect_time' || key === 'record_date') {
         const dateA = new Date(a[key]);
         const dateB = new Date(b[key]);
@@ -212,7 +218,7 @@ const DailyHealthRecord = () => {
             <div className="relative flex-1 max-w-md">
               <input
                 type="text"
-                placeholder="Tìm kiếm theo mã học sinh, chẩn đoán..."
+                placeholder="Tìm kiếm theo mã học sinh, họ tên, chẩn đoán..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
@@ -269,6 +275,12 @@ const DailyHealthRecord = () => {
                       Mã Học Sinh {sortConfig.key === 'student_id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </div>
                   </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('name')}>
+                    <div className="flex items-center gap-2">
+                      <User size={14} />
+                      Họ Tên {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </div>
+                  </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('detect_time')}>
                     <div className="flex items-center gap-2">
                       <Calendar size={14} />
@@ -294,14 +306,14 @@ const DailyHealthRecord = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center">
+                    <td colSpan="7" className="px-6 py-12 text-center">
                       <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-4"></div>
                       <p className="text-gray-500">Đang tải dữ liệu...</p>
                     </td>
                   </tr>
                 ) : currentRecords.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center">
+                    <td colSpan="7" className="px-6 py-12 text-center">
                       <FileText size={40} className="mx-auto text-gray-400 mb-4" />
                       <p className="text-gray-500 text-lg">Không tìm thấy hồ sơ nào</p>
                       <p className="text-gray-400 text-sm mt-2">Thử điều chỉnh bộ lọc hoặc thêm hồ sơ mới</p>
@@ -314,6 +326,16 @@ const DailyHealthRecord = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <span className="text-sm font-medium text-gray-900">{getStudentDisplay(record.student_id)}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => navigate(`/${getUserRole()}/student-overview/${record.student_id}`)}
+                              className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                            >
+                              {record.name || 'N/A'}
+                            </button>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -361,7 +383,7 @@ const DailyHealthRecord = () => {
                       </tr>
                       {expandedRows.has(record.id) && (
                         <tr className="bg-gray-50">
-                          <td colSpan="6" className="px-6 py-6">
+                          <td colSpan="7" className="px-6 py-6">
                             <div className="border-l-4 border-blue-600 pl-4">
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div className="space-y-3">
@@ -370,11 +392,11 @@ const DailyHealthRecord = () => {
                                   </h4>
                                   <div className="space-y-2 text-sm text-gray-600">
                                     <div><span className="font-medium">Mã học sinh:</span> {getStudentDisplay(record.student_id)}</div>
+                                    <div><span className="font-medium">Họ tên:</span> {record.name || 'N/A'}</div>
                                     <div><span className="font-medium">Ngày phát hiện:</span> {formatDate(record.detect_time)}</div>
                                     <div><span className="font-medium">Ngày ghi nhận:</span> {formatDate(record.record_date)}</div>
                                   </div>
                                 </div>
-                                
                                 <div className="space-y-3">
                                   <h4 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
                                     Chẩn đoán & Điều trị
@@ -384,7 +406,6 @@ const DailyHealthRecord = () => {
                                     <div><span className="font-medium">Xử lý tại chỗ:</span> {record.on_site_treatment || 'Không có'}</div>
                                   </div>
                                 </div>
-                                
                                 <div className="space-y-3">
                                   <h4 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
                                     Chuyển viện & Vật tư

@@ -5,6 +5,8 @@ import axiosClient from "../../../config/axiosClient";
 import { getSession } from "../../../config/Supabase";
 import { getStudentInfo } from "../../../service/childenService";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { Loader2, FileText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const HealthDashboard = () => {
   const [selectedChild, setSelectedChild] = useState(null);
@@ -146,11 +148,15 @@ const HealthDashboard = () => {
   if (!isAuthenticated || loading.fetch) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-slate-600 text-sm">
+        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 text-center">
+          <div className="relative">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+            <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-blue-100 mx-auto animate-pulse"></div>
+          </div>
+          <p className="text-gray-600 font-medium">
             {isAuthenticated ? "Đang tải dữ liệu..." : "Đang kiểm tra đăng nhập..."}
           </p>
+          <p className="text-sm text-gray-400 mt-1">Vui lòng đợi một chút</p>
         </div>
       </div>
     );
@@ -160,13 +166,12 @@ const HealthDashboard = () => {
   if (!selectedChild) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-slate-600">Vui lòng chọn một học sinh để xem biểu đồ sức khỏe.</p>
+          <p className="text-gray-600 font-medium">Vui lòng chọn một học sinh để xem biểu đồ sức khỏe.</p>
+          <p className="text-sm text-gray-400 mt-1">Không tìm thấy thông tin học sinh.</p>
         </div>
       </div>
     );
@@ -175,22 +180,22 @@ const HealthDashboard = () => {
   const chartData = processChartData();
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200/60 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
           {/* Header */}
-          <div className="px-6 py-5 border-b border-gray-100">
+          <div className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 sm:px-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-slate-900">
+                <h1 className="text-xl font-semibold text-gray-900">
                   Biểu đồ phát triển
                 </h1>
-                <p className="text-sm text-slate-500 mt-1">
+                <p className="text-sm text-gray-500 mt-1">
                   {selectedChild?.name || "Học sinh"}
                 </p>
               </div>
@@ -198,116 +203,140 @@ const HealthDashboard = () => {
           </div>
 
           {/* Chart Content */}
-          <div className="p-6">
-            {list.length === 0 || chartData.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="p-4 sm:p-6"
+            >
+              {list.length === 0 || chartData.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 font-medium">Không có dữ liệu sức khỏe hợp lệ để hiển thị.</p>
+                  <p className="text-sm text-gray-400 mt-1">Vui lòng kiểm tra lại thông tin hoặc thêm dữ liệu mới.</p>
                 </div>
-                <p className="text-slate-600 text-sm">Không có dữ liệu sức khỏe hợp lệ để hiển thị.</p>
-              </div>
-            ) : (
-              <div className="bg-white">
-                <ResponsiveContainer width="100%" height={500}>
-                  <LineChart
-                    data={chartData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-                  >
-                    <CartesianGrid
-                      stroke="#d1d5db"
-                      strokeWidth={1}
-                      strokeOpacity={0.8}
-                    />
-                    <XAxis
-                      dataKey="campaign_name"
-                      axisLine={{ stroke: "#1e293b", strokeWidth: 2 }}
-                      tickLine={{ stroke: "#1e293b", strokeWidth: 1 }}
-                      tick={{ fontSize: 14, fill: "#1e293b", fontWeight: 500 }}
-                      interval={0}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                      tickFormatter={formatXAxisTick}
-                    />
-                    <YAxis
-                      axisLine={{ stroke: "#1e293b", strokeWidth: 2 }}
-                      tickLine={{ stroke: "#1e293b", strokeWidth: 1 }}
-                      tick={{ fontSize: 14, fill: "#1e293b", fontWeight: 500 }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                        padding: "12px",
-                      }}
-                      labelStyle={{ color: "#1e293b", fontWeight: "600", marginBottom: "8px" }}
-                      itemStyle={{ fontSize: "14px", padding: "4px 0" }}
-                    />
-                    <Legend
-                      verticalAlign="top"
-                      height={40}
-                      iconType="circle"
-                      wrapperStyle={{
-                        paddingBottom: "24px",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        color: "#1e293b",
-                      }}
-                    />
-                    <Line
-                      type="linear"
-                      dataKey="height"
-                      name="Chiều cao (cm)"
-                      stroke="#3b82f6"
-                      strokeWidth={3}
-                      dot={{ r: 5, fill: "#3b82f6", strokeWidth: 2 }}
-                      activeDot={{ r: 7, fill: "#3b82f6", stroke: "#ffffff", strokeWidth: 2 }}
-                    />
-                    <Line
-                      type="linear"
-                      dataKey="weight"
-                      name="Cân nặng (kg)"
-                      stroke="#10b981"
-                      strokeWidth={3}
-                      dot={{ r: 5, fill: "#10b981", strokeWidth: 2 }}
-                      activeDot={{ r: 7, fill: "#10b981", stroke: "#ffffff", strokeWidth: 2 }}
-                    />
-                    <Line
-                      type="linear"
-                      dataKey="blood_pressure"
-                      name="Huyết áp tâm thu (mmHg)"
-                      stroke="#f59e0b"
-                      strokeWidth={3}
-                      dot={{ r: 5, fill: "#f59e0b", strokeWidth: 2 }}
-                      activeDot={{ r: 7, fill: "#f59e0b", stroke: "#ffffff", strokeWidth: 2 }}
-                    />
-                    <Line
-                      type="linear"
-                      dataKey="left_eye"
-                      name="Mắt trái"
-                      stroke="#8b5cf6"
-                      strokeWidth={3}
-                      dot={{ r: 5, fill: "#8b5cf6", strokeWidth: 2 }}
-                      activeDot={{ r: 7, fill: "#8b5cf6", stroke: "#ffffff", strokeWidth: 2 }}
-                    />
-                    <Line
-                      type="linear"
-                      dataKey="right_eye"
-                      name="Mắt phải"
-                      stroke="#ef4444"
-                      strokeWidth={3}
-                      dot={{ r: 5, fill: "#ef4444", strokeWidth: 2 }}
-                      activeDot={{ r: 7, fill: "#ef4444", stroke: "#ffffff", strokeWidth: 2 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="bg-white">
+                  <ResponsiveContainer width="100%" height={500}>
+                    <LineChart
+                      data={chartData}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+                    >
+                      <CartesianGrid
+                        stroke="#d1d5db"
+                        strokeWidth={1}
+                        strokeOpacity={0.8}
+                      />
+                      <XAxis
+                        dataKey="campaign_name"
+                        axisLine={{ stroke: "#1e293b", strokeWidth: 2 }}
+                        tickLine={{ stroke: "#1e293b", strokeWidth: 1 }}
+                        tick={{ fontSize: 14, fill: "#1e293b", fontWeight: 500 }}
+                        interval={0}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                        tickFormatter={formatXAxisTick}
+                        label={{
+                          value: "Tên chiến dịch",
+                          position: "bottom",
+                          offset: 50,
+                          fontSize: 14,
+                          fill: "#1e293b",
+                          fontWeight: 600,
+                        }}
+                      />
+                      <YAxis
+                        axisLine={{ stroke: "#1e293b", strokeWidth: 2 }}
+                        tickLine={{ stroke: "#1e293b", strokeWidth: 1 }}
+                        tick={{ fontSize: 14, fill: "#1e293b", fontWeight: 500 }}
+                        label={{
+                          value: "Giá trị",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: 10,
+                          fontSize: 14,
+                          fill: "#1e293b",
+                          fontWeight: 600,
+                        }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "8px",
+                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                          padding: "12px",
+                        }}
+                        labelStyle={{ color: "#1e293b", fontWeight: "600", marginBottom: "8px" }}
+                        itemStyle={{ fontSize: "14px", padding: "4px 0" }}
+                      />
+                      <Legend
+                        verticalAlign="top"
+                        height={40}
+                        iconType="circle"
+                        wrapperStyle={{
+                          paddingBottom: "24px",
+                          fontSize: "14px",
+                          fontWeight: 500,
+                          color: "#1e293b",
+                        }}
+                      />
+                      <Line
+                        type="linear"
+                        dataKey="height"
+                        name="Chiều cao (cm)"
+                        stroke="#3b82f6"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: "#3b82f6", strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: "#3b82f6", stroke: "#ffffff", strokeWidth: 2 }}
+                      />
+                      <Line
+                        type="linear"
+                        dataKey="weight"
+                        name="Cân nặng (kg)"
+                        stroke="#10b981"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: "#10b981", strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: "#10b981", stroke: "#ffffff", strokeWidth: 2 }}
+                      />
+                      <Line
+                        type="linear"
+                        dataKey="blood_pressure"
+                        name="Huyết áp tâm thu (mmHg)"
+                        stroke="#f59e0b"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: "#f59e0b", strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: "#f59e0b", stroke: "#ffffff", strokeWidth: 2 }}
+                      />
+                      <Line
+                        type="linear"
+                        dataKey="left_eye"
+                        name="Mắt trái"
+                        stroke="#8b5cf6"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: "#8b5cf6", strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: "#8b5cf6", stroke: "#ffffff", strokeWidth: 2 }}
+                      />
+                      <Line
+                        type="linear"
+                        dataKey="right_eye"
+                        name="Mắt phải"
+                        stroke="#ef4444"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: "#ef4444", strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: "#ef4444", stroke: "#ffffff", strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>

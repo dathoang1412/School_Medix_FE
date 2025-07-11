@@ -29,6 +29,66 @@ const Sidebar = () => {
   const [activeItem, setActiveItem] = useState("Trang chủ");
   const [isMobile, setIsMobile] = useState(false);
   const [expandedDropdowns, setExpandedDropdowns] = useState({});
+  const [userData, setUserData] = useState(null);
+  const navigate = useNavigate();
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = await getUser();
+        setUserData(user);
+        console.log("User DETAILS: ", user);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        enqueueSnackbar("Không thể tải thông tin người dùng!", {
+          variant: "error",
+        });
+      }
+    };
+
+    fetchUserData();
+  }, [enqueueSnackbar]);
+
+  // Handle responsive design
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setIsCollapsed(true);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Update admin items based on role
+  useEffect(() => {
+    const role = getUserRole();
+    if (role === "admin") {
+      setAdminItems((prev) => {
+        if (!prev.some((item) => item.title === "Quản lý người dùng")) {
+          return [
+            ...prev,
+            {
+              title: "Quản lý người dùng",
+              path: "user-manage",
+              icon: <User2Icon />,
+            },
+            {
+              title: "Quản lý Blog",
+              path: "blog",
+              icon: <LuNewspaper />,
+            },
+          ];
+        }
+        return prev;
+      });
+    }
+  }, []);
 
   const [commonItems, setCommonItems] = useState([
     { title: "Trang chủ", path: "/", icon: <RiHome9Line /> },
@@ -46,13 +106,13 @@ const Sidebar = () => {
 
   const [adminItems, setAdminItems] = useState([
     {
-      title: "Dashboard / Profile",
+      title: "Dashboard",
       path: "",
       icon: <LuLayoutDashboard />,
     },
     {
       title: "Quản lý bệnh",
-      path: "disease",
+      path: " ",
       icon: <MdOutlineMedicalInformation />,
       hasDropdown: true,
       children: [
@@ -106,52 +166,25 @@ const Sidebar = () => {
     },
   ]);
 
-  const navigate = useNavigate();
-
-  // Handle responsive design
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) {
-        setIsCollapsed(true);
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    const role = getUserRole();
-    if (role === "admin") {
-      setAdminItems((prev) => {
-        if (!prev.some((item) => item.title === "Quản lý người dùng")) {
-          return [
-            ...prev,
-            {
-              title: "Quản lý người dùng",
-              path: "user-manage",
-              icon: <User2Icon />,
-            },
-            {
-              title: "Quản lý Blog",
-              path: "blog",
-              icon: <LuNewspaper />,
-            },
-          ];
-        }
-        return prev;
-      });
-    }
-  }, [localStorage.getItem("user")]);
-
   const bottomItems = [
     {
       title: getUserRole().toString().toUpperCase(),
       action: "",
-      icon: <User2 />,
+      icon: (
+        <div className="w-8 h-8 rounded-full overflow-hidden shadow-sm border-2 border-blue-200 flex-shrink-0">
+          {userData?.profile_img_url ? (
+            <img
+              src={userData.profile_img_url}
+              alt={userData.name || "Người dùng"}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+              <User2 className="w-5 h-5 text-blue-600" />
+            </div>
+          )}
+        </div>
+      ),
     },
     { title: "Đăng xuất", action: "logout", icon: <LogOut /> },
   ];
@@ -159,7 +192,6 @@ const Sidebar = () => {
   const handleNavigation = (path, title, parentTitle = null) => {
     setActiveItem(title);
 
-    // If it's a child item, also expand its parent dropdown
     if (parentTitle) {
       setExpandedDropdowns((prev) => ({
         ...prev,
@@ -170,7 +202,6 @@ const Sidebar = () => {
     console.log(`Navigating to: ${path}`);
     navigate(path);
 
-    // Auto collapse on mobile after navigation
     if (isMobile) {
       setIsCollapsed(true);
     }
@@ -182,19 +213,16 @@ const Sidebar = () => {
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
-    // Close all dropdowns when collapsing
     if (!isCollapsed) {
       setExpandedDropdowns({});
     }
   };
 
-  const toggleDropdown = (itemTitle) => {
-    if (isCollapsed) return;
-
-    setExpandedDropdowns((prev) => ({
-      ...prev,
-      [itemTitle]: !prev[itemTitle],
-    }));
+  const handleLogoClick = () => {
+    navigate("/");
+    if (isMobile) {
+      setIsCollapsed(true);
+    }
   };
 
   const renderMenuItem = (item, isChild = false, parentTitle = null) => {
@@ -202,7 +230,6 @@ const Sidebar = () => {
     const hasDropdown = item.hasDropdown && !isCollapsed;
     const isExpanded = expandedDropdowns[item.title];
 
-    // Check if any child is active (for parent highlighting)
     const hasActiveChild =
       item.children &&
       item.children.some((child) => activeItem === child.title);
@@ -266,7 +293,6 @@ const Sidebar = () => {
           )}
         </button>
 
-        {/* Dropdown items */}
         {hasDropdown && item.children && (
           <div
             className={`
@@ -302,7 +328,6 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Overlay for mobile */}
       {isMobile && !isCollapsed && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
@@ -325,16 +350,20 @@ const Sidebar = () => {
           className={`p-3 border-b border-gray-200 flex items-center justify-between 
                         min-h-[60px] ${isCollapsed ? "flex-col" : "flex-row"}`}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
+          <button
+            onClick={handleLogoClick}
+            className="flex items-center gap-3 cursor-pointer transition-colors duration-200 group"
+            title={isCollapsed ? "SchoolMedix" : ""}
+          >
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm group-hover:from-blue-500 group-hover:to-blue-600">
               <MdOutlineSchool className="text-white text-lg" />
             </div>
             {!isCollapsed && (
-              <span className="font-bold text-gray-900 text-lg">
+              <span className="font-bold text-gray-900 text-lg group-hover:text-blue-600">
                 SchoolMedix
               </span>
             )}
-          </div>
+          </button>
           <button
             onClick={toggleSidebar}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 flex-shrink-0"
@@ -381,11 +410,11 @@ const Sidebar = () => {
                 className="w-full flex items-center gap-3 p-3 rounded-xl text-left text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-300 ease-out group transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-sm"
                 title={isCollapsed ? item.title : ""}
               >
-                <div className="text-lg flex-shrink-0 transition-all duration-300 ease-out group-hover:scale-125 group-hover:rotate-3">
+                <div className="flex-shrink-0">
                   {item.icon}
                 </div>
                 {!isCollapsed && (
-                  <span className="font-medium text-sm">{item.title}</span>
+                  <span className="font-medium text-sm truncate flex-1">{item.title}</span>
                 )}
               </button>
             ))}

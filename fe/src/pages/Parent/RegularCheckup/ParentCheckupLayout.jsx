@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Calendar, History, Shield, BarChart2 } from "lucide-react";
-import { useContext } from "react";
-import { ChildContext } from "../../../layouts/ParentLayout";
+import { getStudentInfo } from "../../../service/childenService";
 import StudentRegularCheckup from "./StudentRegularCheckup";
 import CheckupHistoryInfo from "./CheckupHistoryInfo";
 import HealthDashboard from "./HealthDashboard";
@@ -10,7 +9,6 @@ import axiosClient from "../../../config/axiosClient";
 
 const ParentCheckupLayout = () => {
   const { student_id } = useParams();
-  const { children, handleSelectChild } = useContext(ChildContext);
   const [currChild, setCurrChild] = useState(null);
   const [activeTab, setActiveTab] = useState("plans");
   const [loading, setLoading] = useState(true);
@@ -20,14 +18,12 @@ const ParentCheckupLayout = () => {
     const fetchChild = async () => {
       try {
         setLoading(true);
-        const res = await axiosClient.get('/student/' + student_id);
-        const child = res?.data.data;
+        const child = await getStudentInfo(student_id);
         if (!child) {
           setError("Không tìm thấy thông tin học sinh");
           return;
         }
         setCurrChild(child);
-        handleSelectChild(child);
         setError(null);
       } catch (error) {
         setError("Không thể tải thông tin học sinh");
@@ -37,7 +33,7 @@ const ParentCheckupLayout = () => {
       }
     };
     fetchChild();
-  }, [student_id, children, handleSelectChild]);
+  }, [student_id]);
 
   if (loading) {
     return (
@@ -79,7 +75,7 @@ const ParentCheckupLayout = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Kiểm tra sức khỏe</h1>
-              <p className="text-gray-600">Theo dõi và đăng ký tham gia các chiến dịch kiểm tra sức khỏe cho {currChild.name}</p>
+              <p className="text-gray-600">Theo dõi và đăng ký tham gia các chiến dịch kiểm tra sức khỏe cho {currChild?.name || "học sinh"}</p>
             </div>
           </div>
 
@@ -126,7 +122,7 @@ const ParentCheckupLayout = () => {
       <div className="max-w-7xl mx-auto px-6">
         {activeTab === "plans" && <StudentRegularCheckup currChild={currChild} />}
         {activeTab === "history" && <CheckupHistoryInfo />}
-        {activeTab === "dashboard" && <HealthDashboard />}
+        {activeTab === "dashboard" && <HealthDashboard currChild={currChild} />}
       </div>
     </div>
   );

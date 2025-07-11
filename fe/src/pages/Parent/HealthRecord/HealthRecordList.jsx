@@ -97,7 +97,7 @@ const HealthRecordList = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Danh sách bệnh</h1>
               <p className="text-gray-600">Theo dõi hồ sơ bệnh của con em tại trường</p>
-              {child && <p className="text-sm font-medium text-gray-700 mt-2">Học sinh: HS{String(child.id).padStart(6, '0')}</p>}
+              {child && <p className="text-sm font-medium text-gray-700 mt-2">Học sinh: {child?.name}</p>}
             </div>
           </div>
           <div className="flex gap-4">
