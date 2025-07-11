@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Search, Filter, FileText, User, Pill, Activity, Eye, PenBoxIcon, Plus, X, Loader2 } from "lucide-react";
+import {
+  Search,
+  Filter,
+  FileText,
+  User,
+  Pill,
+  Activity,
+  Eye,
+  PenBoxIcon,
+  Plus,
+  X,
+  Loader2,
+} from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { useNavigate, useParams } from "react-router-dom";
 import { getStudentInfo } from "../../../service/childenService";
 import { enqueueSnackbar } from "notistack";
-import { getUserRole } from "../../../service/authService";
+import { getUser, getUserRole } from "../../../service/authService";
 
 const DrugTable = () => {
   const [drugs, setDrugs] = useState([]);
@@ -54,9 +66,11 @@ const DrugTable = () => {
         }
         setCurrChild(child);
 
-        const res = await axiosClient.get(`/student/${child.id}/send-drug-request`);
+        const res = await axiosClient.get(
+          `/student/${child.id}/send-drug-request`
+        );
         const fetchedDrugs = Array.isArray(res.data.data)
-          ? res.data.data.filter(drug => drug.status !== "DRAFTED") // Filter out DRAFTED
+          ? res.data.data.filter((drug) => drug.status !== "DRAFTED") // Filter out DRAFTED
           : [];
         setDrugs(fetchedDrugs);
         setFilteredDrugs(fetchedDrugs);
@@ -76,8 +90,9 @@ const DrugTable = () => {
   useEffect(() => {
     let result = [...drugs];
     if (searchTerm) {
-      result = result.filter((drug) =>
-        drug.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase()) || ""
+      result = result.filter(
+        (drug) =>
+          drug.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase()) || ""
       );
     }
     if (statusFilter !== "Tất cả trạng thái") {
@@ -151,17 +166,22 @@ const DrugTable = () => {
             <FileText className="w-5 h-5 text-gray-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Mã đơn #{drug.id}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Mã đơn #{drug.id}
+            </h3>
             <p className="text-sm text-gray-500">Chi tiết đơn thuốc</p>
           </div>
         </div>
         <div className="flex items-center justify-between">
           <div className="text-sm">
-            <span className="text-gray-500">Trạng thái:</span> {getStatusBadge(drug.status)}
+            <span className="text-gray-500">Trạng thái:</span>{" "}
+            {getStatusBadge(drug.status)}
           </div>
           <div className="text-sm">
             <span className="text-gray-500">Ngày gửi:</span>{" "}
-            <span className="font-medium">{formatDate(drug.schedule_send_date)}</span>
+            <span className="font-medium">
+              {formatDate(drug.schedule_send_date)}
+            </span>
           </div>
         </div>
       </div>
@@ -170,16 +190,22 @@ const DrugTable = () => {
       <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
         <div className="flex items-center gap-2 mb-3">
           <User className="w-5 h-5 text-gray-600" />
-          <h4 className="text-base font-medium text-gray-900">Thông tin học sinh</h4>
+          <h4 className="text-base font-medium text-gray-900">
+            Thông tin học sinh
+          </h4>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-gray-500">Họ tên:</span>
-            <p className="font-medium text-gray-900 mt-1">{currChild?.name || "N/A"}</p>
+            <p className="font-medium text-gray-900 mt-1">
+              {currChild?.name || "N/A"}
+            </p>
           </div>
           <div>
             <span className="text-gray-500">Lớp:</span>
-            <p className="font-medium text-gray-900 mt-1">{currChild?.class_name || "N/A"}</p>
+            <p className="font-medium text-gray-900 mt-1">
+              {currChild?.class_name || "N/A"}
+            </p>
           </div>
         </div>
       </div>
@@ -188,7 +214,9 @@ const DrugTable = () => {
       <div className="border border-gray-200 rounded-lg p-5">
         <div className="flex items-center gap-2 mb-3">
           <Activity className="w-5 h-5 text-gray-600" />
-          <h4 className="text-base font-medium text-gray-900">Thông tin y tế</h4>
+          <h4 className="text-base font-medium text-gray-900">
+            Thông tin y tế
+          </h4>
         </div>
         <div className="space-y-4 text-sm">
           <div>
@@ -232,12 +260,17 @@ const DrugTable = () => {
       <div className="border border-gray-200 rounded-lg p-5">
         <div className="flex items-center gap-2 mb-3">
           <Pill className="w-5 h-5 text-gray-600" />
-          <h4 className="text-base font-medium text-gray-900">Danh sách thuốc</h4>
+          <h4 className="text-base font-medium text-gray-900">
+            Danh sách thuốc
+          </h4>
         </div>
         {drug?.request_items?.length > 0 ? (
           <div className="space-y-4">
             {drug.request_items.map((item, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div
+                key={index}
+                className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+              >
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-xs font-medium text-gray-600 border border-gray-300">
                     {index + 1}
@@ -303,13 +336,18 @@ const DrugTable = () => {
                 <option>RECEIVED</option>
               </select>
             </div>
-            <button
-              onClick={() => currChild?.id && navigate(`/parent/edit/${currChild.id}/send-drug-form`)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors duration-200"
-            >
-              <Plus className="w-4 h-4" />
-              Gửi thêm thuốc
-            </button>
+            {getUserRole() === "parent" && (
+              <button
+                onClick={() =>
+                  currChild?.id &&
+                  navigate(`/parent/edit/${currChild.id}/send-drug-form`)
+                }
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors duration-200"
+              >
+                <Plus className="w-4 h-4" />
+                Gửi thêm thuốc
+              </button>
+            )}
           </div>
         </div>
 
@@ -324,7 +362,9 @@ const DrugTable = () => {
         {isLoading ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
             <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
-            <p className="text-gray-500 text-sm mt-2">Đang tải lịch sử gửi thuốc...</p>
+            <p className="text-gray-500 text-sm mt-2">
+              Đang tải lịch sử gửi thuốc...
+            </p>
           </div>
         ) : (
           <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
@@ -374,7 +414,10 @@ const DrugTable = () => {
                   {filteredDrugs.length === 0 ? (
                     <tr>
                       <td colSpan="7" className="px-6 py-12 text-center">
-                        <FileText size={40} className="mx-auto text-gray-400 mb-4" />
+                        <FileText
+                          size={40}
+                          className="mx-auto text-gray-400 mb-4"
+                        />
                         <p className="text-gray-500 text-lg">
                           {drugs.length === 0
                             ? "Không có dữ liệu đơn thuốc."
@@ -387,19 +430,29 @@ const DrugTable = () => {
                     </tr>
                   ) : (
                     filteredDrugs.map((drug) => (
-                      <tr key={drug.id} className="hover:bg-gray-50 transition-colors duration-200">
+                      <tr
+                        key={drug.id}
+                        className="hover:bg-gray-50 transition-colors duration-200"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-medium text-gray-900">#{drug.id}</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            #{drug.id}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-900">{currChild?.name || "N/A"}</span>
+                          <span className="text-sm text-gray-900">
+                            {currChild?.name || "N/A"}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-900">{currChild?.class_name || "N/A"}</span>
+                          <span className="text-sm text-gray-900">
+                            {currChild?.class_name || "N/A"}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-sm text-gray-900">
-                            {drug?.request_items?.[0]?.name || "Không có dữ liệu"}
+                            {drug?.request_items?.[0]?.name ||
+                              "Không có dữ liệu"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
@@ -407,7 +460,9 @@ const DrugTable = () => {
                             {drug?.diagnosis || "Không có mô tả"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(drug.status)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(drug.status)}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
@@ -417,18 +472,23 @@ const DrugTable = () => {
                             >
                               <Eye size={18} />
                             </button>
-                            <button
-                              className={`p-1 rounded transition-colors duration-200 ${
-                                userRole === "parent"
-                                  ? "text-green-600 hover:text-green-800 hover:bg-green-50"
-                                  : "text-gray-400 cursor-not-allowed"
-                              }`}
-                              onClick={() => handleEdit(drug)}
-                              disabled={userRole !== "parent"}
-                              title={userRole === "parent" ? "Chỉnh sửa" : "Chỉ phụ huynh mới có quyền chỉnh sửa"}
-                            >
-                              <PenBoxIcon size={18} />
-                            </button>
+                            {getUserRole() === "parent" && (
+                              <button
+                                className={`p-1 rounded transition-colors duration-200 ${
+                                  userRole === "parent"
+                                    ? "text-green-600 hover:text-green-800 hover:bg-green-50"
+                                    : "text-gray-400 cursor-not-allowed"
+                                }`}
+                                onClick={() => handleEdit(drug)}
+                                title={
+                                  userRole === "parent"
+                                    ? "Chỉnh sửa"
+                                    : "Chỉ phụ huynh mới có quyền chỉnh sửa"
+                                }
+                              >
+                                <PenBoxIcon size={18} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -447,8 +507,12 @@ const DrugTable = () => {
               {/* Modal Header */}
               <div className="bg-white border-b border-gray-200 p-6 flex justify-between items-center">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Chi tiết đơn thuốc</h2>
-                  <p className="text-gray-500 text-sm mt-1">Thông tin chi tiết về đơn thuốc #{selectedDrug.id}</p>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Chi tiết đơn thuốc
+                  </h2>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Thông tin chi tiết về đơn thuốc #{selectedDrug.id}
+                  </p>
                 </div>
                 <button
                   onClick={handleCloseModal}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, X, Loader2, Image as ImageIcon } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
-import { getUserRole } from "../../../service/childenService";
+import { getUserRole } from "../../../service/authService";
 import { getChildClass, getStudentInfo } from "../../../service/childenService";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate, useParams } from "react-router-dom";
