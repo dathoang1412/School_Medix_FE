@@ -365,20 +365,25 @@ const AdminDashboard = () => {
                 <p className="text-red-600 text-sm">{heightWeightError}</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
+                {/* Metric Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
-                    <p className="text-xs text-gray-500">Tham gia khám</p>
-                    <p className="text-lg font-bold text-gray-800">{heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}</p>
+                  <div className="bg-white p-2 rounded-lg shadow border-l-4 border-blue-500"> 
+                    <p className="text-xs text-gray-500">Tham gia khám</p> 
+                    <p className="text-xl font-bold text-gray-800"> 
+                      {heightWeightAvg.totalChecked || 0} / {heightWeightAvg.totalStudents || 0}
+                    </p>
                     <p className="text-xs text-gray-600">
-                      Tỷ lệ: {heightWeightAvg.totalStudents ? ((heightWeightAvg.totalChecked / heightWeightAvg.totalStudents) * 100).toFixed(1) : 0}%
+                      Tỷ lệ: {heightWeightAvg.totalStudents ? ((heightWeightAvg.totalChecked / heightWeightAvg.totalStudents) * 100).toFixed(1) : 0}% 
                     </p>
                   </div>
-                  <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-pink-500">
-                    <p className="text-xs text-gray-500">Tỷ lệ nam/nữ</p>
-                    <p className="text-lg font-bold text-gray-800">{heightWeightAvg.maleCount || 0} / {heightWeightAvg.femaleCount || 0}</p>
-                    <p className="text-xs text-gray-600">
-                      Nam: {heightWeightAvg.totalChecked ? ((heightWeightAvg.maleCount / heightWeightAvg.totalChecked) * 100).toFixed(1) : 0}%
+                  <div className="bg-white p-2 rounded-lg shadow border-l-4 border-pink-500">
+                    <p className="text-xs text-gray-500">Tỷ lệ nam/nữ</p> 
+                    <p className="text-xl font-bold text-gray-800"> 
+                      {heightWeightAvg.maleCount || 0} / {heightWeightAvg.femaleCount || 0}
+                    </p>
+                    <p className="text-xs text-gray-600"> 
+                      Nam: {heightWeightAvg.totalChecked ? ((heightWeightAvg.maleCount / heightWeightAvg.totalChecked) * 100).toFixed(1) : 0}% 
                     </p>
                   </div>
                 </div>
