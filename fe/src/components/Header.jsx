@@ -18,10 +18,11 @@ const Header = () => {
 
   const menuItems = [
     { title: "Trang chủ", path: "/" },
+    { title: "Giới thiệu", path: "/about" },
     { title: "Dashboard", path: `/${userRole || 'admin'}` },
     { title: "Blog", path: "/blog" },
     { title: "Profile", path: "/profile" },
-    { title: "Giới thiệu", path: "/about" },
+,
   ];
 
   const userMenuItems = [
