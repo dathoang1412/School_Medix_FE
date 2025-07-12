@@ -174,9 +174,9 @@ const ParentSchedule = () => {
         {/* Stats */}
         <div className="mb-3 grid grid-cols-8 gap-2">
           {Object.entries(eventTypeStyles).map(([type, { label, bgLight, textColor }]) => (
-            <div key={type} className={`${bgLight} rounded-md p-1.5 text-xs`}>
+            <div key={type} className={`${bgLight} rounded-md p-2 text-xs`}>
               <p className="text-gray-900">{label}</p>
-              <p className={`font-semibold ${textColor}`}>
+              <p className={`font-bold ${textColor}`}>
                 {events.filter((e) => e.type === type).length}
               </p>
             </div>
