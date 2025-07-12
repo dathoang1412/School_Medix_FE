@@ -114,11 +114,11 @@ const RegularCheckupSurvey = () => {
       return;
     }
 
-    const selectedCount = selectedExams.filter(exam => exam.status === "WAITING").length;
-    if (selectedCount === 0) {
-      enqueueSnackbar("Vui lòng chọn ít nhất một hạng mục khám.", { variant: "error" });
-      return;
-    }
+    // const selectedCount = selectedExams.filter(exam => exam.status === "WAITING").length;
+    // if (selectedCount === 0) {
+    //   enqueueSnackbar("Vui lòng chọn ít nhất một hạng mục khám.", { variant: "error" });
+    //   return;
+    // }
 
     const submitData = {
       parent_id,
