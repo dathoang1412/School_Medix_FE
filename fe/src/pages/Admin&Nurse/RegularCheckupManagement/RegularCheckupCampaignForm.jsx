@@ -110,9 +110,9 @@ const RegularCheckupCampaignForm = () => {
     if (new Date(formData.start_date) >= new Date(formData.end_date)) {
       return "Ngày kết thúc phải sau ngày bắt đầu";
     }
-    if (formData.specialist_exam_ids.length === 0) {
-      return "Vui lòng chọn ít nhất một loại khám chuyên khoa";
-    }
+    // if (formData.specialist_exam_ids.length === 0) {
+    //   return "Vui lòng chọn ít nhất một loại khám chuyên khoa";
+    // }
     return null;
   };
 
