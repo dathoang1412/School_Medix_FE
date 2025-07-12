@@ -395,14 +395,14 @@ const VaccineCampaignInfo = () => {
                                   onClick={() => handleSurvey(campaign.campaign_id)}
                                   className={` cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                                     campaign.isSurveyed
-                                      ? "bg-green-600 text-white hover:bg-green-700"
+                                      ? "bg-red-600 text-white hover:bg-red-700"
                                       : "bg-blue-600 text-white hover:bg-blue-700"
                                   }`}
                                 >
                                   {campaign.isSurveyed ? (
                                     <>
-                                      <CheckCircle className="w-4 h-4" />
-                                      Đã khảo sát
+                                      Hủy đăng ký
+                                      
                                     </>
                                   ) : (
                                     <>
