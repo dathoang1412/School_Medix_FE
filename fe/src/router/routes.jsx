@@ -55,6 +55,7 @@ import UpdateVaccineCampaign from "../pages/Admin/VaccineCampaign/UpdateVaccineC
 import VaccineForStudentEligible from "../pages/Admin&Nurse/VaccineManagement/VaccineForStudentEligible";
 import Profile from "../pages/Profile/Profile";
 import AboutSchoolMedix from "../pages/Admin/AboutSchoolMedix/AboutSchoolMedix";
+import ParentSchedule from "../pages/Parent/ParentDashboard/ParentSchedule";
 
 const routes = createBrowserRouter([
   {
@@ -249,6 +250,10 @@ const routes = createBrowserRouter([
       {
         path: "student-regular-checkup",
         element: <StudentRegularCheckup />,
+      },
+      {
+        path: "schedule",
+        element: <ParentSchedule />,
       },
       {
         path: "checkup-campaign/:campaign_id",

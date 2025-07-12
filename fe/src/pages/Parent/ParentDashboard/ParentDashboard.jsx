@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext } from "react";
-import { Heart, Activity, Pill, Syringe, User2 } from "lucide-react";
+import { Heart, Activity, Pill, Syringe, User2, Calendar } from "lucide-react";
 import { ChildContext } from "../../../layouts/ParentLayout";
 import axiosClient from "../../../config/axiosClient";
 import { getUser } from "../../../service/authService";
@@ -119,6 +119,7 @@ const ParentDashboardWrapper = () => {
 const ParentDashboard = () => {
   const { children, selectedChild, handleSelectChild, isLoading, error, dashboardStats } =
     useContext(ChildContext);
+  const navigate = useNavigate();
 
   const services = [
     {
@@ -184,8 +185,6 @@ const ParentDashboard = () => {
     },
   ];
 
-  const navigate = useNavigate();
-
   const getInitials = (name) => {
     return name?.charAt(0)?.toUpperCase() || "?";
   };
@@ -194,11 +193,20 @@ const ParentDashboard = () => {
     <div className="min-h-screen bg-gray-100">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-8 shadow border border-gray-200 sm:px-6 lg:px-8 rounded-md py-8 mt-2 bg-gray-200">
+      <div className="max-w-7xl mx-auto my-4 px-8 shadow border border-gray-200 sm:px-6 lg:px-8 rounded-md py-8 mt-2 bg-gray-200">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Trang chủ phụ huynh</h1>
-          <p className="mt-2 text-gray-600">Quản lý thông tin y tế học đường cho con em</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Trang chủ phụ huynh</h1>
+            <p className="mt-2 text-gray-600">Quản lý thông tin y tế học đường cho con em</p>
+          </div>
+          <button
+            onClick={() => navigate("/parent/schedule")}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Calendar className="w-5 h-5 mr-2" />
+            Xem lịch trình
+          </button>
         </div>
 
         {/* Error Alert */}
