@@ -232,7 +232,7 @@ const StudentOverview = () => {
             </div>
             <button
               onClick={handleBack}
-              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              className="inline-flex cursor-pointer items-center gap-2 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
             >
               <ArrowLeft size={16} />
               Quay lại
@@ -257,7 +257,7 @@ const StudentOverview = () => {
                   <button
                     key={tab.id}
                     onClick={() => handleTabChange(tab.id)}
-                    className={`
+                    className={` cursor-pointer
                       group flex items-center space-x-2 whitespace-nowrap px-3 py-2 rounded-md text-sm font-medium
                       transition-colors duration-200
                       ${

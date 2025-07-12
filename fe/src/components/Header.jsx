@@ -21,7 +21,7 @@ const Header = () => {
     { title: "Dashboard", path: `/${userRole || 'admin'}` },
     { title: "Blog", path: "/blog" },
     { title: "Profile", path: "/profile" },
-    { title: "Kiểm tra y tế", path: "/health-check" },
+    { title: "Giới thiệu", path: "/about" },
   ];
 
   const userMenuItems = [
@@ -171,7 +171,7 @@ const Header = () => {
               ) : (
                 <button
                   onClick={() => navigate("/login")}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
+                  className="px-4 cursor-pointer py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
                 >
                   Đăng nhập
                 </button>

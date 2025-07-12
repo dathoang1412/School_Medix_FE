@@ -14,7 +14,7 @@ const StudentProfile = () => {
     const fetchStudentProfile = async () => {
       try {
         const response = await getStudentInfo(student_id);
-        // console.log("Child Info: ", response);
+        console.log("Child Info: ", response);
         setChildData(response);
         setIsLoading(false);
       } catch (err) {
@@ -25,7 +25,7 @@ const StudentProfile = () => {
     };
 
     fetchStudentProfile();
-  }, []);
+  }, [student_id]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
@@ -62,7 +62,7 @@ const StudentProfile = () => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-900 font-medium">{value || ""}</span>
         {status && (
-          <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
+          <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 Rounded">
             {status}
           </span>
         )}
@@ -77,11 +77,19 @@ const StudentProfile = () => {
         <div className="bg-white p-6 border-b border-gray-200">
           <div className="flex items-start gap-6">
             <div className="relative">
-              <div className="w-20 h-24 bg-blue-100 rounded-lg flex items-center justify-center border border-blue-200">
-                <span className="text-2xl font-bold text-blue-600">
-                  {childData.name?.charAt(0).toUpperCase() || "-"}
-                </span>
-              </div>
+              {childData.profile_img_url ? (
+                <img
+                  src={childData.profile_img_url}
+                  alt={childData.name || "Profile"}
+                  className="w-20 h-20 rounded-full object-cover border border-blue-200"
+                />
+              ) : (
+                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center border border-blue-200">
+                  <span className="text-2xl font-bold text-blue-600">
+                    {childData.name?.charAt(0).toUpperCase() || "-"}
+                  </span>
+                </div>
+              )}
               {childData.email_confirmed && (
                 <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
                   <CheckCircle className="w-3 h-3 text-white" />
@@ -106,7 +114,7 @@ const StudentProfile = () => {
                 <InfoRow label="Giới tính" value={childData.isMale ? "Nam" : "Nữ"} icon={User} />
                 <InfoRow label="Nơi sinh" value={childData.address || "-"} icon={MapPin} />
                 <InfoRow label="Quốc tịch" value="Việt Nam" icon={Users} />
-                <InfoRow label="Dân tộc" value="-" icon={Users} />
+                {/* <InfoRow label="Dân tộc" value="-" icon={Users} /> */}
               </div>
 
               <h2 className="text-lg font-bold text-gray-900 mb-4 mt-6">Thông tin gia đình</h2>
@@ -115,14 +123,14 @@ const StudentProfile = () => {
                   <>
                     <InfoRow label="Họ và tên mẹ" value={childData.mom_profile.name || "-"} icon={User} />
                     <InfoRow label="Ngày sinh" value={formatDate(childData.mom_profile.dob)} icon={Calendar} />
-                    <InfoRow label="Nghề nghiệp" value="-" icon={GraduationCap} />
+                    {/* <InfoRow label="Nghề nghiệp" value="Học sinh" icon={GraduationCap} /> */}
                   </>
                 )}
                 {childData.dad_profile && (
                   <>
                     <InfoRow label="Họ và tên bố" value={childData.dad_profile.name || "-"} icon={User} />
                     <InfoRow label="Ngày sinh" value={formatDate(childData.dad_profile.dob)} icon={Calendar} />
-                    <InfoRow label="Nghề nghiệp" value="-" icon={GraduationCap} />
+                    {/* <InfoRow label="Nghề nghiệp" value="-" icon={GraduationCap} /> */}
                   </>
                 )}
                 {!childData.mom_profile && !childData.dad_profile && (

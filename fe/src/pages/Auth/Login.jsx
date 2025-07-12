@@ -77,7 +77,7 @@ const Login = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Welcome Back
           </h1>
-          <p className="text-gray-600">Sign in to your hospital account</p>
+          <p className="text-gray-600">Sign in to your SchoolMedix account</p>
         </div>
 
         {/* Login Form */}
@@ -145,7 +145,7 @@ const Login = () => {
             <button
               type="submit"
               onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 
+              className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 
               px-4 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-700 
               focus:outline-none focus:ring-2 focus:ring-blue-500/20 transform hover:scale-[1.02] 
               transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -157,14 +157,14 @@ const Login = () => {
           </div>
 
           {/* Sign Up Link */}
-          <div className="mt-6 text-center">
+          {/* <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <button className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                 Sign up
               </button>
             </p>
-          </div>
+          </div> */}
         </div>
 
         {/* Footer */}

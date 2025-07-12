@@ -85,11 +85,11 @@ const VaccineStudentList = () => {
       };
     if (isRegistered === false)
       return {
-        label: "Chờ duyệt",
+        label: "Không đăng ký",
         color: "text-yellow-800 bg-yellow-100",
       };
     return {
-      label: "Đã duyệt",
+      label: "Đã đăng ký",
       color: "text-green-800 bg-green-100",
     };
   };

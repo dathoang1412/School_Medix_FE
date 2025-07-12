@@ -13,15 +13,26 @@ import {
   Bar,
 } from "recharts";
 import {
-  Users, Heart, AlertTriangle, Thermometer, Activity, Shield, TrendingUp, Calendar, Pill, Syringe, Stethoscope, FileText
-} from 'lucide-react';
-import PropTypes from 'prop-types';
+  Users,
+  Heart,
+  AlertTriangle,
+  Thermometer,
+  Activity,
+  Shield,
+  TrendingUp,
+  Calendar,
+  Pill,
+  Syringe,
+  Stethoscope,
+  FileText,
+} from "lucide-react";
+import PropTypes from "prop-types";
 import {
   getStatusColor,
   getStatusText,
   formatDate,
 } from "../../../utils/campaignUtils";
-import { getUserRole } from "../../../service/authService";
+import { getUser, getUserRole } from "../../../service/authService";
 
 const CurrentTimeDisplay = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -94,7 +105,7 @@ const AdminDashboard = () => {
 
   const [pendingRecords, setPendingRecords] = useState({
     pendingDiseaseRecords: 0,
-    pendingVaccinationRecords: 0
+    pendingVaccinationRecords: 0,
   });
   const [pendingRecordsLoading, setPendingRecordsLoading] = useState(true);
   const [pendingRecordsError, setPendingRecordsError] = useState(null);
@@ -199,11 +210,11 @@ const AdminDashboard = () => {
 
         let vaccineCount = 0;
         let regularCount = 0;
-        
-        plans.forEach(plan => {
+
+        plans.forEach((plan) => {
           const planDate = new Date(plan.date);
           if (planDate > today && planDate < thirtyDaysFromNow) {
-            if(plan.checkup_id !== null) {
+            if (plan.checkup_id !== null) {
               regularCount++;
             } else {
               vaccineCount++;
@@ -228,14 +239,15 @@ const AdminDashboard = () => {
       setPendingRecordsLoading(true);
       setPendingRecordsError(null);
       try {
-        const response = await axiosClient.get('/dashboard/pending-records');
+        const response = await axiosClient.get("/dashboard/pending-records");
         setPendingRecords({
           pendingDiseaseRecords: response.data.data.pendingDiseaseRecords || 0,
-          pendingVaccinationRecords: response.data.data.pendingVaccinationRecords || 0
+          pendingVaccinationRecords:
+            response.data.data.pendingVaccinationRecords || 0,
         });
       } catch (err) {
-        console.error('Error fetching pending records:', err);
-        setPendingRecordsError('Không thể tải dữ liệu khai báo.');
+        console.error("Error fetching pending records:", err);
+        setPendingRecordsError("Không thể tải dữ liệu khai báo.");
       } finally {
         setPendingRecordsLoading(false);
       }
@@ -281,28 +293,49 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           {summaryLoading || pendingRecordsLoading ? (
             <div className="col-span-full flex items-center justify-center py-4 bg-white rounded-2xl shadow-sm">
-              <svg className="animate-spin h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              <svg
+                className="animate-spin h-5 w-5 mr-2 text-indigo-600"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                />
               </svg>
               <p className="text-gray-600">Đang tải dữ liệu...</p>
             </div>
           ) : summaryError || pendingRecordsError ? (
             <div className="col-span-full bg-red-50 border border-red-200 rounded-2xl p-4">
-              <p className="text-red-600 text-sm">{summaryError || pendingRecordsError}</p>
+              <p className="text-red-600 text-sm">
+                {summaryError || pendingRecordsError}
+              </p>
             </div>
           ) : (
             <>
-              <SummaryCard
-                icon={<Heart className="w-5 h-5" />}
-                label="Tổng số học sinh"
-                value={summary.totalStudents}
-                noti={summary.emailUnconfirmedUserCount}
-                color="green"
-                navigateTo={`/${getUserRole()}/user-manage`}
-              >
-                <p className="text-xs">{summary.emailUnconfirmedStudentCount} học sinh chưa xác thực</p>
-              </SummaryCard>
+              {getUserRole() === "admin" && (
+                <SummaryCard
+                  icon={<Heart className="w-5 h-5" />}
+                  label="Tổng số học sinh"
+                  value={summary.totalStudents}
+                  noti={summary.emailUnconfirmedUserCount}
+                  color="green"
+                  navigateTo={`/${getUserRole()}/user-manage`}
+                >
+                  <p className="text-xs">
+                    {summary.emailUnconfirmedStudentCount} học sinh chưa xác
+                    thực
+                  </p>
+                </SummaryCard>
+              )}
               <SummaryCard
                 icon={<AlertTriangle className="w-5 h-5" />}
                 label="Tai nạn tuần này"
@@ -310,7 +343,12 @@ const AdminDashboard = () => {
                 color="orange"
                 navigateTo={`/${getUserRole()}/daily-health`}
               >
-                <p className="text-xs">{getAccidentComparison(summary.recentAccidents, summary.previousAccidents)}</p>
+                <p className="text-xs">
+                  {getAccidentComparison(
+                    summary.recentAccidents,
+                    summary.previousAccidents
+                  )}
+                </p>
               </SummaryCard>
               <SummaryCard
                 icon={<Thermometer className="w-5 h-5" />}
@@ -334,12 +372,21 @@ const AdminDashboard = () => {
               <SummaryCard
                 icon={<FileText className="w-5 h-5" />}
                 label="Đơn khai báo"
-                value={pendingRecords.pendingDiseaseRecords + pendingRecords.pendingVaccinationRecords}
-                noti={pendingRecords.pendingDiseaseRecords + pendingRecords.pendingVaccinationRecords}
+                value={
+                  pendingRecords.pendingDiseaseRecords +
+                  pendingRecords.pendingVaccinationRecords
+                }
+                noti={
+                  pendingRecords.pendingDiseaseRecords +
+                  pendingRecords.pendingVaccinationRecords
+                }
                 color="amber"
                 navigateTo={`/${getUserRole()}/DeclarationManagement`}
               >
-                <p className="text-xs">Bệnh: {pendingRecords.pendingDiseaseRecords} | Vaccine: {pendingRecords.pendingVaccinationRecords}</p>
+                <p className="text-xs">
+                  Bệnh: {pendingRecords.pendingDiseaseRecords} | Vaccine:{" "}
+                  {pendingRecords.pendingVaccinationRecords}
+                </p>
               </SummaryCard>
             </>
           )}
@@ -743,18 +790,26 @@ const AdminDashboard = () => {
 };
 
 const colorMap = {
-  blue: 'border-blue-500 text-black-500',
-  green: 'border-green-500 text-black-500',
-  purple: 'border-purple-500 text-black-500',
-  red: 'border-red-500 text-black-500',
-  indigo: 'border-indigo-500 text-black-500',
-  orange: 'border-orange-500 text-black-500',
-  amber: 'border-amber-500 text-black-500'
+  blue: "border-blue-500 text-black-500",
+  green: "border-green-500 text-black-500",
+  purple: "border-purple-500 text-black-500",
+  red: "border-red-500 text-black-500",
+  indigo: "border-indigo-500 text-black-500",
+  orange: "border-orange-500 text-black-500",
+  amber: "border-amber-500 text-black-500",
 };
 
-const SummaryCard = ({ icon, label, value, color, navigateTo, children, noti }) => {
+const SummaryCard = ({
+  icon,
+  label,
+  value,
+  color,
+  navigateTo,
+  children,
+  noti,
+}) => {
   const navigate = useNavigate();
-  const classes = colorMap[color] || 'border-black-500 text-black-500';
+  const classes = colorMap[color] || "border-black-500 text-black-500";
 
   return (
     <div
@@ -763,7 +818,9 @@ const SummaryCard = ({ icon, label, value, color, navigateTo, children, noti }) 
     >
       <div className="flex items-center justify-between w-full">
         <div className="space-y-0.5">
-          <p className="text-[10px] text-gray-500 font-medium leading-tight">{label}</p>
+          <p className="text-[10px] text-gray-500 font-medium leading-tight">
+            {label}
+          </p>
           <p className="text-lg font-bold text-gray-800">{value}</p>
           {children}
         </div>

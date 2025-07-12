@@ -82,7 +82,7 @@ const ParentCheckupLayout = () => {
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
             <button
               onClick={() => setActiveTab("plans")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex cursor-pointer items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeTab === "plans"
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -93,7 +93,7 @@ const ParentCheckupLayout = () => {
             </button>
             <button
               onClick={() => setActiveTab("history")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex cursor-pointer  items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeTab === "history"
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -104,7 +104,7 @@ const ParentCheckupLayout = () => {
             </button>
             <button
               onClick={() => setActiveTab("dashboard")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex  cursor-pointer items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeTab === "dashboard"
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"

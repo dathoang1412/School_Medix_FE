@@ -54,6 +54,7 @@ import StudentOverview from "../pages/Student/StudentOverview";
 import UpdateVaccineCampaign from "../pages/Admin/VaccineCampaign/UpdateVaccineCampaign";
 import VaccineForStudentEligible from "../pages/Admin&Nurse/VaccineManagement/VaccineForStudentEligible";
 import Profile from "../pages/Profile/Profile";
+import AboutSchoolMedix from "../pages/Admin/AboutSchoolMedix/AboutSchoolMedix";
 
 const routes = createBrowserRouter([
   {
@@ -95,6 +96,10 @@ const routes = createBrowserRouter([
       {
         path: "/profile",
         element: <Profile/>
+      },
+      {
+        path: "/about",
+        element: <AboutSchoolMedix/>
       }
     ],
   },

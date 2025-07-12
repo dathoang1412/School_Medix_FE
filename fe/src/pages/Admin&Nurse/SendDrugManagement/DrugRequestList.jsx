@@ -1,14 +1,38 @@
 import React, { useState, useEffect } from "react";
-import { FileText, User, Pill, Activity, CheckCircle, Eye, Trash2, XCircle, TicketCheck, X, Calendar, Stethoscope, Loader2 } from "lucide-react";
+import {
+  FileText,
+  User,
+  Pill,
+  Activity,
+  CheckCircle,
+  Eye,
+  Trash2,
+  XCircle,
+  TicketCheck,
+  X,
+  Calendar,
+  Stethoscope,
+  Loader2,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getUserRole } from "../../../service/authService";
-import { enqueueSnackbar } from "notistack";
+import { useSnackbar } from "notistack";
 
-const DrugRequestList = ({ drugs = [], handleAccept, handleRefuse, handleCancel, handleReceive, handleDone }) => {
+const DrugRequestList = ({
+  drugs = [],
+  handleAccept,
+  handleRefuse,
+  handleCancel,
+  handleReceive,
+  handleDone,
+}) => {
   const [selectedDrug, setSelectedDrug] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false); // Explicit loading state
+  const [error, setError] = useState(null); // Error state for actions
   const recordsPerPage = 10;
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
   // Prevent outer page scrolling when modal is open
   useEffect(() => {
@@ -25,12 +49,16 @@ const DrugRequestList = ({ drugs = [], handleAccept, handleRefuse, handleCancel,
   // Format date to DD/MM/YYYY
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    } catch {
+      return "N/A";
+    }
   };
 
   // Open modal
@@ -69,11 +97,38 @@ const DrugRequestList = ({ drugs = [], handleAccept, handleRefuse, handleCancel,
     return `${String(studentId).padStart(6, "0")}`;
   };
 
+  // Handle actions with loading and error states
+  const handleAction = async (action, id, actionName) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await action(id);
+      enqueueSnackbar(`${actionName} thành công!`, { variant: "success" });
+    } catch (err) {
+      console.error(`Error during ${actionName}:`, err);
+      enqueueSnackbar(`Lỗi khi ${actionName.toLowerCase()}: ${err.message}`, {
+        variant: "error",
+      });
+      setError(`Lỗi khi ${actionName.toLowerCase()}. Vui lòng thử lại.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Pagination
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = drugs.slice(indexOfFirstRecord, indexOfLastRecord);
   const totalPages = Math.ceil(drugs.length / recordsPerPage);
+
+  // Reset page if current page is out of bounds
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (currentPage < 1 && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [drugs, currentPage, totalPages]);
 
   // Enhanced Drug request detail component
   const DrugRequestInfo = ({ drug }) => (
@@ -232,263 +287,269 @@ const DrugRequestList = ({ drugs = [], handleAccept, handleRefuse, handleCancel,
   );
 
   return (
-    <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-      {/* Loading State */}
-      {drugs.length === 0 ? (
-        <div className="text-center py-12">
-          <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
-          <p className="text-gray-500 text-sm mt-2">Đang tải danh sách đơn thuốc...</p>
-        </div>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <FileText size={14} />
-                      Mã Đơn
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <User size={14} />
-                      Mã Học Sinh
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <User size={14} />
-                      Họ Tên
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <User size={14} />
-                      Lớp
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <Pill size={14} />
-                      Tên Thuốc
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <Activity size={14} />
-                      Chẩn Đoán
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Trạng Thái
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Hoàn Thành
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Thao Tác
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentRecords.length === 0 ? (
-                  <tr>
-                    <td colSpan="9" className="px-6 py-12 text-center">
-                      <FileText size={40} className="mx-auto text-gray-400 mb-4" />
-                      <p className="text-gray-500 text-lg">Không tìm thấy đơn thuốc phù hợp.</p>
-                      <p className="text-gray-400 text-sm mt-2">Thử điều chỉnh bộ lọc hoặc thêm đơn thuốc mới</p>
-                    </td>
-                  </tr>
-                ) : (
-                  currentRecords.map((drug) => (
-                    <tr key={drug.id} className="hover:bg-gray-50 transition-colors duration-200">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-900">#{drug.id}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-900">{getStudentDisplay(drug.student_id)}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => navigate(`/${getUserRole()}/student-overview/${drug.student_id}`)}
-                          className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
-                        >
-                          {drug.student_name || "N/A"}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-900">{drug.class_name || "N/A"}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-gray-900">{drug?.request_items?.[0]?.name || "Không có dữ liệu"}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-gray-900">{drug?.diagnosis || "Không có mô tả"}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(drug.status)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        {drug.status === "RECEIVED" && (
-                          <button
-                            onClick={() => handleDone(drug.id)}
-                            className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
-                            title="Đánh dấu hoàn thành"
-                          >
-                            <CheckCircle size={18} />
-                          </button>
-                        )}
-                        {drug.status === "DONE" && (
-                          <div className="flex justify-center">
-                            <CheckCircle size={18} className="text-green-600" title="Đã hoàn thành" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
-                            onClick={() => handleView(drug)}
-                            title="Xem chi tiết"
-                          >
-                            <Eye size={18} />
-                          </button>
-                          {drug.status === "PROCESSING" && (
-                            <>
-                              <button
-                                className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors duration-200"
-                                onClick={() => handleAccept(drug.id)}
-                                title="Chấp nhận"
-                              >
-                                <CheckCircle size={18} />
-                              </button>
-                              <button
-                                className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200"
-                                onClick={() => handleRefuse(drug.id)}
-                                title="Từ chối"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </>
-                          )}
-                          {drug.status === "ACCEPTED" && (
-                            <button
-                              className="text-purple-600 hover:text-purple-800 p-1 rounded hover:bg-purple-50 transition-colors duration-200"
-                              onClick={() => handleReceive(drug.id)}
-                              title="Nhận thuốc"
-                            >
-                              <TicketCheck size={18} />
-                            </button>
-                          )}
-                          {!["RECEIVED", "DONE", "CANCELLED", "REFUSED"].includes(drug.status) && (
-                            <button
-                              className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-50 transition-colors duration-200"
-                              onClick={() => handleCancel(drug.id)}
-                              title="Hủy đơn"
-                            >
-                              <XCircle size={18} />
-                            </button>
-                          )}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+
+        <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+          {/* Loading State */}
+          {loading ? (
+            <div className="text-center py-12">
+              <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
+              <p className="text-gray-500 text-sm mt-2">Đang xử lý...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <XCircle className="w-8 h-8 mx-auto text-red-500" />
+              <p className="text-gray-500 text-sm mt-2">{error}</p>
+            </div>
+          ) : drugs.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy đơn thuốc</h3>
+              <p className="text-gray-600">Hiện tại không có đơn thuốc nào phù hợp với bộ lọc.</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <FileText size={14} />
+                          Mã Đơn
                         </div>
-                      </td>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <User size={14} />
+                          Mã Học Sinh
+                        </div>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <User size={14} />
+                          Họ Tên
+                        </div>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <User size={14} />
+                          Lớp
+                        </div>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Pill size={14} />
+                          Tên Thuốc
+                        </div>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Activity size={14} />
+                          Chẩn Đoán
+                        </div>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Trạng Thái
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Hoàn Thành
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Thao Tác
+                      </th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Enhanced Modal */}
-          {selectedDrug && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-                {/* Modal Header */}
-                <div className="bg-white border-b border-gray-200 p-6 flex justify-between items-center">
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Chi tiết đơn thuốc</h2>
-                    <p className="text-gray-500 text-sm mt-1">Thông tin chi tiết về đơn thuốc #{selectedDrug.id}</p>
-                  </div>
-                  <button
-                    onClick={handleCloseModal}
-                    className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-
-                {/* Modal Content */}
-                <div className="p-6 max-h-[calc(90vh-180px)] overflow-y-auto">
-                  <DrugRequestInfo drug={selectedDrug} />
-                </div>
-
-                {/* Modal Footer */}
-                <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
-                  <button
-                    onClick={handleCloseModal}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-sm"
-                  >
-                    Đóng
-                  </button>
-                </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {currentRecords.map((drug) => (
+                      <tr key={drug.id} className="hover:bg-gray-50 transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-medium text-gray-900">#{drug.id}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-medium text-gray-900">{getStudentDisplay(drug.student_id)}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => navigate(`/${getUserRole()}/student-overview/${drug.student_id}`)}
+                            className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                          >
+                            {drug.student_name || "N/A"}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-900">{drug.class_name || "N/A"}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-gray-900">{drug?.request_items?.[0]?.name || "Không có dữ liệu"}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-gray-900">{drug?.diagnosis || "Không có mô tả"}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(drug.status)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          {drug.status === "RECEIVED" && (
+                            <button
+                              onClick={() => handleAction(handleDone, drug.id, "Đánh dấu hoàn thành")}
+                              className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
+                              title="Đánh dấu hoàn thành"
+                            >
+                              <CheckCircle size={18} />
+                            </button>
+                          )}
+                          {drug.status === "DONE" && (
+                            <div className="flex justify-center">
+                              <CheckCircle size={18} className="text-green-600" title="Đã hoàn thành" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
+                              onClick={() => handleView(drug)}
+                              title="Xem chi tiết"
+                            >
+                              <Eye size={18} />
+                            </button>
+                            {drug.status === "PROCESSING" && (
+                              <>
+                                <button
+                                  className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors duration-200"
+                                  onClick={() => handleAction(handleAccept, drug.id, "Chấp nhận")}
+                                  title="Chấp nhận"
+                                >
+                                  <CheckCircle size={18} />
+                                </button>
+                                <button
+                                  className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200"
+                                  onClick={() => handleAction(handleRefuse, drug.id, "Từ chối")}
+                                  title="Từ chối"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </>
+                            )}
+                            {drug.status === "ACCEPTED" && (
+                              <button
+                                className="text-purple-600 hover:text-purple-800 p-1 rounded hover:bg-purple-50 transition-colors duration-200"
+                                onClick={() => handleAction(handleReceive, drug.id, "Nhận thuốc")}
+                                title="Nhận thuốc"
+                              >
+                                <TicketCheck size={18} />
+                              </button>
+                            )}
+                            {!["RECEIVED", "DONE", "CANCELLED", "REFUSED"].includes(drug.status) && (
+                              <button
+                                className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-50 transition-colors duration-200"
+                                onClick={() => handleAction(handleCancel, drug.id, "Hủy đơn")}
+                                title="Hủy đơn"
+                              >
+                                <XCircle size={18} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
-          )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="bg-white px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="text-sm text-gray-700">
-                Hiển thị <span className="font-medium">{indexOfFirstRecord + 1}</span> đến{" "}
-                <span className="font-medium">{Math.min(indexOfLastRecord, drugs.length)}</span> trong tổng số{" "}
-                <span className="font-medium">{drugs.length}</span> đơn thuốc
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
-                >
-                  Trước
-                </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    return (
+              {/* Enhanced Modal */}
+              {selectedDrug && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                    {/* Modal Header */}
+                    <div className="bg-white border-b border-gray-200 p-6 flex justify-between items-center">
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">Chi tiết đơn thuốc</h2>
+                        <p className="text-gray-500 text-sm mt-1">Thông tin chi tiết về đơn thuốc #{selectedDrug.id}</p>
+                      </div>
                       <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-2 text-sm rounded-lg transition-colors duration-200 ${
-                          currentPage === pageNum
-                            ? "bg-blue-600 text-white"
-                            : "border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
+                        onClick={handleCloseModal}
+                        className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
                       >
-                        {pageNum}
+                        <X size={20} />
                       </button>
-                    );
-                  })}
+                    </div>
+
+                    {/* Modal Content */}
+                    <div className="p-6 max-h-[calc(90vh-180px)] overflow-y-auto">
+                      <DrugRequestInfo drug={selectedDrug} />
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
+                      <button
+                        onClick={handleCloseModal}
+                        className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-sm"
+                      >
+                        Đóng
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
-                >
-                  Sau
-                </button>
-              </div>
-            </div>
+              )}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="bg-white px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                  <div className="text-sm text-gray-700">
+                    Hiển thị <span className="font-medium">{indexOfFirstRecord + 1}</span> đến{" "}
+                    <span className="font-medium">{Math.min(indexOfLastRecord, drugs.length)}</span> trong tổng số{" "}
+                    <span className="font-medium">{drugs.length}</span> đơn thuốc
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      Trước
+                    </button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`px-3 py-2 text-sm rounded-lg transition-colors duration-200 ${
+                              currentPage === pageNum
+                                ? "bg-blue-600 text-white"
+                                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      Sau
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 };
