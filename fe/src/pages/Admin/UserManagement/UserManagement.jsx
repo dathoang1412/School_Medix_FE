@@ -472,21 +472,21 @@ const UserManagement = () => {
         <div className="flex gap-1">
           <button
             onClick={() => handleViewDetail(state.activeTab, user.id)}
-            className="p-1 text-gray-500 hover:text-blue-600 rounded"
+            className="p-1 text-gray-500 hover:text-blue-600 rounded cursor-pointer"
             title="Xem chi tiết"
           >
             <Eye size={14} />
           </button>
           <button
             onClick={() => handleEditUser(user)}
-            className="p-1 text-gray-500 hover:text-green-600 rounded"
+            className="p-1 text-gray-500 hover:text-green-600 rounded cursor-pointer"
             title="Chỉnh sửa"
           >
             <Edit2 size={14} />
           </button>
           <button
             onClick={() => updateState({ showDeleteModal: [user] })}
-            className="p-1 text-gray-500 hover:text-red-600 rounded"
+            className="p-1 text-gray-500 hover:text-red-600 rounded cursor-pointer"
             title="Xóa"
           >
             <Trash2 size={14} />
@@ -513,11 +513,13 @@ const UserManagement = () => {
         <div className="flex justify-end gap-2 mb-6">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm"
+            className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm cursor-pointer"
           >
             <Download size={14} /> Xuất CSV
           </button>
-          <label className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer text-sm">
+          <label
+            className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer text-sm"
+          >
             <Upload size={14} /> Nhập CSV
             <input
               type="file"
@@ -528,14 +530,14 @@ const UserManagement = () => {
           </label>
           <button
             onClick={handleGetImportSample}
-            className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm"
+            className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm cursor-pointer"
           >
             <Download size={14} /> File nhập mẫu
           </button>
           <button
             onClick={handleRefresh}
             disabled={state.isRefreshing}
-            className={`flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm ${
+            className={`flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm cursor-pointer ${
               state.isRefreshing ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
@@ -571,7 +573,7 @@ const UserManagement = () => {
             <button
               key={tab.key}
               onClick={() => updateState({ activeTab: tab.key })}
-              className={`p-3 bg-white border rounded-lg text-left ${
+              className={`p-3 bg-white border rounded-lg text-left cursor-pointer ${
                 state.activeTab === tab.key
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200"
@@ -639,7 +641,7 @@ const UserManagement = () => {
               <button
                 onClick={handleSendInvites}
                 disabled={state.isSendingInvites}
-                className={`flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm ${
+                className={`flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm cursor-pointer ${
                   state.isSendingInvites ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >
@@ -660,7 +662,7 @@ const UserManagement = () => {
               onClick={() =>
                 navigate(`/${getUserRole()}/create/${state.activeTab}`)
               }
-              className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+              className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm cursor-pointer"
             >
               <Plus size={14} /> Thêm {activeTabData.label}
             </button>
@@ -684,7 +686,7 @@ const UserManagement = () => {
                 onClick={() =>
                   navigate(`/${getUserRole()}/create/${state.activeTab}`)
                 }
-                className="mt-4 px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                className="mt-4 px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm cursor-pointer"
               >
                 Thêm {activeTabData.label}
               </button>
@@ -719,7 +721,7 @@ const UserManagement = () => {
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => updateState({ showDetailModal: false })}
-                  className="px-4 py-1.5 bg-gray-200 rounded-md hover:bg-gray-300 text-sm"
+                  className="px-4 py-1.5 bg-gray-200 rounded-md hover:bg-gray-300 text-sm cursor-pointer"
                 >
                   Đóng
                 </button>

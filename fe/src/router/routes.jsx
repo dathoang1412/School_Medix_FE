@@ -53,6 +53,7 @@ import ParentCheckupLayout from "../pages/Parent/RegularCheckup/ParentCheckupLay
 import StudentOverview from "../pages/Student/StudentOverview";
 import UpdateVaccineCampaign from "../pages/Admin/VaccineCampaign/UpdateVaccineCampaign";
 import VaccineForStudentEligible from "../pages/Admin&Nurse/VaccineManagement/VaccineForStudentEligible";
+import Profile from "../pages/Profile/Profile";
 
 const routes = createBrowserRouter([
   {
@@ -91,6 +92,10 @@ const routes = createBrowserRouter([
         path: "/blog/:id",
         element: <ShowBlog />,
       },
+      {
+        path: "/profile",
+        element: <Profile/>
+      }
     ],
   },
   {

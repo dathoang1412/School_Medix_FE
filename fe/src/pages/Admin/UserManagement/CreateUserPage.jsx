@@ -76,7 +76,7 @@ const CreateUserPage = () => {
         <div className="mb-8">
           <button
             onClick={() => navigate("/admin/user-manage")}
-            className={`inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 mb-4 ${
+            className={`cursor-pointer inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 mb-4 ${
               loading.formSubmit || loading.imageUpload
                 ? "opacity-50 cursor-not-allowed"
                 : ""
@@ -86,7 +86,7 @@ const CreateUserPage = () => {
             <ArrowLeft size={16} />
             Quay lại
           </button>
-          <div className="border-b border-gray-200 pb-4">
+          <div className="border-b cursor-pointer border-gray-200 pb-4">
             <h1 className="text-xl font-medium text-gray-900">
               Thêm {role} mới
             </h1>
@@ -138,7 +138,7 @@ const CreateUserPage = () => {
                         }
                       }}
                       disabled={loading.imageUpload || loading.formSubmit}
-                      className={`block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 ${
+                      className={`block cursor-pointer w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 ${
                         loading.imageUpload || loading.formSubmit
                           ? "opacity-50 cursor-not-allowed"
                           : ""
@@ -414,7 +414,7 @@ const CreateUserPage = () => {
               <button
                 type="button"
                 onClick={() => navigate("/admin/user-manage")}
-                className={`px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 ${
+                className={`px-4 cursor-pointer py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 ${
                   loading.formSubmit || loading.imageUpload
                     ? "opacity-50 cursor-not-allowed"
                     : ""
@@ -425,7 +425,7 @@ const CreateUserPage = () => {
               </button>
               <button
                 type="submit"
-                className={`flex items-center px-4 py-2 text-sm text-white rounded-md ${
+                className={`flex cursor-pointer items-center px-4 py-2 text-sm text-white rounded-md ${
                   loading.formSubmit || loading.imageUpload
                     ? "bg-blue-400 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700"

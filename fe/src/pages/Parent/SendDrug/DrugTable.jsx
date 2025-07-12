@@ -466,15 +466,15 @@ const DrugTable = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
-                              className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
+                              className="cursor-pointer text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
                               onClick={() => handleView(drug)}
                               title="Xem chi tiết"
                             >
                               <Eye size={18} />
                             </button>
-                            {getUserRole() === "parent" && (
+                            {(getUserRole() === "parent" && drug.status === "PROCESSING") && (
                               <button
-                                className={`p-1 rounded transition-colors duration-200 ${
+                                className={`p-1 cursor-pointer rounded transition-colors duration-200 ${
                                   userRole === "parent"
                                     ? "text-green-600 hover:text-green-800 hover:bg-green-50"
                                     : "text-gray-400 cursor-not-allowed"

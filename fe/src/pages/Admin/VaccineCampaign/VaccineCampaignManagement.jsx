@@ -15,6 +15,7 @@ import {
   Loader2,
   Send,
   Pencil,
+  Syringe,
 } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { getUserRole } from "../../../service/authService";
@@ -53,7 +54,9 @@ const VaccineCampaignManagement = () => {
     } catch (err) {
       setError("Không thể tải danh sách chiến dịch tiêm chủng");
       console.error("Error fetching campaigns:", err);
-      enqueueSnackbar("Không thể tải danh sách chiến dịch", { variant: "error" });
+      enqueueSnackbar("Không thể tải danh sách chiến dịch", {
+        variant: "error",
+      });
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -90,10 +93,17 @@ const VaccineCampaignManagement = () => {
         ? axiosClient.post(endpoint)
         : axiosClient.patch(endpoint));
       await fetchCampaigns();
-      enqueueSnackbar(response?.data.message || "Thành công!", { variant: "info" });
+      enqueueSnackbar(response?.data.message || "Thành công!", {
+        variant: "info",
+      });
     } catch (error) {
-      console.error(`Error performing ${action} on campaign ${campaignId}:`, error);
-      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", { variant: "error" });
+      console.error(
+        `Error performing ${action} on campaign ${campaignId}:`,
+        error
+      );
+      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", {
+        variant: "error",
+      });
     } finally {
       setLoadingActions((prev) => ({ ...prev, [campaignId]: false }));
     }
@@ -150,7 +160,9 @@ const VaccineCampaignManagement = () => {
           </button>,
           <button
             key="edit"
-            onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/edit`)}
+            onClick={() =>
+              navigate(`/admin/vaccine-campaign/${campaignId}/edit`)
+            }
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Pencil className="w-4 h-4" />
@@ -183,7 +195,9 @@ const VaccineCampaignManagement = () => {
           </button>,
           <button
             key="view-register-list"
-            onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
+            onClick={() =>
+              navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)
+            }
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
@@ -216,7 +230,9 @@ const VaccineCampaignManagement = () => {
           </button>,
           <button
             key="view-register-list"
-            onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
+            onClick={() =>
+              navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)
+            }
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
@@ -249,7 +265,9 @@ const VaccineCampaignManagement = () => {
           </button>,
           <button
             key="view-register-list"
-            onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
+            onClick={() =>
+              navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)
+            }
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
@@ -268,7 +286,9 @@ const VaccineCampaignManagement = () => {
           </button>,
           <button
             key="view-register-list"
-            onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
+            onClick={() =>
+              navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)
+            }
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
@@ -279,7 +299,9 @@ const VaccineCampaignManagement = () => {
         buttons.push(
           <button
             key="view-register-list"
-            onClick={() => navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)}
+            onClick={() =>
+              navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)
+            }
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
@@ -292,7 +314,9 @@ const VaccineCampaignManagement = () => {
         buttons.push(
           <button
             key="view-register-list"
-            onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
+            onClick={() =>
+              navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)
+            }
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
@@ -324,7 +348,9 @@ const VaccineCampaignManagement = () => {
           </button>,
           <button
             key="view-register-list"
-            onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
+            onClick={() =>
+              navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)
+            }
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
@@ -336,7 +362,9 @@ const VaccineCampaignManagement = () => {
         buttons.push(
           <button
             key="view-register-list"
-            onClick={() => navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)}
+            onClick={() =>
+              navigate(`/nurse/vaccine-campaign/${campaignId}/register-list`)
+            }
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <Users className="w-4 h-4" />
@@ -460,7 +488,8 @@ const VaccineCampaignManagement = () => {
             {
               status: "PREPARING",
               label: "Chuẩn bị",
-              count: campaignList.filter((c) => c.status === "PREPARING").length,
+              count: campaignList.filter((c) => c.status === "PREPARING")
+                .length,
             },
             {
               status: "UPCOMING",
@@ -475,12 +504,14 @@ const VaccineCampaignManagement = () => {
             {
               status: "COMPLETED",
               label: "Hoàn thành",
-              count: campaignList.filter((c) => c.status === "COMPLETED").length,
+              count: campaignList.filter((c) => c.status === "COMPLETED")
+                .length,
             },
             {
               status: "CANCELLED",
               label: "Đã hủy",
-              count: campaignList.filter((c) => c.status === "CANCELLED").length,
+              count: campaignList.filter((c) => c.status === "CANCELLED")
+                .length,
             },
           ].map(({ status, label, count }) => (
             <div
@@ -489,8 +520,12 @@ const VaccineCampaignManagement = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">{label}</p>
-                  <p className="text-2xl font-semibold text-slate-900">{count}</p>
+                  <p className="text-sm font-medium text-slate-600 mb-1">
+                    {label}
+                  </p>
+                  <p className="text-2xl font-semibold text-slate-900">
+                    {count}
+                  </p>
                 </div>
                 <div className={`p-2 rounded-lg ${getStatusColor(status)}`}>
                   {getStatusIcon(status)}
@@ -527,7 +562,9 @@ const VaccineCampaignManagement = () => {
                     </h3>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <span className="text-sm text-slate-500 font-medium">Chi tiết</span>
+                    <span className="text-sm text-slate-500 font-medium">
+                      Chi tiết
+                    </span>
                     {expandedItems[campaign.campaign_id] ? (
                       <ChevronUp className="w-5 h-5 text-slate-400" />
                     ) : (
@@ -582,15 +619,27 @@ const VaccineCampaignManagement = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start space-x-4">
+                      <div
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          navigate(
+                            `/${getUserRole()}/vaccine/${
+                              campaign.vaccine_id
+                            }/students`
+                          );
+                        }}
+                        className="group flex cursor-pointer items-start space-x-4"
+                      >
                         <div className="p-2 bg-violet-100 rounded-lg">
-                          <Users className="w-5 h-5 text-violet-600" />
+                          <Syringe className="w-5 h-5 text-violet-600" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-slate-700 mb-1">
+                          <p className="text-sm font-medium text-slate-700 group-hover:text-blue-600 mb-1">
                             Vaccine
                           </p>
-                          <p className="text-base text-slate-900">{campaign.vaccine_name}</p>
+                          <p className="text-base text-slate-900 group-hover:text-blue-600">
+                            {campaign.vaccine_name}
+                          </p>
                         </div>
                       </div>
                     </div>

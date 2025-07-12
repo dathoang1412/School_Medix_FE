@@ -629,7 +629,7 @@ const AdminDashboard = () => {
           </ChartCard>
 
           <ChartCard
-            title="Thống kê dịch bệnh theo năm"
+            title="Thống kê ca bệnh theo năm"
             icon={<Shield className="w-5 h-5 text-gray-600" />}
             select={
               <select

@@ -258,7 +258,7 @@ const ParentDashboard = () => {
                       <a
                         key={index}
                         onClick={() => {navigate(service.path)}}
-                        className="group block p-6 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-200"
+                        className="group cursor-pointer block p-6 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-200"
                       >
                         <div className="flex items-start space-x-4">
                           <div className="flex-shrink-0">

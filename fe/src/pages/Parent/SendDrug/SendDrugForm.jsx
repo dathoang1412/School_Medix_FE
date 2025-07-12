@@ -424,7 +424,7 @@ const SendDrugForm = () => {
                       multiple
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium file:hover:bg-blue-100"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium file:hover:bg-blue-100 file:cursor-pointer"
                     />
                   </div>
                   {previews.length > 0 && (
@@ -441,7 +441,7 @@ const SendDrugForm = () => {
                             <button
                               type="button"
                               onClick={() => handleRemoveFile(index)}
-                              className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                              className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
                               title="Xóa ảnh"
                             >
                               <X className="w-4 h-4" />
@@ -474,7 +474,7 @@ const SendDrugForm = () => {
                 <button
                   type="button"
                   onClick={handleAddRequestItem}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Thêm thuốc
@@ -490,7 +490,7 @@ const SendDrugForm = () => {
                         <button
                           type="button"
                           onClick={() => handleRemoveRequestItem(index)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 cursor-pointer"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -544,7 +544,7 @@ const SendDrugForm = () => {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveIntakeTime(index, timeIndex)}
-                                className="text-red-600 hover:text-red-800"
+                                className="text-red-600 hover:text-red-800 cursor-pointer"
                               >
                                 <X className="w-4 h-4" />
                               </button>
@@ -553,7 +553,7 @@ const SendDrugForm = () => {
                           <button
                             type="button"
                             onClick={() => handleAddIntakeTime(index)}
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100"
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
                           >
                             <Plus className="w-4 h-4 mr-2" />
                             Thêm thời gian uống
@@ -576,14 +576,14 @@ const SendDrugForm = () => {
               <button
                 type="button"
                 onClick={() => navigate(`/parent/edit/${currChild.id}/drug-table`)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer"
               >
                 Hủy
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || userRole !== "parent"}
-                className={`px-4 py-2 text-sm font-medium text-white rounded-md border border-transparent flex items-center gap-2 transition-colors duration-200 ${
+                className={`px-4 py-2 text-sm font-medium text-white rounded-md border border-transparent flex items-center gap-2 transition-colors duration-200 cursor-pointer ${
                   isSubmitting || userRole !== "parent"
                     ? "bg-blue-400 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700"

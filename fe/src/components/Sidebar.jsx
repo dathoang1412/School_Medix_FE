@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { MdOutlineSchool, MdOutlineMedicalInformation, MdMedicationLiquid } from "react-icons/md";
+import {
+  MdOutlineSchool,
+  MdOutlineMedicalInformation,
+  MdMedicationLiquid,
+} from "react-icons/md";
 import { RiHome9Line } from "react-icons/ri";
 import { BsTextIndentLeft } from "react-icons/bs";
 import { LuLayoutDashboard, LuNewspaper, LuSyringe } from "react-icons/lu";
@@ -66,7 +70,9 @@ const Sidebar = () => {
     const role = getUserRole();
     if (role === "admin") {
       setAdminItems((prev) => {
-        const hasUserManagement = prev.some((item) => item.title === "Quản lý người dùng");
+        const hasUserManagement = prev.some(
+          (item) => item.title === "Quản lý người dùng"
+        );
         if (!hasUserManagement) {
           return [
             ...prev,
@@ -164,11 +170,13 @@ const Sidebar = () => {
   ]);
 
   const bottomItems = [
-    {
+    { 
+      action: "profile",
       title: getUserRole().toString().toUpperCase(),
-      action: "",
       icon: (
-        <div className="w-8 h-8 rounded-full overflow-hidden shadow-sm border-2 border-blue-200 flex-shrink-0">
+        <div
+          className="w-8 h-8 rounded-full overflow-hidden shadow-sm border-2 border-blue-200 flex-shrink-0"
+        >
           {userData?.profile_img_url ? (
             <img
               src={userData.profile_img_url}
@@ -215,6 +223,8 @@ const Sidebar = () => {
         variant: "success",
       });
       navigate("/");
+    }else if (action === "profile"){
+      navigate('/profile')
     }
   };
 
@@ -236,7 +246,9 @@ const Sidebar = () => {
     const isActive = activeItem === item.title;
     const hasDropdown = item.hasDropdown && !isCollapsed;
     const isExpanded = expandedDropdowns[item.title];
-    const hasActiveChild = item.children?.some((child) => activeItem === child.title);
+    const hasActiveChild = item.children?.some(
+      (child) => activeItem === child.title
+    );
     const shouldHighlightParent = isActive || hasActiveChild;
 
     return (
@@ -250,7 +262,7 @@ const Sidebar = () => {
             }
           }}
           className={`
-            w-full flex items-center gap-3 p-3 rounded-xl text-left 
+            w-full cursor-pointer flex items-center gap-3 p-3 rounded-xl text-left 
             transition-all duration-300 ease-out group relative
             transform hover:scale-[1.02] active:scale-[0.98]
             ${
@@ -397,16 +409,18 @@ const Sidebar = () => {
         {/* Bottom Actions */}
         <div className="p-2 border-t border-gray-100 bg-gray-50/50">
           <div className="space-y-1">
-            {bottomItems.map((item) => (
+            {bottomItems.map((item, index) => (
               <button
                 key={item.title}
                 onClick={() => handleAction(item.action)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl text-left text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-300 ease-out group transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-sm"
+                className="w-full flex items-center cursor-pointer gap-3 p-3 rounded-xl text-left text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-300 ease-out group transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-sm"
                 title={isCollapsed ? item.title : ""}
               >
                 <div className="flex-shrink-0">{item.icon}</div>
                 {!isCollapsed && (
-                  <span className="font-medium text-sm truncate flex-1">{item.title}</span>
+                  <span className="font-medium text-sm truncate flex-1">
+                    {item.title}
+                  </span>
                 )}
               </button>
             ))}

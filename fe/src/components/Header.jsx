@@ -20,7 +20,7 @@ const Header = () => {
     { title: "Trang chủ", path: "/" },
     { title: "Dashboard", path: `/${userRole || 'admin'}` },
     { title: "Blog", path: "/blog" },
-    { title: "Tiêm chủng", path: "/vaccination" },
+    { title: "Profile", path: "/profile" },
     { title: "Kiểm tra y tế", path: "/health-check" },
   ];
 
@@ -114,7 +114,7 @@ const Header = () => {
                 <button
                   key={item.title}
                   onClick={() => handleNavigation(item.path)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                  className={`px-4 cursor-pointer py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                     isActive(item.path)
                       ? "bg-white text-blue-600 shadow-sm"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
@@ -147,7 +147,7 @@ const Header = () => {
                 <div className="flex items-center">
                   <button
                     onClick={handleUserClick}
-                    className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                    className="flex cursor-pointer items-center gap-2 px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden shadow-sm border-2 border-blue-200">
                       {user?.profile_img_url ? (
@@ -179,7 +179,7 @@ const Header = () => {
 
               {/* User Dropdown Menu */}
               {isLoggedIn && isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <div className="absolute cursor-pointer right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                   {/* User Info Header */}
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
@@ -215,7 +215,7 @@ const Header = () => {
                         <button
                           key={item.title}
                           onClick={() => item.action ? item.action() : handleNavigation(item.path)}
-                          className={`flex items-center gap-3 w-full px-4 py-2 text-left text-sm transition-colors duration-200 ${
+                          className={`flex cursor-pointer items-center gap-3 w-full px-4 py-2 text-left text-sm transition-colors duration-200 ${
                             item.variant === "danger"
                               ? "text-red-600 hover:bg-red-50"
                               : `text-gray-700 hover:bg-gray-50 ${
