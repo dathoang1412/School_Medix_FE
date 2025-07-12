@@ -64,7 +64,7 @@ const VaccineCampaignInfo = () => {
         }
         setCurrChild(child);
 
-        const campaignRes = await axiosClient.get("/vaccination-campaign");
+        const campaignRes = await axiosClient.get(`parent/${child.id}/vaccination-campaign`);
 
         let campaigns = campaignRes.data.data || [];
 
