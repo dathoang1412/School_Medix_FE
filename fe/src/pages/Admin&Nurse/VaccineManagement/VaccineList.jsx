@@ -78,7 +78,7 @@ const VaccineList = ({ vaccines, onEdit }) => {
                     <span className="text-sm text-gray-600">{vaccine.description}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-800">{vaccine.disease_name}</span>
+                    <span className="text-sm text-gray-800">{vaccine.diseases}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex justify-center gap-3">

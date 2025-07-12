@@ -416,19 +416,19 @@ const AdminDashboard = () => {
                       <p className="text-sm font-semibold text-gray-700">
                         Kế hoạch trong 30 ngày tới
                       </p>
-                      <p className="text-sm text-gray-600">
+                      {/* <p className="text-sm text-gray-600">
                         Vaccine: {planStats.vaccineCount} | Khám định kỳ:{" "}
                         {planStats.regularCount}
-                      </p>
+                      </p> */}
                     </div>
                     <div className="flex space-x-2">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         <Stethoscope className="w-4 h-4 mr-1" />
-                        Khám định kỳ
+                        Khám định kỳ: {planStats.regularCount}
                       </span>
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
                         <Syringe className="w-4 h-4 mr-1" />
-                        Vaccine
+                        Vaccine: {planStats.vaccineCount}
                       </span>
                     </div>
                   </div>
