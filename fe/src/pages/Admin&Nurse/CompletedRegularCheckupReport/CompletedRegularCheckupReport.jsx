@@ -32,21 +32,6 @@ const CompletedRegularCheckupReport = () => {
     "Khám xâm lấn",
   ];
 
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data, error } = await getSession();
-      if (error || !data.session) {
-        enqueueSnackbar("Vui lòng đăng nhập để tiếp tục!", {
-          variant: "error",
-        });
-        navigate("/login");
-        return;
-      }
-      setIsAuthenticated(true);
-    };
-    checkAuth();
-  }, [navigate, enqueueSnackbar]);
 
   const fetchGeneralList = async () => {
     setLoading((prev) => ({ ...prev, general: true }));
@@ -86,11 +71,6 @@ const CompletedRegularCheckupReport = () => {
 
   // Handle individual record download
   const handleRecordDownload = async (recordUrl, registerId) => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để tải file!", { variant: "error" });
-      navigate("/login");
-      return;
-    }
 
     if (!recordUrl) {
       enqueueSnackbar("Không có file kết quả cho hồ sơ này!", {
