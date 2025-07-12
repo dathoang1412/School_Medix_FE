@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, X, Loader2, Image as ImageIcon } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
-import { getUserRole } from "../../../service/authService";
+import { getUser, getUserRole } from "../../../service/authService";
 import { getChildClass, getStudentInfo } from "../../../service/childenService";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate, useParams } from "react-router-dom";
@@ -43,6 +43,14 @@ const SendDrugForm = () => {
         }
         setUserRole(role);
 
+        const user = getUser();
+        if (!user?.id) {
+          setError("Không thể lấy thông tin người dùng. Vui lòng đăng nhập lại.");
+          setIsLoading(false);
+          return;
+        }
+        setCurrUser({ id: user.id, name: user.name || "Người dùng" });
+
         const child = await getStudentInfo(student_id);
         if (!child) {
           setError("Vui lòng chọn một học sinh để gửi đơn thuốc.");
@@ -54,8 +62,6 @@ const SendDrugForm = () => {
         const clas = await getChildClass();
         setChildClass(clas);
 
-        setCurrUser({ id: child.parent_id || "unknown", name: "Phụ huynh" });
-
         if (request_id) {
           try {
             const response = await axiosClient.get(`/send-drug-request/${request_id}`);
@@ -65,7 +71,7 @@ const SendDrugForm = () => {
             const requestData = response.data.data;
             setFormData({
               student_id: requestData.student_id || "",
-              create_by: requestData.create_by || child.parent_id || "",
+              create_by: user.id || requestData.create_by ,
               diagnosis: requestData.diagnosis || "",
               schedule_send_date: requestData.schedule_send_date ? requestData.schedule_send_date.split('T')[0] : "",
               intake_date: requestData.intake_date ? requestData.intake_date.split('T')[0] : "",
@@ -88,7 +94,7 @@ const SendDrugForm = () => {
           setFormData((prev) => ({
             ...prev,
             student_id: child.id || "",
-            create_by: child.parent_id || "",
+            create_by: user.id,
           }));
         }
       } catch (error) {
@@ -178,6 +184,7 @@ const SendDrugForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Drug form: ", formData);
 
     if (userRole !== "parent") {
       enqueueSnackbar("Chỉ phụ huynh mới có quyền gửi hoặc cập nhật đơn thuốc.", {
@@ -474,7 +481,9 @@ const SendDrugForm = () => {
                 <button
                   type="button"
                   onClick={handleAddRequestItem}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-7
+
+00 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Thêm thuốc
