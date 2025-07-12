@@ -17,7 +17,7 @@ const CompletedRegularCheckupReport = () => {
     download: {}, // Object to track download loading state for each record
     bulkDownload: false, // Loading state for bulk report download
   });
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated] = useState(false);
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [selectedPDFUrl, setSelectedPDFUrl] = useState(null);
   const { campaign_id } = useParams();

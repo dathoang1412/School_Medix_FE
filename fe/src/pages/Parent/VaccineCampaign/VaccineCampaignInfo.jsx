@@ -23,6 +23,7 @@ const VaccineCampaignInfo = () => {
   const { student_id } = useParams();
   const [campaignList, setCampaignList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false); // For cancel action
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState(null);
   const [historyView, setHistoryView] = useState(false);
@@ -89,7 +90,7 @@ const VaccineCampaignInfo = () => {
           }
         });
         const registerResults = await Promise.all(registerPromises);
-        console.log("VACCINE REGISTER LIST: ", registerResults)
+        console.log("VACCINE REGISTER LIST: ", registerResults);
         const newRegisterMap = registerResults.reduce(
           (acc, { campaign_id, isSurveyed }) => {
             acc[campaign_id] = { isSurveyed };
@@ -136,6 +137,33 @@ const VaccineCampaignInfo = () => {
     });
   };
 
+  const handleCancelRegistration = async (campaignId) => {
+    if (!currChild?.id) return;
+    setActionLoading(true);
+    try {
+      await axiosClient.delete(
+        `/student/${currChild.id}/vaccination-campaign/${campaignId}/register`
+      );
+      setRegisterMap((prev) => ({
+        ...prev,
+        [campaignId]: { isSurveyed: false },
+      }));
+      setCampaignList((prev) =>
+        prev.map((campaign) =>
+          campaign.campaign_id === campaignId
+            ? { ...campaign, isSurveyed: false }
+            : campaign
+        )
+      );
+      enqueueSnackbar("Hủy đăng ký thành công!", { variant: "success" });
+    } catch (error) {
+      console.error("Error cancelling registration:", error);
+      enqueueSnackbar("Lỗi khi hủy đăng ký!", { variant: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleViewDetails = (campaignId) => {
     navigate(`/parent/vaccination-campaign/${campaignId}`, {
       state: { from: location.pathname, childId: currChild?.id },
@@ -155,7 +183,7 @@ const VaccineCampaignInfo = () => {
     }
   };
 
-  const getCampaignStatus = (campaign, register = registerMap[campaign.campaign_id]) => {
+  const getCampaignStatus = (campaign) => {
     const currentDate = new Date();
     const status = campaign.status?.toUpperCase();
 
@@ -238,15 +266,15 @@ const VaccineCampaignInfo = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full text-center">
+        <div className="bg-white rounded-lg shadow-sm p-6 max-w-md w-full text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-800 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Lỗi tải dữ liệu
           </h3>
-          <p className="text-red-700 mb-6">{error}</p>
+          <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Thử lại
           </button>
@@ -258,19 +286,19 @@ const VaccineCampaignInfo = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">
             Hệ thống quản lý tiêm chủng
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 text-sm mt-1">
             {currChild?.name || "Học sinh"} - Danh sách chiến dịch tiêm chủng
           </p>
         </div>
         <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
           <button
             onClick={() => setHistoryView(false)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
               !historyView
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -281,7 +309,7 @@ const VaccineCampaignInfo = () => {
           </button>
           <button
             onClick={() => setHistoryView(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
               historyView
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -294,7 +322,7 @@ const VaccineCampaignInfo = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {historyView ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <VaccineRecordInfo />
@@ -327,7 +355,7 @@ const VaccineCampaignInfo = () => {
                           : "border-gray-200"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center gap-4 flex-1">
                           <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-50 rounded-lg">
@@ -384,17 +412,31 @@ const VaccineCampaignInfo = () => {
                             </button>
                             {statusInfo.canSurvey && (
                               <button
-                                onClick={() => handleSurvey(campaign.campaign_id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium ${
+                                onClick={() =>
                                   campaign.isSurveyed
-                                    ? "bg-yellow-500 hover:bg-yellow-600"
+                                    ? handleCancelRegistration(campaign.campaign_id)
+                                    : handleSurvey(campaign.campaign_id)
+                                }
+                                disabled={actionLoading}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors ${
+                                  campaign.isSurveyed
+                                    ? "bg-red-600 hover:bg-red-700"
                                     : "bg-blue-600 hover:bg-blue-700"
-                                } transition-colors`}
+                                } ${actionLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               >
-                                <ClipboardList className="w-4 h-4" />
-                                {campaign.isSurveyed
-                                  ? "Chỉnh sửa khảo sát"
-                                  : "Tham gia khảo sát"}
+                                {campaign.isSurveyed ? (
+                                  <>
+                                    <XCircle className="w-4 h-4" />
+                                    Hủy đăng ký
+                                  </>
+                                ) : (
+                                  <>
+                                    <ClipboardList className="w-4 h-4" />
+                                    {campaign.isSurveyed
+                                      ? "Chỉnh sửa khảo sát"
+                                      : "Tham gia khảo sát"}
+                                  </>
+                                )}
                               </button>
                             )}
                           </div>

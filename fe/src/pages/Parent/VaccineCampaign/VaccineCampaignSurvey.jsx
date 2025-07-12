@@ -55,7 +55,7 @@ const VaccineCampaignSurvey = () => {
       return;
     }
 
-    if (register.is_registered === "ACCEPTED") {
+    if (register.is_registered === true) {
       enqueueSnackbar("Đăng ký đã được chấp nhận trước đó", { variant: "warning" });
       return;
     }
@@ -89,7 +89,7 @@ const VaccineCampaignSurvey = () => {
       return;
     }
 
-    if (register.is_registered === "REFUSED") {
+    if (register.is_registered === false) {
       enqueueSnackbar("Đăng ký đã bị từ chối trước đó", { variant: "warning" });
       return;
     }
@@ -208,25 +208,25 @@ const VaccineCampaignSurvey = () => {
                 <div className="flex items-center">
                   <span
                     className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      register?.is_registered === "ACCEPTED"
+                      register?.is_registered === true
                         ? "bg-green-100 text-green-800"
-                        : register?.is_registered === "REFUSED"
+                        : register?.is_registered === false
                         ? "bg-red-100 text-red-800"
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
                     <div
                       className={`w-2 h-2 rounded-full mr-2 ${
-                        register?.is_registered === "ACCEPTED"
+                        register?.is_registered === true
                           ? "bg-green-400"
-                          : register?.is_registered === "REFUSED"
+                          : register?.is_registered === false
                           ? "bg-red-400"
                           : "bg-gray-400"
                       }`}
                     ></div>
-                    {register?.is_registered === "ACCEPTED"
+                    {register?.is_registered === true
                       ? "Đã chấp nhận"
-                      : register?.is_registered === "REFUSED"
+                      : register?.is_registered === false
                       ? "Đã từ chối"
                       : "Chưa đăng ký"}
                   </span>
@@ -270,7 +270,6 @@ const VaccineCampaignSurvey = () => {
                   type="checkbox"
                   checked={consentChecked}
                   onChange={(e) => setConsentChecked(e.target.checked)}
-                  disabled={register?.is_registered === "ACCEPTED" || register?.is_registered === "REFUSED"}
                   className="focus:ring-blue-500 h-5 w-5 text-blue-600 border-gray-300 rounded disabled:cursor-not-allowed"
                 />
               </div>
@@ -362,7 +361,7 @@ const VaccineCampaignSurvey = () => {
 
                 <button
                   onClick={handleAccept}
-                  disabled={!consentChecked || processing || register?.is_registered === "ACCEPTED"}
+                  disabled={!consentChecked || processing || register?.is_registered === true}
                   className="flex items-center justify-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed transition-colors shadow-md"
                 >
                   {processing ? (

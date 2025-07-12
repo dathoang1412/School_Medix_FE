@@ -139,14 +139,14 @@ const RegularCheckupSurvey = () => {
         navigate(`/parent/edit/${student_id}/regular-checkup`, { state: { childId: student_id } });
       }
     } catch (err) {
-      enqueueSnackbar("Không thể gửi đăng ký. Vui lòng thử lại.", { variant: "error" });
+      {err && enqueueSnackbar("Không thể gửi đăng ký. Vui lòng thử lại.", { variant: "error" })};
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleBack = () => {
-    const { from, childId } = location.state || {};
+    const { from } = location.state || {};
     const validFromRoutes = [
       "/parent/student-regular-checkup",
       `/parent/edit/${student_id}/regular-checkup`,
