@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useContext } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { Heart, Activity, Pill, Syringe, User2 } from "lucide-react";
 import { ChildContext } from "../../../layouts/ParentLayout";
 import axiosClient from "../../../config/axiosClient";
@@ -18,7 +18,16 @@ const ParentDashboardWrapper = () => {
   const [error, setError] = useState(null);
   const location = useLocation();
 
-  // Fetch children data
+  const [dashboardStats, setDashboardStats] = useState({
+    surveyVaccinationPending: 0,
+    surveyCheckupPending: 0,
+    dailyHealthRecordToday: 0,
+    drugSendPending: 0,
+    declareSendPending: 0,
+    sumNoti: 0
+  });
+
+  // Fetch children data and their notification counts
   useEffect(() => {
     const fetchChildren = async () => {
       const user = getUser();
@@ -30,7 +39,22 @@ const ParentDashboardWrapper = () => {
       setIsLoading(true);
       try {
         const res = await axiosClient.get(`/parent/${user?.id}`);
-        setChildren(res.data.data?.children || []);
+        const childrenData = res.data.data?.children || [];
+        
+        // Fetch notification stats for each child
+        const childrenWithNoti = await Promise.all(
+          childrenData.map(async (child) => {
+            try {
+              const response = await axiosClient.get(`/dashboard/${child.id}/parent-dashboard`);
+              return { ...child, sumNoti: response.data.data.sumNoti || 0 };
+            } catch (err) {
+              console.error(`Error fetching dashboard for child ${child.id}:`, err);
+              return { ...child, sumNoti: 0 };
+            }
+          })
+        );
+        
+        setChildren(childrenWithNoti);
       } catch (error) {
         console.error("Error fetching children:", error);
         setError("Không thể tải thông tin học sinh. Vui lòng thử lại sau.");
@@ -61,6 +85,22 @@ const ParentDashboardWrapper = () => {
     }
   }, [location.pathname, children, selectedChild]);
 
+  // Fetch dashboard stats for selected child
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      if (!selectedChild?.id) return;
+      
+      try {
+        const response = await axiosClient.get(`/dashboard/${selectedChild.id}/parent-dashboard`);
+        setDashboardStats(response.data.data);
+      } catch (err) {
+        console.error("Error fetching summary:", err);
+      }
+    };
+    
+    fetchDashboard();
+  }, [selectedChild?.id]);
+
   const handleSelectChild = useCallback((child) => {
     setSelectedChild(child);
     localStorage.setItem("selectedChild", JSON.stringify(child));
@@ -68,7 +108,7 @@ const ParentDashboardWrapper = () => {
 
   return (
     <ChildContext.Provider
-      value={{ children, selectedChild, handleSelectChild, isLoading, error }}
+      value={{ children, selectedChild, handleSelectChild, isLoading, error, dashboardStats }}
     >
       <ParentDashboard />
     </ChildContext.Provider>
@@ -77,7 +117,7 @@ const ParentDashboardWrapper = () => {
 
 // Main ParentDashboard component
 const ParentDashboard = () => {
-  const { children, selectedChild, handleSelectChild, isLoading, error } =
+  const { children, selectedChild, handleSelectChild, isLoading, error, dashboardStats } =
     useContext(ChildContext);
 
   const services = [
@@ -85,6 +125,9 @@ const ParentDashboard = () => {
       icon: <Syringe className="w-6 h-6 text-green-600" />,
       title: "Tiêm Chủng",
       description: "Theo dõi và cập nhật lịch tiêm chủng",
+      info: dashboardStats?.surveyVaccinationPending
+        ? `${dashboardStats.surveyVaccinationPending} đơn khảo sát chờ hoàn thành`
+        : null,
       path: selectedChild
         ? `/parent/edit/${selectedChild.id}/vaccine-info`
         : "#",
@@ -93,6 +136,9 @@ const ParentDashboard = () => {
       icon: <Heart className="w-6 h-6 text-red-600" />,
       title: "Khám sức khỏe định kỳ",
       description: "Lịch khám và kết quả khám định kỳ",
+      info: dashboardStats?.surveyCheckupPending
+        ? `${dashboardStats.surveyCheckupPending} đơn khảo sát chờ hoàn thành`
+        : null,
       path: selectedChild
         ? `/parent/edit/${selectedChild.id}/regular-checkup`
         : "#",
@@ -101,6 +147,9 @@ const ParentDashboard = () => {
       icon: <Activity className="w-6 h-6 text-blue-600" />,
       title: "Sức khỏe hằng ngày",
       description: "Các khảo sát về tình trạng sức khỏe",
+      info: dashboardStats?.dailyHealthRecordToday 
+        ? `${dashboardStats.dailyHealthRecordToday} ca được ghi nhận hôm nay`
+        : null,
       path: selectedChild
         ? `/parent/edit/${selectedChild.id}/health-record`
         : "#",
@@ -109,7 +158,9 @@ const ParentDashboard = () => {
       icon: <Pill className="w-6 h-6 text-purple-600" />,
       title: "Gửi thuốc cho nhà trường",
       description: "Đăng ký và theo dõi thuốc tại trường",
-      info: "1 đơn thuốc đang chờ xác nhận",
+      info: dashboardStats?.drugSendPending 
+        ? `${dashboardStats.drugSendPending} đơn thuốc đang chờ xác nhận`
+        : null,
       path: selectedChild ? `/parent/edit/${selectedChild.id}/drug-table` : "#",
     },
     {
@@ -124,6 +175,9 @@ const ParentDashboard = () => {
       icon: <MdDashboard className="w-6 h-6 text-blue-400" />,
       title: "Khai báo",
       description: "Khai báo bệnh và tiêm chủng cho học sinh",
+      info: dashboardStats?.declareSendPending
+        ? `${dashboardStats.declareSendPending} đơn khai báo đang chờ xác nhận`
+        : null,
       path: selectedChild
         ? `/parent/edit/${selectedChild.id}/history-declare-record`
         : "#",
@@ -184,7 +238,7 @@ const ParentDashboard = () => {
                         key={child.id}
                         onClick={() => handleSelectChild(child)}
                         className={`
-                          p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
+                          p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 relative
                           ${
                             selectedChild?.id === child.id
                               ? "border-blue-500 bg-blue-50 shadow-sm"
@@ -193,6 +247,12 @@ const ParentDashboard = () => {
                         `}
                         aria-label={`Chọn ${child?.name}`}
                       >
+                        {child.sumNoti > 0 && (
+                          <span className="absolute top-[-8px] right-[-8px] bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs font-medium z-10 shadow-sm">
+                            {child.sumNoti}
+                          </span>
+                        )}
+                        
                         <div className="flex items-center space-x-3">
                           <div
                             className={`
@@ -257,7 +317,7 @@ const ParentDashboard = () => {
                     {services.map((service, index) => (
                       <a
                         key={index}
-                        onClick={() => {navigate(service.path)}}
+                        onClick={() => navigate(service.path)}
                         className="group cursor-pointer block p-6 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-200"
                       >
                         <div className="flex items-start space-x-4">
