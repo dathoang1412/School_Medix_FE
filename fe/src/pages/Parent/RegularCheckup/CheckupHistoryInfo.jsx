@@ -126,36 +126,36 @@ const CheckupHistoryInfo = () => {
     setSelectedRecord(null);
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "WAITING":
-        return (
-          <span className="px-2.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 text-xs font-medium rounded-full">
-            Chờ khám
-          </span>
-        );
-      case "DONE":
-        return (
-          <span className="px-2.5 py-0.5 bg-green-50 text-green-600 border border-green-200 text-xs font-medium rounded-full">
-            Hoàn thành
-          </span>
-        );
-      case "CANCELLED":
-        return (
-          <span className="px-2.5 py-0.5 bg-red-50 text-red-600 border border-red-200 text-xs font-medium rounded-full">
-            Đã hủy
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2.5 py-0.5 bg-gray-50 text-gray-600 border border-gray-200 text-xs font-medium rounded-full">
-            Không xác định
-          </span>
-        );
+  const getStatusBadge = (recordStatus, campaignStatus) => {
+    if (campaignStatus === "CANCELLED") {
+      return (
+        <span className="px-2.5 py-0.5 bg-red-50 text-red-600 border border-red-200 text-xs font-medium rounded-full">
+          Đã hủy
+        </span>
+      );
     }
+    if (recordStatus === "DONE") {
+      return (
+        <span className="px-2.5 py-0.5 bg-green-50 text-green-600 border border-green-200 text-xs font-medium rounded-full">
+          Hoàn thành
+        </span>
+      );
+    }
+    if (campaignStatus === "DONE" || campaignStatus === "COMPLETED") {
+      return (
+        <span className="px-2.5 py-0.5 bg-gray-50 text-gray-600 border border-gray-200 text-xs font-medium rounded-full">
+          Không khám
+        </span>
+      );
+    }
+    return (
+      <span className="px-2.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 text-xs font-medium rounded-full">
+        Chờ khám
+      </span>
+    );
   };
 
-  const renderSpecialistExams = (specialistExams, healthRecordId) => {
+  const renderSpecialistExams = (specialistExams, healthRecordId, campaignStatus) => {
     if (!specialistExams || specialistExams.length === 0) {
       return (
         <div className="text-gray-500 text-sm italic">Không có chuyên khoa</div>
@@ -172,7 +172,7 @@ const CheckupHistoryInfo = () => {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-3">
                 <span className="text-gray-800 font-medium text-sm">{exam.specialist_name}</span>
-                {getStatusBadge(exam.record_status)}
+                {getStatusBadge(exam.record_status, campaignStatus)}
               </div>
               <div className="flex space-x-2">
                 {exam.record_url?.length > 0 && exam.record_url[0].endsWith('.pdf') && (
@@ -340,7 +340,7 @@ const CheckupHistoryInfo = () => {
                 <h4 className="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4">
                   Khám chuyên khoa
                 </h4>
-                {renderSpecialistExams(selectedRecord.specialist_exam_records, selectedRecord.health_record_id)}
+                {renderSpecialistExams(selectedRecord.specialist_exam_records, selectedRecord.health_record_id, selectedRecord.campaign_status)}
               </div>
             </div>
           </div>
@@ -408,7 +408,7 @@ const CheckupHistoryInfo = () => {
                     </button>
                   </td>
                   <td className="px-4 py-3 border-r border-gray-200">
-                    {getStatusBadge(item.record_status)}
+                    {getStatusBadge(item.record_status, item.campaign_status)}
                   </td>
                   <td className="px-4 py-3 text-center border-r border-gray-200">
                     <button
@@ -477,7 +477,7 @@ const CheckupHistoryInfo = () => {
                   <tr>
                     <td colSpan="7" className="px-4 py-4 bg-gray-50 border-b border-gray-200">
                       <div className="text-sm">
-                        {renderSpecialistExams(item.specialist_exam_records, item.health_record_id)}
+                        {renderSpecialistExams(item.specialist_exam_records, item.health_record_id, item.campaign_status)}
                       </div>
                     </td>
                   </tr>

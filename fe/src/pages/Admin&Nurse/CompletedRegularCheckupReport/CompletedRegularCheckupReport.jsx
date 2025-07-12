@@ -242,8 +242,8 @@ const CompletedRegularCheckupReport = () => {
     switch (status) {
       case "WAITING":
         return (
-          <span className="px-2.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 text-xs font-medium rounded-full">
-            Chờ khám
+          <span className="px-2.5 py-0.5 bg-amber-50 text-gray-600 border border-amber-200 text-xs font-medium rounded-full">
+            Không khám
           </span>
         );
       case "DONE":
