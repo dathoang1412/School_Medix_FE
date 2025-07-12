@@ -153,7 +153,7 @@ const VaccineCampaignInfo = () => {
     }
   };
 
-  const getCampaignStatus = (campaign, register = registerMap[campaign.campaign_id]) => {
+  const getCampaignStatus = (campaign = registerMap[campaign.campaign_id]) => {
     const currentDate = new Date();
     const status = campaign.status?.toUpperCase();
 

@@ -146,7 +146,7 @@ const RegularCheckupSurvey = () => {
   };
 
   const handleBack = () => {
-    const { from, childId } = location.state || {};
+    const { from } = location.state || {};
     const validFromRoutes = [
       "/parent/student-regular-checkup",
       `/parent/edit/${student_id}/regular-checkup`,
