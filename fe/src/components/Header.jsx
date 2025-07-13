@@ -1,4 +1,4 @@
-import { User, Menu, X, LogOut, ChevronDown } from "lucide-react";
+import { User, Menu, X, LogOut, ChevronDown, Settings } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MdDashboardCustomize, MdOutlineSchool } from "react-icons/md";
 import { getUser, getUserRole, removeUser } from "../service/authService";
@@ -31,6 +31,7 @@ const Header = () => {
       icon: MdDashboardCustomize,
     },
     { title: "Profile", path: "/profile", icon: User },
+    { title: "Cài đặt", path: "/settings", icon: Settings },
     {
       title: "Đăng xuất",
       action: handleLogout,

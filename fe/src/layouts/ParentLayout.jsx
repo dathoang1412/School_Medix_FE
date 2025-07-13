@@ -47,8 +47,13 @@ const ParentLayout = () => {
     const childIdFromUrl = pathSegments[3]; // e.g., "211003" in /parent/edit/211003/health-profile
 
     if (childIdFromUrl && children.length > 0) {
-      const childFromUrl = children.find((child) => child.id === childIdFromUrl);
-      if (childFromUrl && (!selectedChild || selectedChild.id !== childIdFromUrl)) {
+      const childFromUrl = children.find(
+        (child) => child.id === childIdFromUrl
+      );
+      if (
+        childFromUrl &&
+        (!selectedChild || selectedChild.id !== childIdFromUrl)
+      ) {
         setSelectedChild(childFromUrl);
         localStorage.setItem("selectedChild", JSON.stringify(childFromUrl));
       }
@@ -61,7 +66,9 @@ const ParentLayout = () => {
   }, []);
 
   return (
-    <ChildContext.Provider value={{ children, selectedChild, handleSelectChild, isLoading, error }}>
+    <ChildContext.Provider
+      value={{ children, selectedChild, handleSelectChild, isLoading, error }}
+    >
       <div className="min-h-screen bg-gray-50">
         <Header />
         <TabHeader />

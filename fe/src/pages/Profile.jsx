@@ -1,7 +1,14 @@
-import React from "react";
+import React from 'react'
 
 const Profile = () => {
-  return <div>Profile nef</div>;
-};
+  
+    
+    
+    return (
+    <div>
+      
+    </div>
+  )
+}
 
-export default Profile;
+export default Profile
