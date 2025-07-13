@@ -338,7 +338,7 @@ const RegularCheckupSurvey = () => {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={submitting || !reason.trim() || selectedCount === 0}
+                disabled={submitting || !reason.trim()}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
               >
                 {submitting ? (
@@ -355,11 +355,11 @@ const RegularCheckupSurvey = () => {
               </button>
             </div>
             
-            {selectedCount === 0 && (
+            {/* {selectedCount === 0 && (
               <p className="text-sm text-amber-600 mt-2 text-right">
                 Vui lòng chọn ít nhất một hạng mục khám
               </p>
-            )}
+            )} */}
           </div>
         </div>
       </div>
