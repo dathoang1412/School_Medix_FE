@@ -96,12 +96,12 @@ const routes = createBrowserRouter([
       },
       {
         path: "/profile",
-        element: <Profile/>
+        element: <Profile />,
       },
       {
         path: "/about",
-        element: <AboutSchoolMedix/>
-      }
+        element: <AboutSchoolMedix />,
+      },
     ],
   },
   {

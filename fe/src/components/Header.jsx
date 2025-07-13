@@ -19,20 +19,23 @@ const Header = () => {
   const menuItems = [
     { title: "Trang chủ", path: "/" },
     { title: "Giới thiệu", path: "/about" },
-    { title: "Dashboard", path: `/${userRole || 'admin'}` },
+    { title: "Dashboard", path: `/${userRole || "admin"}` },
     { title: "Blog", path: "/blog" },
     { title: "Profile", path: "/profile" },
-,
   ];
 
   const userMenuItems = [
-    { title: "Dashboard", path: `/${userRole || 'admin'}`, icon: MdDashboardCustomize },
-    { title: "Profile", path: "/notifications", icon: User },
-    { 
-      title: "Đăng xuất", 
+    {
+      title: "Dashboard",
+      path: `/${userRole || "admin"}`,
+      icon: MdDashboardCustomize,
+    },
+    { title: "Profile", path: "/profile", icon: User },
+    {
+      title: "Đăng xuất",
       action: handleLogout,
       icon: LogOut,
-      variant: "danger"
+      variant: "danger",
     },
   ];
 
@@ -166,7 +169,11 @@ const Header = () => {
                     <span className="text-sm font-medium hidden sm:block">
                       {user?.name || "Người dùng"}
                     </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
                 </div>
               ) : (
@@ -215,12 +222,18 @@ const Header = () => {
                       return (
                         <button
                           key={item.title}
-                          onClick={() => item.action ? item.action() : handleNavigation(item.path)}
+                          onClick={() =>
+                            item.action
+                              ? item.action()
+                              : handleNavigation(item.path)
+                          }
                           className={`flex cursor-pointer items-center gap-3 w-full px-4 py-2 text-left text-sm transition-colors duration-200 ${
                             item.variant === "danger"
                               ? "text-red-600 hover:bg-red-50"
                               : `text-gray-700 hover:bg-gray-50 ${
-                                  isActive(item.path) ? "bg-blue-50 text-blue-600" : ""
+                                  isActive(item.path)
+                                    ? "bg-blue-50 text-blue-600"
+                                    : ""
                                 }`
                           }`}
                         >
@@ -256,7 +269,7 @@ const Header = () => {
                   </button>
                 ))}
               </div>
-              
+
               {/* Mobile User Menu */}
               {isLoggedIn && (
                 <div className="border-t border-gray-200 mt-3 pt-3">
@@ -292,7 +305,11 @@ const Header = () => {
                       return (
                         <button
                           key={item.title}
-                          onClick={() => item.action ? item.action() : handleNavigation(item.path)}
+                          onClick={() =>
+                            item.action
+                              ? item.action()
+                              : handleNavigation(item.path)
+                          }
                           className={`flex items-center gap-3 w-full px-3 py-2 text-left rounded-lg text-sm font-medium transition-colors duration-200 ${
                             item.variant === "danger"
                               ? "text-red-600 hover:bg-red-50"
