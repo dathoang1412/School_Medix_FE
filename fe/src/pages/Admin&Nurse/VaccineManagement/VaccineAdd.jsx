@@ -19,7 +19,7 @@ const VaccineAdd = ({ vaccine, onClose }) => {
       setDiseaseLoading(true);
       try {
         const response = await axiosClient.get('/diseases');
-        setDiseases(response.data); // Backend returns array of { id, name, ... }
+        setDiseases(response.data.data); // Backend returns array of { id, name, ... }
       } catch (error) {
         setMessage({ type: 'error', text: 'Lỗi khi lấy danh sách bệnh.' });
       } finally {
