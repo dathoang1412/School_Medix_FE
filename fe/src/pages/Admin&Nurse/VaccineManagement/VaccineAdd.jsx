@@ -6,7 +6,7 @@ const VaccineAdd = ({ vaccine, onClose }) => {
   const [formData, setFormData] = useState({
     name: vaccine ? vaccine.name : '',
     description: vaccine ? vaccine.description : '',
-    disease_name: vaccine ? vaccine.disease_name : '',
+    disease_list: vaccine ? vaccine.disease_list : [],
   });
   const [diseases, setDiseases] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ const VaccineAdd = ({ vaccine, onClose }) => {
         const response = await axiosClient.get('/diseases');
         setDiseases(response.data); // Backend returns array of { id, name, ... }
       } catch (error) {
-        {error &&setMessage({ type: 'error', text: 'Lỗi khi lấy danh sách bệnh.' })};
+        setMessage({ type: 'error', text: 'Lỗi khi lấy danh sách bệnh.' });
       } finally {
         setDiseaseLoading(false);
       }
@@ -30,17 +30,28 @@ const VaccineAdd = ({ vaccine, onClose }) => {
   }, []);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const { name, value, options } = e.target;
+    if (name === 'disease_list') {
+      // Convert selected options to array of IDs (numbers)
+      const selectedIds = Array.from(options)
+        .filter((option) => option.selected)
+        .map((option) => parseInt(option.value));
+      setFormData((prev) => ({
+        ...prev,
+        disease_list: selectedIds,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const validateForm = () => {
     if (!formData.name.trim()) return 'Tên vaccine không được để trống';
     if (!formData.description.trim()) return 'Mô tả không được để trống';
-    if (!formData.disease_name) return 'Vui lòng chọn một bệnh';
+    if (!formData.disease_list.length) return 'Vui lòng chọn ít nhất một bệnh';
     return null;
   };
 
@@ -60,11 +71,11 @@ const VaccineAdd = ({ vaccine, onClose }) => {
         setMessage({ type: 'error', text: response.data.message });
       } else {
         setMessage({ type: 'success', text: 'Tạo vaccine thành công!' });
-        setFormData({ name: '', description: '', disease_name: '' });
+        setFormData({ name: '', description: '', disease_list: [] });
         setTimeout(onClose, 1500); // Close form after success
       }
     } catch (error) {
-      {error && setMessage({ type: 'error', text: 'Có lỗi xảy ra khi tạo vaccine. Vui lòng thử lại.' })};
+      setMessage({ type: 'error', text: 'Có lỗi xảy ra khi tạo vaccine. Vui lòng thử lại.' });
     } finally {
       setLoading(false);
     }
@@ -131,7 +142,7 @@ const VaccineAdd = ({ vaccine, onClose }) => {
           />
         </div>
 
-        {/* Disease Name */}
+        {/* Disease List */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
             Bệnh *
@@ -145,19 +156,20 @@ const VaccineAdd = ({ vaccine, onClose }) => {
             <div className="text-red-700">Không có bệnh nào được tìm thấy.</div>
           ) : (
             <select
-              name="disease_name"
-              value={formData.disease_name}
+              name="disease_list"
+              multiple
+              value={formData.disease_list}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800 max-h-40"
             >
-              <option value="">Chọn một bệnh</option>
               {diseases.map((disease) => (
-                <option key={disease.id} value={disease.name}>
+                <option key={disease.id} value={disease.id}>
                   {disease.name}
                 </option>
               ))}
             </select>
           )}
+          <p className="mt-1 text-xs text-slate-500">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều bệnh.</p>
         </div>
 
         {/* Submit Button */}
