@@ -240,7 +240,7 @@ const ParentEditStudentProfile = () => {
 
       setFormData((prev) => ({ ...prev, profile_img_url: uploadedProfileUrl }));
       setSelectedFile(null);
-      navigate(`/parent/edit/${student_id}/profile`);
+      navigate(`/parent/edit/${student_id}/health-profile`);
     } catch (err) {
       console.error("Profile update error:", err.response?.data || err);
       enqueueSnackbar(

@@ -115,21 +115,13 @@ const Sidebar = () => {
     },
     {
       title: "Quản lý bệnh",
-      path: "disease-management",
+      path: "disease",
       icon: <MdOutlineMedicalInformation />,
-      hasDropdown: true,
-      children: [
-        {
-          title: "Quản lý bệnh",
-          path: "disease",
-          icon: <MdOutlineMedicalInformation />,
-        },
-        {
-          title: "Quản lý Khai Báo",
-          path: "DeclarationManagement",
-          icon: <PencilLineIcon />,
-        },
-      ],
+    },
+    {
+      title: "Quản lý Khai Báo",
+      path: "DeclarationManagement",
+      icon: <PencilLineIcon />,
     },
     {
       title: "Khám định kỳ",

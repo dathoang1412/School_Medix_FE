@@ -16,7 +16,7 @@ const handleStatusUpdate = async (cb, status, url, id, setError, setDrugs, setFi
           drug.id === id ? { ...drug, status: status } : drug
         )
       );
-      enqueueSnackbar(successMessage, { variant: "success" });
+      // enqueueSnackbar(successMessage, { variant: "success" });
       if (cb) cb();
     } else {
       throw new Error(res.data.message);
