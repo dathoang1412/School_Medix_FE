@@ -44,7 +44,7 @@ const DiseaseDeclarationHistory = ({ student_id }) => {
       // Fetch diseases
       try {
         const { data } = await axiosClient.get('/diseases');
-        setDiseaseMap(data.reduce((acc, d) => ({ ...acc, [d.id]: d.name }), {}));
+        setDiseaseMap(data.data.reduce((acc, d) => ({ ...acc, [d.id]: d.name }), {}));
       } catch {
         setError('Không thể tải danh sách bệnh.');
       }

@@ -63,7 +63,7 @@ const DeclarationManagement = () => {
   const fetchDiseases = async () => {
     try {
       const { data } = await axiosClient.get('/diseases');
-      setDiseaseMap(data.reduce((acc, d) => ({ ...acc, [d.id]: d.name }), {}));
+      setDiseaseMap(data.data.reduce((acc, d) => ({ ...acc, [d.id]: d.name }), {}));
     } catch (err) {
       console.error('Fetch diseases error:', err.response?.data || err.message);
       setError('Không thể tải danh sách bệnh: ' + (err.response?.data?.message || err.message));

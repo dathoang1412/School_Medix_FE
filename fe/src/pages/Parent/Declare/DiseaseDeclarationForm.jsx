@@ -56,8 +56,8 @@ const DiseaseDeclarationForm = () => {
       // Fetch diseases
       try {
         const response = await axiosClient.get("/diseases");
-        console.log("Diseases response:", response.data);
-        setDiseases(response.data); // Response is an array of { id, name, description }
+        console.log("Diseases response:", response.data.data);
+        setDiseases(response.data.data); // Response is an array of { id, name, description }
       } catch (error) {
         console.error("Error fetching diseases:", error);
         setError(
