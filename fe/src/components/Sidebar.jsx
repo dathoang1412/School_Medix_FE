@@ -170,13 +170,11 @@ const Sidebar = () => {
   ]);
 
   const bottomItems = [
-    { 
+    {
       action: "profile",
       title: getUserRole().toString().toUpperCase(),
       icon: (
-        <div
-          className="w-8 h-8 rounded-full overflow-hidden shadow-sm border-2 border-blue-200 flex-shrink-0"
-        >
+        <div className="w-8 h-8 rounded-full overflow-hidden shadow-sm border-2 border-blue-200 flex-shrink-0">
           {userData?.profile_img_url ? (
             <img
               src={userData.profile_img_url}
@@ -223,8 +221,8 @@ const Sidebar = () => {
         variant: "success",
       });
       navigate("/");
-    }else if (action === "profile"){
-      navigate('/profile')
+    } else if (action === "profile") {
+      navigate("/profile");
     }
   };
 

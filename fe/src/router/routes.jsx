@@ -36,7 +36,7 @@ import VaccineManagement from "../pages/Admin&Nurse/VaccineManagement/VaccineMan
 import SendDrugManagement from "../pages/Admin&Nurse/SendDrugManagement/SendDrugManagement";
 import RegularCheckupReport from "../pages/Nurse/RegularCheckupReport/RegularCheckupReport";
 import VaccineCampaignReport from "../pages/Nurse/VaccineCampaignReport/VaccineCampaignReport";
-import AuthFlow from "../pages/Auth/ResetPassword/AuthFlow";
+import AuthFlow from "../pages/Auth/ForgotPassword/AuthFlow";
 import RegularCheckupCampaignForm from "../pages/Admin&Nurse/RegularCheckupManagement/RegularCheckupCampaignForm";
 import VaccineCampaignInfo from "../pages/Parent/VaccineCampaign/VaccineCampaignInfo";
 import VaccineDeclarationForm from "../pages/Parent/Declare/VaccineDeclarationForm";
@@ -56,6 +56,9 @@ import VaccineForStudentEligible from "../pages/Admin&Nurse/VaccineManagement/Va
 import Profile from "../pages/Profile/Profile";
 import AboutSchoolMedix from "../pages/Admin/AboutSchoolMedix/AboutSchoolMedix";
 import ParentSchedule from "../pages/Parent/ParentDashboard/ParentSchedule";
+import UserSettings from "../pages/UserSettings/UserSettings";
+import ResetPassword from "../pages/Auth/ResetPassword";
+import ParentEditStudentProfile from "../pages/Parent/StudentProfile/ParentEditStudentProfile";
 
 const routes = createBrowserRouter([
   {
@@ -79,6 +82,11 @@ const routes = createBrowserRouter([
         element: <AuthFlow />,
       },
       {
+        path: "reset-password",
+        element: <ResetPassword />,
+      },
+
+      {
         path: "/blog",
         element: <BlogList />,
       },
@@ -96,12 +104,16 @@ const routes = createBrowserRouter([
       },
       {
         path: "/profile",
-        element: <Profile/>
+        element: <Profile />,
+      },
+      {
+        path: "/settings",
+        element: <UserSettings />,
       },
       {
         path: "/about",
-        element: <AboutSchoolMedix/>
-      }
+        element: <AboutSchoolMedix />,
+      },
     ],
   },
   {
@@ -274,6 +286,10 @@ const routes = createBrowserRouter([
           {
             path: "health-profile",
             element: <StudentProfile />,
+          },
+          {
+            path: "student-profile",
+            element: <ParentEditStudentProfile />,
           },
           {
             path: "drug-table",
