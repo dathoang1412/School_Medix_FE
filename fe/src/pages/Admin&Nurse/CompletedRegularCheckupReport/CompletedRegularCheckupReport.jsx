@@ -5,6 +5,7 @@ import axiosClient from "../../../config/axiosClient";
 import { ArrowLeft, Download, FileText, X, FileDown } from "lucide-react";
 import PDFViewer from "../../../components/PDFViewer";
 import { debounce } from "lodash";
+import { getUserRole } from "../../../service/authService";
 
 const CompletedRegularCheckupReport = () => {
   const [generalHealthList, setGeneralHealthList] = useState([]);
@@ -926,7 +927,7 @@ const CompletedRegularCheckupReport = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <button
-          onClick={() => navigate("/nurse/regular-checkup")}
+          onClick={() => navigate(`/${getUserRole()}/regular-checkup`)}
           className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Quay lại danh sách kiểm tra định kỳ"
         >

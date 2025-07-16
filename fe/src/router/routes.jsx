@@ -119,7 +119,7 @@ const routes = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <PrivateRoute allowedRoles={"admin"} currentRole={getUserRole()} />,
+    element: <PrivateRoute allowedRoles={"admin"} />,
     children: [
       {
         element: <AdminLayout />,
@@ -254,7 +254,7 @@ const routes = createBrowserRouter([
   },
   {
     path: "/parent",
-    element: <PrivateRoute allowedRoles={"parent"} currentRole={getUserRole()} />,
+    element: <PrivateRoute allowedRoles={"parent"} />,
     children: [
       {
         path: "",
@@ -342,7 +342,7 @@ const routes = createBrowserRouter([
   },
   {
     path: "/nurse",
-    element: <PrivateRoute allowedRoles={"nurse"} currentRole={getUserRole()} />,
+    element: <PrivateRoute allowedRoles={"nurse"}/>,
     children: [
       {
         element: <AdminLayout />,
