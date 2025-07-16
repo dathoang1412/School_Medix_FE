@@ -19,7 +19,6 @@ const RegularCheckupReport = () => {
     update: {},
     upload: {},
   });
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showSpecialistModal, setShowSpecialistModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -250,11 +249,6 @@ const RegularCheckupReport = () => {
   };
 
   const handleFormSubmit = async () => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để cập nhật!", { variant: "error" });
-      navigate("/login");
-      return;
-    }
 
     if (!validateForm()) {
       enqueueSnackbar("Vui lòng điền đầy đủ và đúng định dạng các chỉ số bắt buộc!", {
@@ -314,11 +308,6 @@ const RegularCheckupReport = () => {
   };
 
   const handleSpecialistFormSubmit = async () => {
-    if (!isAuthenticated) {
-      enqueueSnackbar("Vui lòng đăng nhập để cập nhật!", { variant: "error" });
-      navigate("/login");
-      return;
-    }
 
     const { register_id, spe_exam_id } = selectedRecord;
     let diagnosisUrls = specialistFormData.diagnosis_paper_urls;
@@ -438,7 +427,6 @@ const RegularCheckupReport = () => {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) return;
     const fetchAllData = async () => {
       try {
         await Promise.all([
@@ -451,7 +439,7 @@ const RegularCheckupReport = () => {
       }
     };
     fetchAllData();
-  }, [isAuthenticated]);
+  }, []);
 
   const getStatusBadge = (status) => {
     return status === "WAITING" ? (
@@ -650,13 +638,7 @@ const RegularCheckupReport = () => {
     return { records: specialistData.records || [], type: "specialist" };
   }, [activeMainTab, activeSubTab, generalHealthList, specialistList]);
 
-  if (!isAuthenticated) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto text-center">
-        <p className="text-gray-500">Đang kiểm tra đăng nhập...</p>
-      </div>
-    );
-  }
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

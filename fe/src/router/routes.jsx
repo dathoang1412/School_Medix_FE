@@ -59,6 +59,7 @@ import ParentSchedule from "../pages/Parent/ParentDashboard/ParentSchedule";
 import UserSettings from "../pages/UserSettings/UserSettings";
 import ResetPassword from "../pages/Auth/ResetPassword";
 import ParentEditStudentProfile from "../pages/Parent/StudentProfile/ParentEditStudentProfile";
+import { getUser, getUserRole } from "../service/authService";
 
 const routes = createBrowserRouter([
   {
@@ -118,7 +119,7 @@ const routes = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <PrivateRoute allowedRoles={["admin"]} currentRole={"admin"} />,
+    element: <PrivateRoute allowedRoles={"admin"} currentRole={getUserRole()} />,
     children: [
       {
         element: <AdminLayout />,
@@ -253,7 +254,7 @@ const routes = createBrowserRouter([
   },
   {
     path: "/parent",
-    element: <PrivateRoute allowedRoles={["parent"]} currentRole={"parent"} />,
+    element: <PrivateRoute allowedRoles={"parent"} currentRole={getUserRole()} />,
     children: [
       {
         path: "",
@@ -341,7 +342,7 @@ const routes = createBrowserRouter([
   },
   {
     path: "/nurse",
-    element: <PrivateRoute allowedRoles={["nurse"]} currentRole={"nurse"} />,
+    element: <PrivateRoute allowedRoles={"nurse"} currentRole={getUserRole()} />,
     children: [
       {
         element: <AdminLayout />,

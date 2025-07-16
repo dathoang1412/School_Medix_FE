@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
-import { getSession } from "../../../config/Supabase";
 import { getStudentInfo } from "../../../service/childenService";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Loader2, FileText } from "lucide-react";
@@ -15,28 +14,9 @@ const HealthDashboard = () => {
     fetch: false,
     download: {},
   });
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { student_id } = useParams();
-
-  // Check authentication
-  useEffect(() => {
-    const checkAuth = async () => {
-      setLoading((prev) => ({ ...prev, fetch: true }));
-      const { data, error } = await getSession();
-      if (error || !data.session) {
-        enqueueSnackbar("Vui lòng đăng nhập để tiếp tục!", {
-          variant: "error",
-        });
-        navigate("/login");
-        return;
-      }
-      setIsAuthenticated(true);
-      setLoading((prev) => ({ ...prev, fetch: false }));
-    };
-    checkAuth();
-  }, [navigate, enqueueSnackbar]);
 
   // Fetch student info
   useEffect(() => {
@@ -65,14 +45,12 @@ const HealthDashboard = () => {
       }
     };
 
-    if (isAuthenticated) {
-      fetchStudentInfo();
-    }
-  }, [isAuthenticated, student_id, navigate, enqueueSnackbar]);
+    fetchStudentInfo();
+  }, [student_id, navigate, enqueueSnackbar]);
 
   // Fetch health history
   useEffect(() => {
-    if (!isAuthenticated || !selectedChild?.id) return;
+    if (!selectedChild?.id) return;
 
     const fetchHistory = async () => {
       setLoading((prev) => ({ ...prev, fetch: true }));
@@ -90,7 +68,7 @@ const HealthDashboard = () => {
     };
 
     fetchHistory();
-  }, [isAuthenticated, selectedChild?.id, enqueueSnackbar]);
+  }, [selectedChild?.id, enqueueSnackbar]);
 
   // Parse functions
   const parseValue = (value, unit) => {
@@ -144,8 +122,8 @@ const HealthDashboard = () => {
     return value.length > 12 ? `${value.substring(0, 12)}...` : value;
   };
 
-  // Loading state for authentication or student info
-  if (!isAuthenticated || loading.fetch) {
+  // Loading state for student info
+  if (loading.fetch) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 text-center">
@@ -153,9 +131,6 @@ const HealthDashboard = () => {
             <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
             <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-blue-100 mx-auto animate-pulse"></div>
           </div>
-          <p className="text-gray-600 font-medium">
-            {isAuthenticated ? "Đang tải dữ liệu..." : "Đang kiểm tra đăng nhập..."}
-          </p>
           <p className="text-sm text-gray-400 mt-1">Vui lòng đợi một chút</p>
         </div>
       </div>
@@ -165,7 +140,9 @@ const HealthDashboard = () => {
   // No selected child
   if (!selectedChild) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min /
+
+-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FileText className="w-8 h-8 text-gray-400" />
@@ -272,7 +249,7 @@ const HealthDashboard = () => {
                           boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                           padding: "12px",
                         }}
-                        labelStyle={{ color: "#1e293b", fontWeight: "600", marginBottom: "8px" }}
+                        labelStyle={{ colorure: "#1e293b", fontWeight: "600", marginBottom: "8px" }}
                         itemStyle={{ fontSize: "14px", padding: "4px 0" }}
                       />
                       <Legend
@@ -330,7 +307,7 @@ const HealthDashboard = () => {
                         strokeWidth={3}
                         dot={{ r: 5, fill: "#ef4444", strokeWidth: 2 }}
                         activeDot={{ r: 7, fill: "#ef4444", stroke: "#ffffff", strokeWidth: 2 }}
-                      />
+                      />  
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

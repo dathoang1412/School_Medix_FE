@@ -1,4 +1,5 @@
 import { User, Menu, X, LogOut, ChevronDown, Settings } from "lucide-react";
+import { Loader2 } from "lucide-react"; // Added Loader2 import
 import { useNavigate, useLocation } from "react-router-dom";
 import { MdDashboardCustomize, MdOutlineSchool } from "react-icons/md";
 import { getUser, getUserRole, removeUser } from "../service/authService";
@@ -9,6 +10,7 @@ import { signOut } from "../config/Supabase";
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false); // Added loading state for logout
   const navigate = useNavigate();
   const location = useLocation();
   const dropdownRef = useRef(null);
@@ -41,12 +43,19 @@ const Header = () => {
   ];
 
   async function handleLogout() {
-    await signOut();
-    removeUser();
-    navigate("/");
-    enqueueSnackbar("Đăng xuất thành công", { variant: "success" });
-    setIsDropdownOpen(false);
-    setIsMobileMenuOpen(false);
+    setIsLoggingOut(true); // Set loading state
+    try {
+      await signOut();
+      removeUser();
+      navigate("/");
+      enqueueSnackbar("Đăng xuất thành công", { variant: "success" });
+    } catch (error) {
+      enqueueSnackbar("Đăng xuất thất bại", { variant: "error" });
+    } finally {
+      setIsLoggingOut(false); // Reset loading state
+      setIsDropdownOpen(false);
+      setIsMobileMenuOpen(false);
+    }
   }
 
   const handleNavigation = (path) => {
@@ -237,8 +246,13 @@ const Header = () => {
                                     : ""
                                 }`
                           }`}
+                          disabled={item.title === "Đăng xuất" && isLoggingOut} // Disable logout button during loading
                         >
-                          <Icon className="w-4 h-4" />
+                          {item.title === "Đăng xuất" && isLoggingOut ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-red-600" />
+                          ) : (
+                            <Icon className="w-4 h-4" />
+                          )}
                           {item.title}
                         </button>
                       );
@@ -318,8 +332,13 @@ const Header = () => {
                               ? "bg-blue-50 text-blue-600"
                               : "text-gray-700 hover:bg-gray-50"
                           }`}
+                          disabled={item.title === "Đăng xuất" && isLoggingOut} // Disable logout button during loading
                         >
-                          <Icon className="w-4 h-4" />
+                          {item.title === "Đăng xuất" && isLoggingOut ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-red-600" />
+                          ) : (
+                            <Icon className="w-4 h-4" />
+                          )}
                           {item.title}
                         </button>
                       );
