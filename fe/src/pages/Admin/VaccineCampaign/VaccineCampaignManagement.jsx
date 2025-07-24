@@ -278,7 +278,7 @@ const VaccineCampaignManagement = () => {
         buttons.push(
           <button
             key="view-report"
-            onClick={() => navigate(`/admin/vaccination-report/${campaignId}`)}
+            onClick={() => navigate(`/admin/completed-vaccine-campaign-report/${campaignId}`)}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <FileText className="w-4 h-4" />
@@ -340,7 +340,7 @@ const VaccineCampaignManagement = () => {
         buttons.push(
           <button
             key="view-report"
-            onClick={() => navigate(`/nurse/vaccination-report/${campaignId}`)}
+            onClick={() => navigate(`/nurse/completed-vaccine-campaign-report/${campaignId}`)}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
           >
             <FileText className="w-4 h-4" />
