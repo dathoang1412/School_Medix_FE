@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2, Heart } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ChevronDown, ChevronUp, FileText, Calendar, Clock, MapPin, Pill, User, Activity, CheckCircle, XCircle, Shield, Loader2, Heart, X } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import { getStudentInfo } from '../../../service/childenService';
 
@@ -16,6 +16,10 @@ const HealthRecord = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [student, setStudent] = useState(null);
   const recordsPerPage = 10;
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [downloading, setDownloading] = useState(new Set());
+  const navigate = useNavigate();
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa xác định';
@@ -172,6 +176,158 @@ const HealthRecord = () => {
     isToday(record.detect_time) || isToday(record.record_date)
   ).length;
 
+  const handleViewDetails = async (record) => {
+    setDownloading((prev) => new Set(prev).add(`details_${record.id}`));
+    try {
+      console.log(`Fetching full record for student_id: ${record.student_id}, record_id: ${record.id}`);
+      const response = await axiosClient.get(`/daily-health-record/${record.id}`);
+      console.log("FULL RECORD RESPONSE:", response.data);
+      const fullRecord = response.data.data;
+      if (!fullRecord) {
+        throw new Error("Không tìm thấy hồ sơ chi tiết!");
+      }
+      setSelectedRecord(fullRecord);
+      setShowDetailsModal(true);
+    } catch (error) {
+      console.error("Error fetching full record:", error.response || error);
+      setError(
+        error.response?.data?.message ||
+          `Không thể tải chi tiết hồ sơ: ${error.message}`
+      );
+    } finally {
+      setDownloading((prev) => {
+        const next = new Set(prev);
+        next.delete(`details_${record.id}`);
+        return next;
+      });
+    }
+  };
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setSelectedRecord(null);
+  };
+
+  const renderDetailsModal = () => {
+    if (!selectedRecord) return null;
+    else console.log('Selected record: ', selectedRecord);
+    return (
+      <div className="fixed inset-0 bg-gray-900/40 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-lg">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Chi tiết hồ sơ y tế
+            </h3>
+            <button
+              onClick={closeDetailsModal}
+              className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+              aria-label="Đóng"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="p-6 space-y-6">
+            {downloading.has(`details_${selectedRecord.id}`) ? (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span className="text-gray-600">Đang tải chi tiết...</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                  <h4 className="text-sm font-medium text-gray-800 uppercase">
+                    Thông tin học sinh
+                  </h4>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Mã học sinh: {selectedRecord.student_id} | Họ tên: {selectedRecord.name || 'N/A'}
+                  </p>
+                </div>
+                    <div className="space-y-4">
+                        <div>
+                            <h4 className="text-lg font-medium text-gray-800 uppercase border-b border-gray-200 pb-2 mb-4">
+                            Chi tiết y tế
+                            </h4>
+                            <div className="space-y-4">
+                                <h5 className="text-sm font-bold text-gray-800">I. Thời gian</h5>
+                                {[
+                                { label: "Ngày phát hiện", value: formatDate(selectedRecord.detect_time) },
+                                { label: "Ngày ghi nhận", value: formatDate(selectedRecord?.record_date) },
+                                ].map(({ label, value }) => (
+                                <div key={label} className="flex items-start">
+                                    <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                                    <p className="flex-1 text-sm text-gray-800">{value}</p>
+                                </div>
+                                ))}
+                            </div>
+                            <div className="space-y-4 mt-6">
+                                <h5 className="text-sm font-bold text-gray-800">II. Chẩn đoán & Điều trị</h5>
+                                {[
+                                { label: "Chẩn đoán", value: selectedRecord?.diagnosis || 'Chưa có chẩn đoán' },
+                                { label: "Xử lý tại chỗ", value: selectedRecord?.on_site_treatment || 'Không có' },
+                                ].map(({ label, value }) => (
+                                <div key={label} className="flex items-start">
+                                    <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                                    <p className="flex-1 text-sm text-gray-800">{value}</p>
+                                </div>
+                                ))}
+                            </div>
+                            <div className="mt-6 space-y-4">
+                                <h5 className="text-sm font-bold text-gray-800">III. Chuyển viện & Vật tư</h5>
+                                {[
+                                    { label: "Chuyển đến", value: selectedRecord?.transferred_to || 'Không chuyển viện' },
+                                    { label: "Vật tư sử dụng", value: selectedRecord?.items_usage || 'Không sử dụng' },
+                                ].map(({ label, value }) => (
+                                    <div key={label} className="flex items-start">
+                                    <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                                    <p className="flex-1 text-sm text-gray-800">{value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+              </>
+            )}
+          </div>
+          <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+            <button 
+              onClick={() => navigate(`${selectedRecord.id}`)} 
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
+            >
+              Xem chi tiết
+            </button>
+            <button
+              onClick={closeDetailsModal}
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -299,96 +455,76 @@ const HealthRecord = () => {
                   </tr>
                 ) : (
                   currentRecords.map((record) => (
-                    <React.Fragment key={record.id}>
-                      <tr className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                        <td className="p-4 text-sm text-gray-700">
-                          <div className="flex items-center gap-2">
-                            {isToday(record.detect_time) && (
-                              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                            )}
-                            {formatDate(record.detect_time)}
-                          </div>
-                        </td>
-                        <td className="p-4 text-sm text-gray-700">
-                          <div className="flex items-center gap-2">
-                            {isToday(record.record_date) && (
-                              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                            )}
-                            {formatDate(record.record_date)}
-                          </div>
-                        </td>
-                        <td className="p-4 text-sm text-gray-800 font-medium">
-                          {record.diagnosis || 'Chưa có chẩn đoán'}
-                        </td>
-                        <td className="p-4">
-                          {getStatusBadge(record)}
-                        </td>
-                        <td className="p-4 text-center">
-                          <button
-                            onClick={() => toggleRowExpansion(record.id)}
-                            className="flex items-center gap-2 mx-auto px-3 py-2 text-blue-600 border border-gray-300 rounded-lg hover:bg-blue-50 hover:text-blue-800 transition-colors text-sm"
-                          >
-                            {expandedRows.has(record.id) ? (
-                              <>
-                                <ChevronUp className="w-4 h-4" />
-                                Ẩn
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown className="w-4 h-4" />
-                                Xem
-                              </>
-                            )}
-                          </button>
-                        </td>
-                      </tr>
-                      {expandedRows.has(record.id) && (
-                        <tr className="bg-gray-50">
-                          <td colSpan="5" className="p-0">
-                            <div className="p-6 border-t border-gray-200">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="space-y-3">
-                                  <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                                    <User className="w-4 h-4 text-blue-600" />
-                                    Thông tin cơ bản
-                                  </h4>
-                                  <div className="space-y-2 text-sm text-gray-700">
-                                    <p><span className="font-medium text-gray-600">Mã học sinh:</span> {student?.name || getStudentDisplay(record.student_id)}</p>
-                                    <p><span className="font-medium text-gray-600">Ngày phát hiện:</span> {formatDate(record.detect_time)}</p>
-                                    <p><span className="font-medium text-gray-600">Ngày ghi nhận:</span> {formatDate(record.record_date)}</p>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                                    <Activity className="w-4 h-4 text-green-600" />
-                                    Chẩn đoán & Điều trị
-                                  </h4>
-                                  <div className="space-y-2 text-sm text-gray-700">
-                                    <p><span className="font-medium text-gray-600">Chẩn đoán:</span> {record.diagnosis || 'Chưa có chẩn đoán'}</p>
-                                    <p><span className="font-medium text-gray-600">Xử lý tại chỗ:</span> {record.on_site_treatment || 'Không có'}</p>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                                    <MapPin className="w-4 h-4 text-red-600" />
-                                    Chuyển viện & Vật tư
-                                  </h4>
-                                  <div className="space-y-2 text-sm text-gray-700">
-                                    <p><span className="font-medium text-gray-600">Chuyển đến:</span> {record.transferred_to || 'Không chuyển viện'}</p>
-                                    <p className="flex items-start gap-2">
-                                      <Pill className="w-4 h-4 text-purple-600 mt-0.5" />
-                                      <span>
-                                        <span className="font-medium text-gray-600">Vật tư sử dụng:</span> {record.items_usage || 'Không sử dụng'}
-                                      </span>
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
+                    <tr key={record.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                      <td className="p-4 text-sm text-gray-700">
+                        <div className="flex items-center gap-2">
+                          {isToday(record.detect_time) && (
+                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                          )}
+                          {formatDate(record.detect_time)}
+                        </div>
+                      </td>
+                      <td className="p-4 text-sm text-gray-700">
+                        <div className="flex items-center gap-2">
+                          {isToday(record.record_date) && (
+                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                          )}
+                          {formatDate(record.record_date)}
+                        </div>
+                      </td>
+                      <td className="p-4 text-sm text-gray-800 font-medium">
+                        {record.diagnosis || 'Chưa có chẩn đoán'}
+                      </td>
+                      <td className="p-4">
+                        {getStatusBadge(record)}
+                      </td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => handleViewDetails(record)}
+                          disabled={loading || downloading.has(`details_${record.id}`)}
+                          className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                            loading || downloading.has(`details_${record.id}`)
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700'
+                          }`}
+                          title={
+                            downloading.has(`details_${record.id}`)
+                              ? 'Đang tải chi tiết...'
+                              : 'Xem chi tiết'
+                          }
+                          aria-label={
+                            downloading.has(`details_${record.id}`)
+                              ? 'Đang tải chi tiết...'
+                              : 'Xem chi tiết'
+                          }
+                        >
+                          {downloading.has(`details_${record.id}`) ? (
+                            <Loader2
+                              className="animate-spin h-4 w-4 text-gray-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </Loader2>
+                          ) : (
+                            <FileText className="h-4 w-4" />
+                          )}
+                        </button>
+                      </td>
+                    </tr>
                   ))
                 )}
               </tbody>
@@ -448,6 +584,7 @@ const HealthRecord = () => {
           </div>
         )}
       </div>
+      {renderDetailsModal()}
     </div>
   );
 };

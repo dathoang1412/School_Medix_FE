@@ -60,6 +60,8 @@ import UserSettings from "../pages/UserSettings/UserSettings";
 import ResetPassword from "../pages/Auth/ResetPassword";
 import ParentEditStudentProfile from "../pages/Parent/StudentProfile/ParentEditStudentProfile";
 import { getUser, getUserRole } from "../service/authService";
+import DetailHealthRecord from "../pages/Parent/DailyHealth/DetailHealthRecord";
+import DetailHealthRecordForUpdate from "../pages/Admin&Nurse/DailyHealthManagement/DetailHealthRecordForUpdate";
 
 const routes = createBrowserRouter([
   {
@@ -143,6 +145,10 @@ const routes = createBrowserRouter([
           {
             path: "daily-health",
             element: <DailyHealthRecord />,
+          },
+          {
+            path: "daily-health/:record_id",
+            element: <DetailHealthRecordForUpdate />
           },
           {
             path: "vaccine-campaign-creation",
@@ -309,6 +315,10 @@ const routes = createBrowserRouter([
             element: <HealthRecord />,
           },
           {
+            path: "health-record/:record_id",
+            element: <DetailHealthRecord />
+          },
+          {
             path: "regular-checkup",
             element: <ParentCheckupLayout />,
           },
@@ -367,6 +377,10 @@ const routes = createBrowserRouter([
           {
             path: "daily-health",
             element: <DailyHealthRecord />,
+          },
+          {
+            path: "daily-health/:record_id",
+            element: <DetailHealthRecordForUpdate />
           },
           {
             path: "add-record",

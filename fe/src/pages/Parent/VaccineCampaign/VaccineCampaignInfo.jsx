@@ -12,6 +12,7 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  
 } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { getStudentInfo } from "../../../service/childenService";
@@ -315,8 +316,19 @@ const VaccineCampaignInfo = () => {
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
+            <TrendingDownIcon className="w-4 h-4" />
+            Theo dõi tiêm chủng
+          </button>
+          <button
+            onClick={() => setHistoryView(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+              historyView
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            }`}
+          >
             <History className="w-4 h-4" />
-            Lịch sử tiêm chủng
+            Lịch sử  tiêm chủng
           </button>
         </div>
       </div>
