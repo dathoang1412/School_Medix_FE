@@ -150,10 +150,10 @@ const DailyHealthRecord = () => {
 
   // Get status badge
   const getStatusBadge = (record) => {
-    if (record.transferred_to) {
-      return <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border border-red-200">Chuyển viện</span>;
-    } else if (record.on_site_treatment) {
-      return <span className="px-2 py-1 bg-yellow-50 text-yellow-800 text-xs font-medium rounded border border-yellow-200">Điều trị tại chỗ</span>;
+    if (record.status === 'SERIOUS') {
+      return <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border border-red-200">Nghiêm trọng</span>;
+    } else if (record.status === 'MILD') {
+      return <span className="px-2 py-1 bg-yellow-50 text-yellow-800 text-xs font-medium rounded border border-yellow-200">Nhẹ</span>;
     }
     return <span className="px-2 py-1 bg-green-50 text-green-800 text-xs font-medium rounded border border-green-200">Bình thường</span>;
   };
@@ -454,7 +454,7 @@ const DailyHealthRecord = () => {
                       Chẩn Đoán
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Trạng Thái</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tình Trạng</th>
                   <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Chi Tiết</th>
                 </tr>
               </thead>
