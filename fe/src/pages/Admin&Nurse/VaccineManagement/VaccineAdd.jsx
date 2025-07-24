@@ -5,7 +5,9 @@ import axiosClient from '../../../config/axiosClient';
 const VaccineAdd = ({ vaccine, onClose }) => {
   const [formData, setFormData] = useState({
     name: vaccine ? vaccine.name : '',
-    description: vaccine ? vaccine.description : '',
+    origin: vaccine ? vaccine.origin : '',
+    description: vaccine ?  vaccine.description : '',
+    dose_quantity: vaccine ? vaccine.dose_quantity || 0 : 0,
     disease_list: vaccine ? vaccine.disease_list : [],
   });
   const [diseases, setDiseases] = useState([]);
@@ -50,8 +52,10 @@ const VaccineAdd = ({ vaccine, onClose }) => {
 
   const validateForm = () => {
     if (!formData.name.trim()) return 'Tên vaccine không được để trống';
-    if (!formData.description.trim()) return 'Mô tả không được để trống';
-    if (!formData.disease_list.length) return 'Vui lòng chọn ít nhất một bệnh';
+    if (!formData.origin.trim()) return 'Nguồn gốc không được để trống';
+    if (!Array.isArray(formData.disease_list) || formData.disease_list.length === 0) {
+      return 'Vui lòng chọn ít nhất một bệnh';
+    }
     return null;
   };
 
@@ -71,7 +75,7 @@ const VaccineAdd = ({ vaccine, onClose }) => {
         setMessage({ type: 'error', text: response.data.message });
       } else {
         setMessage({ type: 'success', text: 'Tạo vaccine thành công!' });
-        setFormData({ name: '', description: '', disease_list: [] });
+        setFormData({ name: '', origin: '', dose_quantity: 0, disease_list: [] });
         setTimeout(onClose, 1500); // Close form after success
       }
     } catch (error) {
@@ -112,36 +116,6 @@ const VaccineAdd = ({ vaccine, onClose }) => {
       )}
 
       <div className="space-y-6">
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
-            Tên Vaccine *
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800"
-            placeholder="Nhập tên vaccine"
-          />
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
-            Mô Tả *
-          </label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            rows={4}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800"
-            placeholder="Nhập mô tả chi tiết về vaccine"
-          />
-        </div>
-
         {/* Disease List */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -170,6 +144,65 @@ const VaccineAdd = ({ vaccine, onClose }) => {
             </select>
           )}
           <p className="mt-1 text-xs text-slate-500">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều bệnh.</p>
+        </div>
+
+        {/* Name */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Tên Vaccine *
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800"
+            placeholder="Nhập tên vaccine"
+          />
+        </div>
+        {/* Description */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Mô Tả *
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            rows={4}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800"
+            placeholder="Nhập mô tả chi tiết về vaccine"
+          />
+        </div>
+        {/* Origin */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Nguồn Gốc *
+          </label>
+          <input
+            type="text"
+            name="origin"
+            value={formData.origin}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800"
+            placeholder="Nhập nguồn gốc vaccine"
+          />
+        </div>
+
+        {/* Dose Quantity */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Số Mũi Tiêm
+          </label>
+          <input
+            type="number"
+            name="dose_quantity"
+            value={formData.dose_quantity}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800"
+            placeholder="Nhập số mũi tiêm (mặc định 0)"
+            min="0"
+          />
         </div>
 
         {/* Submit Button */}
