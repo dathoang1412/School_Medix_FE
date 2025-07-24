@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, ChevronDown, ChevronUp, Search, FileText, CheckCircle, Calendar, Clock, MapPin, Pill, User, Activity } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Search, FileText, CheckCircle, Calendar, Clock, MapPin, Pill, User, Activity, X } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import { getUserRole } from '../../../service/authService';
 
@@ -18,6 +18,9 @@ const DailyHealthRecord = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'record_date', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [downloading, setDownloading] = useState(new Set());
 
   // Format date to DD/MM/YYYY
   const formatDate = (dateString) => {
@@ -168,6 +171,158 @@ const DailyHealthRecord = () => {
     isToday(record.detect_time) || isToday(record.record_date)
   ).length;
 
+  const handleViewDetails = async (record) => {
+    setDownloading((prev) => new Set(prev).add(`details_${record.id}`));
+    try {
+      console.log(record);
+      console.log(`Fetching full record for student_id: ${record.student_id}`);
+      const response = await axiosClient.get(`/daily-health-record/${record.id}`);
+      console.log("FULL RECORD RESPONSE:", response.data);
+      const fullRecord = response.data.data;
+      if (!fullRecord) {
+        throw new Error("Không tìm thấy hồ sơ chi tiết!");
+      }
+      setSelectedRecord(fullRecord);
+      setShowDetailsModal(true);
+    } catch (error) {
+      console.error("Error fetching full record:", error.response || error);
+      setError(
+        error.response?.data?.message ||
+          `Không thể tải chi tiết hồ sơ: ${error.message}`
+      );
+    } finally {
+      setDownloading((prev) => {
+        const next = new Set(prev);
+        next.delete(`details_${record.id}`);
+        return next;
+      });
+    }
+  };
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setSelectedRecord(null);
+  };
+
+  const renderDetailsModal = () => {
+    if (!selectedRecord) return null;
+    else console.log('Selected record: ', selectedRecord);
+    return (
+      <div className="fixed inset-0 bg-gray-900/40 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-lg">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Chi tiết hồ sơ y tế
+            </h3>
+            <button
+              onClick={closeDetailsModal}
+              className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+              aria-label="Đóng"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="p-6 space-y-6">
+            {downloading.has(`details_${selectedRecord.id}`) ? (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span className="text-gray-600">Đang tải chi tiết...</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                  <h4 className="text-sm font-medium text-gray-800 uppercase">
+                    Thông tin học sinh
+                  </h4>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Mã học sinh: {selectedRecord.student_id} | Họ tên: {selectedRecord.name || 'N/A'}
+                  </p>
+                </div>
+                    <div className="space-y-4">
+                        <div>
+                            <h4 className="text-lg font-medium text-gray-800 uppercase border-b border-gray-200 pb-2 mb-4">
+                            Chi tiết y tế
+                            </h4>
+                            <div className="space-y-4">
+                                <h5 className="text-sm font-bold text-gray-800">I. Thời gian</h5>
+                                {[
+                                { label: "Ngày phát hiện", value: formatDate(selectedRecord.detect_time) },
+                                { label: "Ngày ghi nhận", value: formatDate(selectedRecord?.record_date) },
+                                ].map(({ label, value }) => (
+                                <div key={label} className="flex items-start">
+                                    <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                                    <p className="flex-1 text-sm text-gray-800">{value}</p>
+                                </div>
+                                ))}
+                            </div>
+                            <div className="space-y-4 mt-6">
+                                <h5 className="text-sm font-bold text-gray-800">II. Chẩn đoán & Điều trị</h5>
+                                {[
+                                { label: "Chẩn đoán", value: selectedRecord?.diagnosis || 'Chưa có chẩn đoán' },
+                                { label: "Xử lý tại chỗ", value: selectedRecord?.on_site_treatment || 'Không có' },
+                                ].map(({ label, value }) => (
+                                <div key={label} className="flex items-start">
+                                    <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                                    <p className="flex-1 text-sm text-gray-800">{value}</p>
+                                </div>
+                                ))}
+                            </div>
+                            <div className="mt-6 space-y-4">
+                                <h5 className="text-sm font-bold text-gray-800">III. Chuyển viện & Vật tư</h5>
+                                {[
+                                    { label: "Chuyển đến", value: selectedRecord?.transferred_to || 'Không chuyển viện' },
+                                    { label: "Vật tư sử dụng", value: selectedRecord?.items_usage || 'Không sử dụng' },
+                                ].map(({ label, value }) => (
+                                    <div key={label} className="flex items-start">
+                                    <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                                    <p className="flex-1 text-sm text-gray-800">{value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+              </>
+            )}
+          </div>
+          <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+            <button 
+              onClick={() => navigate(`${selectedRecord.id}`)} 
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
+            >
+              Xem chi tiết & Chỉnh sửa
+            </button>
+            <button
+              onClick={closeDetailsModal}
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="container mx-auto max-w-7xl">
@@ -241,21 +396,20 @@ const DailyHealthRecord = () => {
             <div className="flex gap-3">
               <button
                 onClick={filterTodayRecords}
-                className="flex cursor-pointer  items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm font-medium"
+                className="flex cursor-pointer items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm font-medium"
               >
                 <Clock size={16} />
                 Hôm nay
               </button>
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 cursor-pointer  border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200 text-sm font-medium"
+                className="px-4 py-2 cursor-pointer border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200 text-sm font-medium"
               >
                 Xóa bộ lọc
               </button>
               <button
                 onClick={() => navigate('/admin/add-record')}
-                className=" cursor-pointer flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
-
+                className="cursor-pointer flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
               >
                 <Plus size={16} />
                 Thêm Hồ Sơ
@@ -322,106 +476,93 @@ const DailyHealthRecord = () => {
                   </tr>
                 ) : (
                   currentRecords.map((record, index) => (
-                    <React.Fragment key={index}>
-                      <tr className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">{getStudentDisplay(record.student_id)}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <button
-                              onClick={() => navigate(`/${getUserRole()}/student-overview/${record.student_id}`)}
-                              className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
-                            >
-                              {record.name || 'N/A'}
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            {isToday(record.detect_time) && (
-                              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                            )}
-                            <span className="text-sm text-gray-900">{formatDate(record.detect_time)}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            {isToday(record.record_date) && (
-                              <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            )}
-                            <span className="text-sm text-gray-900">{formatDate(record.record_date)}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-gray-900">
-                            {record.diagnosis || 'Chưa có chẩn đoán'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {getStatusBadge(record)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium text-gray-900">{getStudentDisplay(record.student_id)}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
                           <button
-                            onClick={() => toggleRowExpansion(record.id)}
-                            className="cursor-pointer inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
+                            onClick={() => navigate(`/${getUserRole()}/student-overview/${record.student_id}`)}
+                            className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
                           >
-                            {expandedRows.has(record.id) ? (
-                              <>
-                                <ChevronUp size={14} />
-                                Ẩn
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown size={14} />
-                                Xem
-                              </>
-                            )}
+                            {record.name || 'N/A'}
                           </button>
-                        </td>
-                      </tr>
-                      {expandedRows.has(record.id) && (
-                        <tr className="bg-gray-50">
-                          <td colSpan="7" className="px-6 py-6">
-                            <div className="border-l-4 border-blue-600 pl-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div className="space-y-3">
-                                  <h4 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
-                                    Thông tin cơ bản
-                                  </h4>
-                                  <div className="space-y-2 text-sm text-gray-600">
-                                    <div><span className="font-medium">Mã học sinh:</span> {getStudentDisplay(record.student_id)}</div>
-                                    <div><span className="font-medium">Họ tên:</span> {record.name || 'N/A'}</div>
-                                    <div><span className="font-medium">Ngày phát hiện:</span> {formatDate(record.detect_time)}</div>
-                                    <div><span className="font-medium">Ngày ghi nhận:</span> {formatDate(record.record_date)}</div>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <h4 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
-                                    Chẩn đoán & Điều trị
-                                  </h4>
-                                  <div className="space-y-2 text-sm text-gray-600">
-                                    <div><span className="font-medium">Chẩn đoán:</span> {record.diagnosis || 'Chưa có chẩn đoán'}</div>
-                                    <div><span className="font-medium">Xử lý tại chỗ:</span> {record.on_site_treatment || 'Không có'}</div>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <h4 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
-                                    Chuyển viện & Vật tư
-                                  </h4>
-                                  <div className="space-y-2 text-sm text-gray-600">
-                                    <div><span className="font-medium">Chuyển đến:</span> {record.transferred_to || 'Không chuyển viện'}</div>
-                                    <div><span className="font-medium">Vật tư sử dụng:</span> {record.items_usage || 'Không sử dụng'}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          {isToday(record.detect_time) && (
+                            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                          )}
+                          <span className="text-sm text-gray-900">{formatDate(record.detect_time)}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          {isToday(record.record_date) && (
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                          )}
+                          <span className="text-sm text-gray-900">{formatDate(record.record_date)}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-900">
+                          {record.diagnosis || 'Chưa có chẩn đoán'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(record)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => handleViewDetails(record)}
+                          disabled={loading || downloading.has(`details_${record.id}`)}
+                          className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                            loading || downloading.has(`details_${record.id}`)
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700'
+                          }`}
+                          title={
+                            downloading.has(`details_${record.id}`)
+                              ? 'Đang tải chi tiết...'
+                              : 'Xem chi tiết'
+                          }
+                          aria-label={
+                            downloading.has(`details_${record.id}`)
+                              ? 'Đang tải chi tiết...'
+                              : 'Xem chi tiết'
+                          }
+                        >
+                          {downloading.has(`details_${record.id}`) ? (
+                            <svg
+                              className="animate-spin h-4 w-4 text-gray-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          ) : (
+                            <FileText className="h-4 w-4" />
+                          )}
+                        </button>
+                      </td>
+                    </tr>
                   ))
                 )}
               </tbody>
@@ -482,6 +623,7 @@ const DailyHealthRecord = () => {
           </div>
         )}
       </div>
+      {renderDetailsModal()}
     </div>
   );
 };
