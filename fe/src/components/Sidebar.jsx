@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Newspaper,
   PencilLineIcon,
+  SquareActivity
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getUser, getUserRole, removeUser } from "../service/authService";
@@ -105,6 +106,11 @@ const Sidebar = () => {
       path: "daily-health",
       icon: <CalendarDaysIcon />,
     },
+    {
+      title: "Quản lý Khai Báo",
+      path: "DeclarationManagement",
+      icon: <PencilLineIcon />,
+    },
   ]);
 
   const [adminItems, setAdminItems] = useState([
@@ -114,14 +120,22 @@ const Sidebar = () => {
       icon: <LuLayoutDashboard />,
     },
     {
-      title: "Quản lý bệnh",
+      title: "Hồ sơ bệnh",
       path: "disease",
       icon: <MdOutlineMedicalInformation />,
-    },
-    {
-      title: "Quản lý Khai Báo",
-      path: "DeclarationManagement",
-      icon: <PencilLineIcon />,
+      hasDropdown: true,
+      children: [
+        {
+          title: "Quản lý bệnh",
+          path: "#",
+          icon: <SquareActivity/>
+        },
+        {
+          title: "Quản lý hồ sơ bệnh",
+          path: "disease",
+          icon: <MdOutlineMedicalInformation size={25}/>
+        },
+      ]
     },
     {
       title: "Khám định kỳ",
