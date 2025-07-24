@@ -431,7 +431,7 @@ const HealthRecord = () => {
                       Chẩn Đoán
                     </div>
                   </th>
-                  <th className="p-4 text-left text-sm font-semibold text-gray-700">Trạng Thái</th>
+                  <th className="p-4 text-left text-sm font-semibold text-gray-700">Tình Trạng</th>
                   <th className="p-4 text-center text-sm font-semibold text-gray-700">Chi Tiết</th>
                 </tr>
               </thead>
