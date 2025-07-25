@@ -322,7 +322,7 @@ const VaccineCampaignInfo = () => {
           </button>
           <button
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200
-              text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
             <History className="w-4 h-4" />
