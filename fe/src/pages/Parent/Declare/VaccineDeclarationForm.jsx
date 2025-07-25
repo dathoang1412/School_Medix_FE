@@ -18,12 +18,12 @@ const VaccineDeclarationForm = () => {
     status: "COMPLETED",
   });
   const [vaccines, setVaccines] = useState([]);
-  const [diseases, setDiseases] = useState([]);
+  const [vaccineDiseases, setVaccineDiseases] = useState([]);
   const [student, setStudent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch student and vaccines data
+  // Fetch student and vaccine_disease data
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -53,17 +53,17 @@ const VaccineDeclarationForm = () => {
         setError("Không thể tải thông tin học sinh. Vui lòng thử lại.");
       }
 
-      // Fetch vaccines
+      // Fetch vaccine_disease
       try {
-        const response = await axiosClient.get("/vaccines");
-        console.log("Vaccines response:", response.data);
+        const response = await axiosClient.get("/vaccine-disease");
+        console.log("Vaccine diseases response:", response.data);
         if (response.data.error) {
           throw new Error(response.data.message);
         }
-        setVaccines(response.data.data);
+        setVaccineDiseases(response.data.data || []);
       } catch (error) {
-        console.error("Error fetching vaccines:", error);
-        setError("Không thể tải danh sách vaccine. Vui lòng thử lại sau.");
+        console.error("Error fetching vaccine_diseases:", error);
+        setError("Không thể tải danh sách cụm bệnh. Vui lòng thử lại sau.");
       } finally {
         setIsLoading(false);
       }
@@ -71,36 +71,29 @@ const VaccineDeclarationForm = () => {
     fetchData();
   }, [student_id]);
 
-  // Fetch diseases when vaccine_id changes
+  // Fetch vaccines based on disease_id
   useEffect(() => {
-    const fetchDiseases = async () => {
-      if (formData.vaccine_id && !isNaN(formData.vaccine_id)) {
-        console.log("Fetching diseases for vaccine_id:", formData.vaccine_id);
-        try {
-          const response = await axiosClient.get(
-            `/vaccines/${formData.vaccine_id}/diseases`
-          );
-          console.log("Diseases response:", response.data);
-          if (response.data.error) {
-            throw new Error(response.data.message);
-          }
-          setDiseases(response.data.data);
-          setFormData((prev) => ({ ...prev, disease_id: "" }));
-        } catch (error) {
-          console.error("Error fetching diseases:", error);
-          setError(
-            error.response?.data?.message ||
-              "Không thể tải danh sách bệnh. Vui lòng thử lại sau."
-          );
-          setDiseases([]);
-        }
-      } else {
-        setDiseases([]);
-        setFormData((prev) => ({ ...prev, disease_id: "" }));
+    const fetchVaccines = async () => {
+      if (!formData.disease_id) {
+        setVaccines([]);
+        setFormData((prev) => ({ ...prev, vaccine_id: "" }));
+        return;
+      }
+      try {
+        const diseaseId = formData.disease_id.split(',').map(Number);
+        const res = await axiosClient.get(`/diseases/vaccines`, {
+          params: { diseaseId }
+        });
+        console.log("Vaccines response:", res.data);
+        setVaccines(res.data.data || []);
+      } catch (error) {
+        console.error("Error fetching vaccines:", error);
+        setError("Không thể tải danh sách vaccine. Vui lòng thử lại sau.");
+        setVaccines([]);
       }
     };
-    fetchDiseases();
-  }, [formData.vaccine_id]);
+    fetchVaccines();
+  }, [formData.disease_id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -131,7 +124,7 @@ const VaccineDeclarationForm = () => {
       register_id: formData.register_id,
       description: formData.description || null,
       disease_id: formData.disease_id
-        ? parseInt(formData.disease_id, 10)
+        ? formData.disease_id.split(',').map(Number)
         : null,
       vaccine_id: parseInt(formData.vaccine_id, 10),
       location: formData.location || null,
@@ -222,6 +215,28 @@ const VaccineDeclarationForm = () => {
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Chọn Cụm Bệnh <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="disease_id"
+                    value={formData.disease_id}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 whitespace-nowrap"
+                    required
+                  >
+                    <option value="" disabled>
+                      Chọn cụm bệnh
+                    </option>
+                    {vaccineDiseases.map((vd) => (
+                      <option key={vd.disease_id} value={vd.disease_id}>
+                        {vd.disease_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Vaccine <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -230,6 +245,7 @@ const VaccineDeclarationForm = () => {
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 whitespace-nowrap"
                     required
+                    disabled={!formData.disease_id || vaccines.length === 0}
                   >
                     <option value="" disabled>
                       Chọn vaccine
@@ -237,32 +253,6 @@ const VaccineDeclarationForm = () => {
                     {vaccines.map((vaccine) => (
                       <option key={vaccine.id} value={vaccine.id}>
                         {vaccine.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bệnh{" "}
-                    {diseases.length > 0 && (
-                      <span className="text-red-500">*</span>
-                    )}
-                  </label>
-                  <select
-                    name="disease_id"
-                    value={formData.disease_id}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 whitespace-nowrap"
-                    disabled={!formData.vaccine_id || diseases.length === 0}
-                    required={diseases.length > 0}
-                  >
-                    <option value="" disabled>
-                      {diseases.length > 0 ? "Chọn bệnh" : "Không có bệnh nào"}
-                    </option>
-                    {diseases.map((disease) => (
-                      <option key={disease.id} value={disease.id}>
-                        {disease.name}
                       </option>
                     ))}
                   </select>
@@ -279,6 +269,7 @@ const VaccineDeclarationForm = () => {
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
+                    disabled={isLoading || !formData.vaccine_id}
                   />
                 </div>
 
@@ -293,6 +284,7 @@ const VaccineDeclarationForm = () => {
                     onChange={handleChange}
                     placeholder="Nhập địa điểm tiêm..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isLoading || !formData.vaccine_id}
                   />
                 </div>
 
@@ -307,6 +299,7 @@ const VaccineDeclarationForm = () => {
                     placeholder="Nhập mô tả (nếu có)..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     rows="4"
+                    disabled={isLoading || !formData.vaccine_id}
                   />
                 </div>
 
@@ -335,7 +328,7 @@ const VaccineDeclarationForm = () => {
             <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !formData.vaccine_id}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Đang gửi..." : "Gửi khai báo"}
