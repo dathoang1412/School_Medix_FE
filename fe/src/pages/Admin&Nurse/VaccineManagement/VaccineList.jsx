@@ -100,7 +100,6 @@ const VaccineList = ({ vaccines, onEdit }) => {
                         onClick={() => navigate(`/${getUserRole()}/vaccine/${vaccine.id}/students`)}
                         className="whitespace-nowrap cursor-pointer inline-flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 hover:text-green-800 text-sm font-medium transition-colors duration-200"
                         title="Xem danh sách học sinh"
-                        disabled
                       >
                         <Users size={14} />
                         Xem học sinh
