@@ -207,6 +207,13 @@ const VaccineCampaignReport = () => {
             )}
           </div>
           <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+            <button
+              onClick={handleSubmitDiagnosis}
+              disabled={updatingRecords.has(selectedRecord.id)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {updatingRecords.has(selectedRecord.id) ? "Đang xử lý..." : selectedRecord.status === 'COMPLETED' ? "Cập nhật" : "Xác nhận"}
+            </button>
             {selectedRecord.status === 'COMPLETED' 
               ?
               <button
@@ -227,13 +234,6 @@ const VaccineCampaignReport = () => {
                 Đóng
               </button>
             }
-            <button
-              onClick={handleSubmitDiagnosis}
-              disabled={updatingRecords.has(selectedRecord.id)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {updatingRecords.has(selectedRecord.id) ? "Đang xử lý..." : selectedRecord.status === 'COMPLETED' ? "Cập nhật" : "Xác nhận"}
-            </button>
           </div>
         </div>
       </div>
