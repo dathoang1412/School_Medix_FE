@@ -9,8 +9,8 @@ const UpdateVaccineCampaign = () => {
   const { campaign_id } = useParams();
 
   const [campaignForm, setCampaignForm] = useState({
-    vaccine_id: "",
     disease_id: "",
+    vaccine_id: "",
     title: "",
     description: "",
     location: "",
@@ -20,33 +20,39 @@ const UpdateVaccineCampaign = () => {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [vaccineDiseases, setVaccineDiseases] = useState([]);
   const [vaccines, setVaccines] = useState([]);
-  const [diseases, setDiseases] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingDiseases, setIsLoadingDiseases] = useState(false);
+  const [isLoadingVaccineDiseases, setIsLoadingVaccineDiseases] = useState(false);
+  const [isLoadingVaccines, setIsLoadingVaccines] = useState(false);
   const [isFetchingCampaign, setIsFetchingCampaign] = useState(true);
 
-  // Fetch vaccines
+  // Fetch vaccine_disease list
   useEffect(() => {
-    const fetchVaccines = async () => {
-      setIsLoading(true);
+    const fetchVaccineDiseases = async () => {
+      setIsLoadingVaccineDiseases(true);
       try {
-        const vaccineResponse = await axiosClient.get("/vaccines");
-        if (vaccineResponse.data.error) {
-          setError(vaccineResponse.data.message);
+        const response = await axiosClient.get("/vaccine-disease");
+        if (response.data.error) {
+          setError(response.data.message);
         } else {
-          setVaccines(vaccineResponse.data.data || []);
+          setVaccineDiseases(
+            Array.isArray(response.data.data)
+              ? response.data.data
+              : []
+          );
         }
       } catch (err) {
+        console.error("Fetch vaccine_disease error:", err);
         setError(
           err.response?.data?.message ||
             "Không thể kết nối với server. Vui lòng kiểm tra backend."
         );
       } finally {
-        setIsLoading(false);
+        setIsLoadingVaccineDiseases(false);
       }
     };
-    fetchVaccines();
+    fetchVaccineDiseases();
   }, []);
 
   // Fetch campaign data
@@ -65,8 +71,8 @@ const UpdateVaccineCampaign = () => {
             return;
           }
           const campaignData = {
-            vaccine_id: campaign.vaccine_id?.toString() || "",
             disease_id: campaign.disease_id?.toString() || "",
+            vaccine_id: campaign.vaccine_id?.toString() || "",
             title: campaign.title || "",
             description: campaign.description || "",
             location: campaign.location || "",
@@ -75,6 +81,12 @@ const UpdateVaccineCampaign = () => {
           };
           setCampaignForm(campaignData);
           setOriginalFormData(campaignData);
+          // Fetch vaccines based on initial disease_id
+          if (campaignData.disease_id) {
+            const diseaseId = campaignData.disease_id.split(',').map(Number);
+            const res = await axiosClient.get(`/diseases/vaccines`, { params: { diseaseId } });
+            setVaccines(res.data.data || []);
+          }
         }
       } catch (err) {
         setError(
@@ -87,40 +99,37 @@ const UpdateVaccineCampaign = () => {
     fetchCampaign();
   }, [campaign_id]);
 
-  // Fetch diseases based on selected vaccine
+  // Fetch vaccines based on disease_id
   useEffect(() => {
-    const fetchDiseases = async () => {
-      if (!campaignForm.vaccine_id) return;
-      setIsLoadingDiseases(true);
-      setDiseases([]);
+    const fetchVaccines = async () => {
+      if (!campaignForm.disease_id) {
+        setVaccines([]);
+        setCampaignForm((prev) => ({ ...prev, vaccine_id: "" }));
+        return;
+      }
+      setIsLoadingVaccines(true);
       try {
-        const res = await axiosClient.get(`/vaccines/${campaignForm.vaccine_id}/diseases`);
-        setDiseases(res.data.data || []);
+        const diseaseId = campaignForm.disease_id.split(',').map(Number);
+        const res = await axiosClient.get(`/diseases/vaccines`, {
+          params: { diseaseId }
+        });
+        setVaccines(res.data.data || []);
       } catch (err) {
-        setError("Không thể tải danh sách bệnh. Vui lòng kiểm tra lại.");
+        console.error("Fetch vaccines error:", err);
+        setError("Không thể tải danh sách vaccine. Vui lòng kiểm tra lại.");
       } finally {
-        setIsLoadingDiseases(false);
+        setIsLoadingVaccines(false);
       }
     };
-    fetchDiseases();
-  }, [campaignForm.vaccine_id]);
-
-  // Set default vaccine_id or handle empty vaccine list
-  useEffect(() => {
-    if (vaccines.length > 0 && !campaignForm.vaccine_id && !isFetchingCampaign) {
-      setCampaignForm((prev) => ({
-        ...prev,
-        vaccine_id: vaccines[0].id.toString(),
-      }));
-    }
-  }, [vaccines, campaignForm.vaccine_id, isFetchingCampaign]);
+    fetchVaccines();
+  }, [campaignForm.disease_id]);
 
   const handleCampaignChange = useCallback((e) => {
     const { name, value } = e.target;
     setCampaignForm((prev) => ({
       ...prev,
       [name]: value,
-      ...(name === "vaccine_id" ? { disease_id: "" } : {}),
+      ...(name === "disease_id" ? { vaccine_id: "" } : {}),
     }));
   }, []);
 
@@ -131,13 +140,13 @@ const UpdateVaccineCampaign = () => {
       setSuccess("");
       setIsLoading(true);
 
-      if (!campaignForm.vaccine_id) {
-        setError("Vui lòng chọn vaccine");
+      if (!campaignForm.disease_id) {
+        setError("Vui lòng chọn cụm bệnh");
         setIsLoading(false);
         return;
       }
-      if (!campaignForm.disease_id) {
-        setError("Vui lòng chọn bệnh");
+      if (!campaignForm.vaccine_id) {
+        setError("Vui lòng chọn vaccine");
         setIsLoading(false);
         return;
       }
@@ -163,7 +172,11 @@ const UpdateVaccineCampaign = () => {
       }
 
       try {
-        const response = await axiosClient.patch(`/vaccination-campaign/${campaign_id}`, campaignForm);
+        const response = await axiosClient.patch(`/vaccination-campaign/${campaign_id}`, {
+          ...campaignForm,
+          disease_id: campaignForm.disease_id.split(',').map(Number),
+          vaccine_id: parseInt(campaignForm.vaccine_id),
+        });
         setSuccess(response.data.message || "Cập nhật chiến dịch thành công");
         navigate("/admin/vaccine-campaign");
       } catch (err) {
@@ -258,14 +271,43 @@ const UpdateVaccineCampaign = () => {
         )}
         <form onSubmit={handleCampaignSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Vaccine</label>
+            <label className="block text-sm font-medium mb-1">Chọn Cụm Bệnh</label>
+            <select
+              name="disease_id"
+              value={campaignForm.disease_id}
+              onChange={handleCampaignChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              required
+              disabled={isLoading || isLoadingVaccineDiseases}
+            >
+              <option value="">Chọn cụm bệnh</option>
+              {vaccineDiseases.map((vd) => (
+                <option key={vd.disease_id} value={vd.disease_id}>
+                  {vd.disease_name}
+                </option>
+              ))}
+            </select>
+            {isLoadingVaccineDiseases && (
+              <div className="text-gray-500 text-sm mt-1">
+                <Loader2 className="animate-spin inline-block mr-2" size={16} />
+                Đang tải danh sách...
+              </div>
+            )}
+            {!isLoadingVaccineDiseases && vaccineDiseases.length === 0 && (
+              <div className="text-red-600 text-sm mt-1">
+                Không có dữ liệu cụm bệnh.
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Chọn Vaccine</label>
             <select
               name="vaccine_id"
               value={campaignForm.vaccine_id}
               onChange={handleCampaignChange}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
               required
-              disabled={isLoading}
+              disabled={isLoading || isLoadingVaccines || !campaignForm.disease_id}
             >
               <option value="">Chọn vaccine</option>
               {vaccines.map((vaccine) => (
@@ -274,28 +316,15 @@ const UpdateVaccineCampaign = () => {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Bệnh</label>
-            <select
-              name="disease_id"
-              value={campaignForm.disease_id}
-              onChange={handleCampaignChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              required
-              disabled={isLoading || isLoadingDiseases || !campaignForm.vaccine_id}
-            >
-              <option value="">Chọn bệnh</option>
-              {diseases.map((disease) => (
-                <option key={disease.id} value={disease.id}>
-                  {disease.name}
-                </option>
-              ))}
-            </select>
-            {isLoadingDiseases && (
+            {isLoadingVaccines && (
               <div className="text-gray-500 text-sm mt-1">
                 <Loader2 className="animate-spin inline-block mr-2" size={16} />
-                Đang tải danh sách bệnh...
+                Đang tải danh sách vaccine...
+              </div>
+            )}
+            {!isLoadingVaccines && campaignForm.disease_id && vaccines.length === 0 && (
+              <div className="text-red-600 text-sm mt-1">
+                Không có vaccine nào liên quan đến bệnh đã chọn.
               </div>
             )}
           </div>
@@ -309,7 +338,7 @@ const UpdateVaccineCampaign = () => {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
               required
               placeholder="Nhập tiêu đề chiến dịch"
-              disabled={isLoading}
+              disabled={isLoading || !campaignForm.vaccine_id}
             />
           </div>
           <div>
@@ -321,7 +350,7 @@ const UpdateVaccineCampaign = () => {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
               rows="4"
               placeholder="Nhập mô tả chiến dịch (không bắt buộc)"
-              disabled={isLoading}
+              disabled={isLoading || !campaignForm.vaccine_id}
             />
           </div>
           <div>
@@ -334,7 +363,7 @@ const UpdateVaccineCampaign = () => {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
               required
               placeholder="Nhập địa điểm"
-              disabled={isLoading}
+              disabled={isLoading || !campaignForm.vaccine_id}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -347,7 +376,7 @@ const UpdateVaccineCampaign = () => {
                 onChange={handleCampaignChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                 required
-                disabled={isLoading}
+                disabled={isLoading || !campaignForm.vaccine_id}
               />
             </div>
             <div>
@@ -359,7 +388,7 @@ const UpdateVaccineCampaign = () => {
                 onChange={handleCampaignChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                 required
-                disabled={isLoading}
+                disabled={isLoading || !campaignForm.vaccine_id}
               />
             </div>
           </div>
@@ -379,7 +408,7 @@ const UpdateVaccineCampaign = () => {
             <button
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-              disabled={isLoading}
+              disabled={isLoading || !campaignForm.vaccine_id}
             >
               {isLoading ? (
                 <Loader2 className="animate-spin inline-block mr-2" size={16} />
