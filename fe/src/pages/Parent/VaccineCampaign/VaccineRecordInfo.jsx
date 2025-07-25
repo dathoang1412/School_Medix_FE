@@ -73,6 +73,7 @@ const VaccineRecordInfo = () => {
   const fetchDetails = async (diseaseId) => {
     if (!details[diseaseId]) {
       try {
+        console.log(diseaseId);
         setLoadingDetails((prev) => ({ ...prev, [diseaseId]: true }));
         const res = await axiosClient.get(`/student/${currChild.id}/disease/vaccination-record`, 
           { 
