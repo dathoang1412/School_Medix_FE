@@ -62,6 +62,7 @@ import ParentEditStudentProfile from "../pages/Parent/StudentProfile/ParentEditS
 import { getUser, getUserRole } from "../service/authService";
 import DetailHealthRecord from "../pages/Parent/DailyHealth/DetailHealthRecord";
 import DetailHealthRecordForUpdate from "../pages/Admin&Nurse/DailyHealthManagement/DetailHealthRecordForUpdate";
+import VaccinationHistoryDetail from "../pages/Parent/VaccinationRecord/VaccinationHistoryDetail";
 
 const routes = createBrowserRouter([
   {
@@ -309,6 +310,10 @@ const routes = createBrowserRouter([
           {
             path: "vaccine-info",
             element: <VaccineCampaignInfo />,
+          },
+          {
+            path: "vaccine-info/:record_id",
+            element: <VaccinationHistoryDetail />,
           },
           {
             path: "health-record",
