@@ -188,6 +188,12 @@ const VaccinationHistory = () => {
             </div>
           </div>
           <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+            <button 
+              onClick={() => navigate(`${selectedRecord.id}`)} 
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
+            >
+              Xem chi tiết
+            </button>
             <button
               onClick={closeFullDetailsModal}
               className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
