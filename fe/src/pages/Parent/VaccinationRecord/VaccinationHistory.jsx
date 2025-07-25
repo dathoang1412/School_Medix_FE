@@ -168,10 +168,10 @@ const VaccinationHistory = () => {
                     </div>
                     <div className="flex items-start">
                       <label className="w-1/3 text-sm font-medium text-gray-600">
-                        Mô tả
+                        Chẩn đoán
                       </label>
                       <p className="flex-1 text-sm text-gray-800">
-                        {selectedRecord.description || "Không có mô tả"}
+                        {selectedRecord.description || "Không có chẩn đoán"}
                       </p>
                     </div>
                     <div className="flex items-start">
