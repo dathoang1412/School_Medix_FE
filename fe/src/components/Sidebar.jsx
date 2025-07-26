@@ -20,7 +20,7 @@ import {
   ChevronRight,
   Newspaper,
   PencilLineIcon,
-  SquareActivity
+  SquareActivity,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getUser, getUserRole, removeUser } from "../service/authService";
@@ -87,6 +87,11 @@ const Sidebar = () => {
               path: "blog",
               icon: <LuNewspaper />,
             },
+            {
+              title: "Quản lý Vật Tư Y Tế",
+              path: "medical-supply",
+              icon: <FaVial />,
+            },
           ];
         }
         return prev;
@@ -128,14 +133,14 @@ const Sidebar = () => {
         {
           title: "Quản lý bệnh",
           path: "#",
-          icon: <SquareActivity/>
+          icon: <SquareActivity />,
         },
         {
           title: "Quản lý hồ sơ bệnh",
           path: "disease",
-          icon: <MdOutlineMedicalInformation size={25}/>
+          icon: <MdOutlineMedicalInformation size={22} />,
         },
-      ]
+      ],
     },
     {
       title: "Khám định kỳ",
@@ -180,7 +185,7 @@ const Sidebar = () => {
       action: "profile",
       title: getUserRole().toString().toUpperCase(),
       icon: (
-        <div className="w-8 h-8 rounded-full overflow-hidden shadow-sm border-2 border-blue-200 flex-shrink-0">
+        <div className="w-7 h-7 rounded-full overflow-hidden shadow-sm border-2 border-blue-200 flex-shrink-0">
           {userData?.profile_img_url ? (
             <img
               src={userData.profile_img_url}
@@ -189,13 +194,13 @@ const Sidebar = () => {
             />
           ) : (
             <div className="w-full h-full bg-blue-100 flex items-center justify-center">
-              <User2 className="w-5 h-5 text-blue-600" />
+              <User2 className="w-4 h-4 text-blue-600" />
             </div>
           )}
         </div>
       ),
     },
-    { title: "Đăng xuất", action: "logout", icon: <LogOut /> },
+    { title: "Đăng xuất", action: "logout", icon: <LogOut size={16} /> },
   ];
 
   const toggleDropdown = (title) => {
@@ -266,12 +271,12 @@ const Sidebar = () => {
             }
           }}
           className={`
-            w-full cursor-pointer flex items-center gap-3 p-3 rounded-xl text-left 
+            w-full cursor-pointer flex items-center gap-2.5 p-2.5 rounded-lg text-left 
             transition-all duration-300 ease-out group relative
             transform hover:scale-[1.02] active:scale-[0.98]
             ${
               isChild
-                ? "ml-4 pl-8 bg-gray-50/70 hover:bg-gray-100/80 border-l-2 border-gray-200"
+                ? "ml-3 pl-7 bg-gray-50/70 hover:bg-gray-100/80 border-l-2 border-gray-200"
                 : ""
             }
             ${
@@ -287,8 +292,8 @@ const Sidebar = () => {
           title={isCollapsed ? item.title : ""}
         >
           <div
-            className={`text-lg flex-shrink-0 transition-all duration-300 ease-out group-hover:scale-125 group-hover:rotate-3 ${
-              isChild ? "text-base" : ""
+            className={`text-[17px] flex-shrink-0 transition-all duration-300 ease-out group-hover:scale-125 group-hover:rotate-3 ${
+              isChild ? "text-sm" : ""
             }`}
           >
             {item.icon}
@@ -296,7 +301,7 @@ const Sidebar = () => {
           {!isCollapsed && (
             <span
               className={`font-medium leading-tight truncate flex-1 ${
-                isChild ? "text-xs" : "text-sm"
+                isChild ? "text-[11px]" : "text-[13px]"
               }`}
             >
               {item.title}
@@ -305,9 +310,9 @@ const Sidebar = () => {
           {hasDropdown && !isCollapsed && (
             <div className="text-sm">
               {isExpanded ? (
-                <ChevronDown size={16} />
+                <ChevronDown size={15} />
               ) : (
-                <ChevronRight size={16} />
+                <ChevronRight size={15} />
               )}
             </div>
           )}
@@ -317,10 +322,10 @@ const Sidebar = () => {
           <div
             className={`
               overflow-hidden transition-all duration-300 ease-in-out
-              ${isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}
+              ${isExpanded ? "max-h-80 opacity-100" : "max-h-0 opacity-0"}
             `}
           >
-            <div className="mt-1 space-y-1 pb-1 bg-gray-50/30 rounded-lg mx-2 px-1 py-2">
+            <div className="mt-0.5 space-y-0.5 pb-1 bg-gray-50/30 rounded-lg mx-1.5 px-1 py-1">
               {item.children.map((child, index) => (
                 <div
                   key={child.title}
@@ -361,68 +366,68 @@ const Sidebar = () => {
           ${isMobile ? "z-50" : "z-10"}
           h-screen bg-white shadow-lg border-r border-gray-200 
           flex flex-col transition-all duration-300 ease-in-out
-          ${isCollapsed ? "w-16" : "w-64"}
+          ${isCollapsed ? "w-14" : "w-60"}
           ${isMobile && isCollapsed ? "-translate-x-full" : "translate-x-0"}
         `}
       >
         {/* Header */}
         <div
-          className={`p-3 border-b border-gray-200 flex items-center justify-between 
-                        min-h-[60px] ${isCollapsed ? "flex-col" : "flex-row"}`}
+          className={`p-2.5 border-b border-gray-200 flex items-center justify-between 
+                        min-h-[52px] ${isCollapsed ? "flex-col" : "flex-row"}`}
         >
           <button
             onClick={handleLogoClick}
-            className="flex items-center gap-3 cursor-pointer transition-colors duration-200 group"
+            className="flex items-center gap-2.5 cursor-pointer transition-colors duration-200 group"
             title={isCollapsed ? "SchoolMedix" : ""}
           >
             <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm group-hover:from-blue-500 group-hover:to-blue-600">
-              <MdOutlineSchool className="text-white text-lg" />
+              <MdOutlineSchool className="text-white text-[17px]" />
             </div>
             {!isCollapsed && (
-              <span className="font-bold text-gray-900 text-lg group-hover:text-blue-600">
+              <span className="font-bold text-gray-900 text-[17px] group-hover:text-blue-600">
                 SchoolMedix
               </span>
             )}
           </button>
           <button
             onClick={toggleSidebar}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 flex-shrink-0"
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors duration-200 flex-shrink-0"
           >
-            {isCollapsed ? <Menu size={18} /> : <X size={18} />}
+            {isCollapsed ? <Menu size={17} /> : <X size={17} />}
           </button>
         </div>
 
         {/* Main Navigation */}
-        <div className="flex-1 py-2 px-2 overflow-y-auto scrollbar-hide">
+        <div className="flex-1 py-1.5 px-1.5 overflow-y-auto scrollbar-hide">
           {/* Common Items */}
-          <div className="space-y-1">
+          <div className="space-y-0.75">
             {commonItems.map((item) => renderMenuItem(item))}
           </div>
 
           {/* Divider */}
           {adminItems.length > 0 && (
-            <div className="my-4 border-t border-gray-100" />
+            <div className="my-3 border-t border-gray-100" />
           )}
 
           {/* Admin Items */}
-          <div className="space-y-1">
+          <div className="space-y-0.75">
             {adminItems.map((item) => renderMenuItem(item))}
           </div>
         </div>
 
         {/* Bottom Actions */}
-        <div className="p-2 border-t border-gray-100 bg-gray-50/50">
-          <div className="space-y-1">
-            {bottomItems.map((item, index) => (
+        <div className="p-1.5 border-t border-gray-100 bg-gray-50/50">
+          <div className="space-y-0.75">
+            {bottomItems.map((item) => (
               <button
                 key={item.title}
                 onClick={() => handleAction(item.action)}
-                className="w-full flex items-center cursor-pointer gap-3 p-3 rounded-xl text-left text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-300 ease-out group transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-sm"
+                className="w-full flex items-center cursor-pointer gap-2.5 p-2.5 rounded-lg text-left text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-300 ease-out group transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-sm"
                 title={isCollapsed ? item.title : ""}
               >
                 <div className="flex-shrink-0">{item.icon}</div>
                 {!isCollapsed && (
-                  <span className="font-medium text-sm truncate flex-1">
+                  <span className="font-medium text-[13px] truncate flex-1">
                     {item.title}
                   </span>
                 )}

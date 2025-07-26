@@ -63,6 +63,7 @@ import { getUser, getUserRole } from "../service/authService";
 import DetailHealthRecord from "../pages/Parent/DailyHealth/DetailHealthRecord";
 import DetailHealthRecordForUpdate from "../pages/Admin&Nurse/DailyHealthManagement/DetailHealthRecordForUpdate";
 import VaccinationHistoryDetail from "../pages/Parent/VaccinationRecord/VaccinationHistoryDetail";
+import MedicalSupplyManagement from "../pages/Admin/MedicalSupplyManagement/MedicalSupplyManagement";
 
 const routes = createBrowserRouter([
   {
@@ -138,6 +139,10 @@ const routes = createBrowserRouter([
           {
             path: "user-manage",
             element: <UserManagement />,
+          },
+          {
+            path: "medical-supply",
+            element: <MedicalSupplyManagement />,
           },
           {
             path: "vaccine-campaign",
