@@ -167,7 +167,7 @@ const MedicineList = () => {
                     </div>
                   </th>
                   <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-[25%]">
-                    Hành động
+                    Thao tác
                   </th>
                 </tr>
               </thead>

@@ -63,9 +63,11 @@ import DetailHealthRecord from "../pages/Parent/DailyHealth/DetailHealthRecord";
 import DetailHealthRecordForUpdate from "../pages/Admin&Nurse/DailyHealthManagement/DetailHealthRecordForUpdate";
 import VaccinationHistoryDetail from "../pages/Parent/VaccinationRecord/VaccinationHistoryDetail";
 import MedicalSupplyManagement from "../pages/Admin/MedicalSupplyManagement/MedicalSupplyManagement";
-import MedicalItemsList from "../pages/Admin/MedicalSupplyManagement/MedicalItemsList";
+import MedicalItemsList from "../pages/Admin/MedicalSupplyManagement/MedicalItemsManagement";
 import AddMedicationForm from "../pages/Parent/VaccineCampaign/AddMedicationForm";
 import AddMedicalSupplyForm from "../pages/Admin/MedicalSupplyManagement/AddMedicalSupplyForm";
+import MedicalItemsManagement from "../pages/Admin/MedicalSupplyManagement/MedicalItemsManagement";
+import AddSupplierForm from "../pages/Admin/MedicalSupplyManagement/AddSupplierForm";
 
 const routes = createBrowserRouter([
   {
@@ -144,7 +146,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "medical-supply",
-            element: <MedicalItemsList />,
+            element: <MedicalItemsManagement />,
           },
           {
             path: "medicine-item-form",
@@ -162,6 +164,14 @@ const routes = createBrowserRouter([
           {
             path: "medical-supply-item-form/:id",
             element: <AddMedicalSupplyForm />,
+          },
+          {
+            path: "supplier-form",
+            element: <AddSupplierForm />,
+          },
+          {
+            path: "supplier-form/:id",
+            element: <AddSupplierForm />,
           },
 
           {
