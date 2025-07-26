@@ -73,8 +73,12 @@ const VaccineRecordInfo = () => {
   const fetchDetails = async (diseaseId) => {
     if (!details[diseaseId]) {
       try {
+        console.log(diseaseId);
         setLoadingDetails((prev) => ({ ...prev, [diseaseId]: true }));
-        const res = await axiosClient.get(`/student/${currChild.id}/disease/${diseaseId}/vaccination-record`);
+        const res = await axiosClient.get(`/student/${currChild.id}/disease/vaccination-record`, 
+          { 
+            params: { diseaseId } 
+          });
         const allRecords = res.data.data || [];
         setDetails((prev) => ({ ...prev, [diseaseId]: allRecords }));
       } catch (error) {

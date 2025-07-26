@@ -12,13 +12,15 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  
+  TrendingDownIcon,
+  ActivityIcon
 } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { getStudentInfo } from "../../../service/childenService";
 import { getSession } from "../../../config/Supabase";
 import { useSnackbar } from "notistack";
 import VaccineRecordInfo from "./VaccineRecordInfo";
+import VaccinationHistory from "../VaccinationRecord/VaccinationHistory";
 
 const VaccineCampaignInfo = () => {
   const { student_id } = useParams();
@@ -28,6 +30,7 @@ const VaccineCampaignInfo = () => {
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState(null);
   const [historyView, setHistoryView] = useState(false);
+  const [recordsView, setRecordsView] = useState(false);
   const [registerMap, setRegisterMap] = useState({});
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
@@ -290,7 +293,7 @@ const VaccineCampaignInfo = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">
-            Hệ thống quản lý tiêm chủng
+            Quản lý tiêm chủng
           </h1>
           <p className="text-gray-600 text-sm mt-1">
             {currChild?.name || "Học sinh"} - Danh sách chiến dịch tiêm chủng
@@ -298,9 +301,12 @@ const VaccineCampaignInfo = () => {
         </div>
         <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
           <button
-            onClick={() => setHistoryView(false)}
+            onClick={() => {
+              setHistoryView(false);
+              setRecordsView(false);
+            }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-              !historyView
+              !historyView && !recordsView
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
@@ -309,20 +315,26 @@ const VaccineCampaignInfo = () => {
             Kế hoạch tiêm chủng
           </button>
           <button
-            onClick={() => setHistoryView(true)}
+            onClick={() => {
+              setHistoryView(true);
+              setRecordsView(false);
+            }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-              historyView
+              historyView && !recordsView
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
-            <TrendingDownIcon className="w-4 h-4" />
+            <ActivityIcon className="w-4 h-4" />
             Theo dõi tiêm chủng
           </button>
           <button
-            onClick={() => setHistoryView(true)}
+            onClick={() => {
+              setRecordsView(true);
+              setHistoryView(false);
+            }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-              historyView
+              recordsView && !historyView
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
@@ -339,7 +351,13 @@ const VaccineCampaignInfo = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <VaccineRecordInfo />
           </div>
-        ) : (
+        ) :
+        recordsView ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <VaccinationHistory />
+          </div>
+        ) : 
+        (
           <>
             {campaignList.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">

@@ -28,16 +28,13 @@ const VaccineList = ({ vaccines, onEdit }) => {
           <thead className="bg-gray-100">
             <tr>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Mã Vaccine
+                Mũi Tiêm
               </th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Tên Vaccine
+                Vaccine
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Mô Tả
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Tên Bệnh Liên Quan
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                Số Mũi Tiêm
               </th>
               <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Thao Tác
@@ -47,7 +44,7 @@ const VaccineList = ({ vaccines, onEdit }) => {
           <tbody className="bg-white divide-y divide-gray-100">
             {vaccines.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-6 py-12 text-center">
+                <td colSpan="4" className="px-6 py-12 text-center">
                   <svg
                     className="mx-auto h-12 w-12 text-gray-300 mb-4"
                     fill="none"
@@ -68,19 +65,20 @@ const VaccineList = ({ vaccines, onEdit }) => {
             ) : (
               vaccines.map((vaccine) => (
                 <tr key={vaccine.id} className="hover:bg-gray-50 transition-colors duration-200">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-800">#{vaccine.id}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-800">{vaccine.name}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{vaccine.description}</span>
-                  </td>
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-800">{vaccine.diseases}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-800">
+                      {vaccine.vaccines
+                        ? vaccine.vaccines.map((v) => `#${v.id} - ${v.name}`).join(", ")
+                        : `#${vaccine.id} - ${vaccine.name}`}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-800">{vaccine.dose_quantity || 1}</span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
                     <div className="flex justify-center gap-3">
                       <button
                         onClick={() => onEdit(vaccine)}
@@ -100,7 +98,7 @@ const VaccineList = ({ vaccines, onEdit }) => {
                       </button> */}
                       <button
                         onClick={() => navigate(`/${getUserRole()}/vaccine/${vaccine.id}/students`)}
-                        className="cursor-pointer inline-flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 hover:text-green-800 text-sm font-medium transition-colors duration-200"
+                        className="whitespace-nowrap cursor-pointer inline-flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 hover:text-green-800 text-sm font-medium transition-colors duration-200"
                         title="Xem danh sách học sinh"
                       >
                         <Users size={14} />
@@ -118,4 +116,4 @@ const VaccineList = ({ vaccines, onEdit }) => {
   );
 };
 
-export default VaccineList;
+export default VaccineList; 

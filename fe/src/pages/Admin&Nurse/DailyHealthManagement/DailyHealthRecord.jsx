@@ -149,13 +149,40 @@ const DailyHealthRecord = () => {
   };
 
   // Get status badge
-  const getStatusBadge = (record) => {
-    if (record.transferred_to) {
-      return <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border border-red-200">Chuyển viện</span>;
-    } else if (record.on_site_treatment) {
-      return <span className="px-2 py-1 bg-yellow-50 text-yellow-800 text-xs font-medium rounded border border-yellow-200">Điều trị tại chỗ</span>;
+  const getStatusBadge = (record, forTransfer = false) => {
+    if (forTransfer) {
+      if (record.transferred_to && record.transferred_to.trim() !== '') {
+        return (
+          <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border border-red-200">
+            Chuyển viện
+          </span>
+        );
+      }
+      return (
+        <span className="px-2 py-1 bg-yellow-50 text-yellow-800 text-xs font-medium rounded border border-yellow-200">
+          Điều trị tại chỗ
+        </span>
+      );
+    } else {
+      if (record.status === 'SERIOUS') {
+        return (
+          <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border border-red-200">
+            Nghiêm trọng
+          </span>
+        );
+      } else if (record.status === 'MILD') {
+        return (
+          <span className="px-2 py-1 bg-yellow-50 text-yellow-800 text-xs font-medium rounded border border-yellow-200">
+            Nhẹ
+          </span>
+        );
+      }
+      return (
+        <span className="px-2 py-1 bg-green-50 text-green-800 text-xs font-medium rounded border border-green-200">
+          Bình thường
+        </span>
+      );
     }
-    return <span className="px-2 py-1 bg-green-50 text-green-800 text-xs font-medium rounded border border-green-200">Bình thường</span>;
   };
 
   // Clear success message after 3 seconds
@@ -421,54 +448,61 @@ const DailyHealthRecord = () => {
         {/* Records Table */}
         <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table className="w-full border-collapse table-fixed">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('student_id')}>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" style={{ width: '10%' }} onClick={() => handleSort('student_id')}>
                     <div className="flex items-center gap-2">
                       <User size={14} />
                       Mã Học Sinh {sortConfig.key === 'student_id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('name')}>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" style={{ width: '15%' }} onClick={() => handleSort('name')}>
                     <div className="flex items-center gap-2">
                       <User size={14} />
                       Họ Tên {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('detect_time')}>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" style={{ width: '15%' }} onClick={() => handleSort('detect_time')}>
                     <div className="flex items-center gap-2">
                       <Calendar size={14} />
                       Ngày Phát Hiện {sortConfig.key === 'detect_time' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('record_date')}>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" style={{ width: '15%' }} onClick={() => handleSort('record_date')}>
                     <div className="flex items-center gap-2">
                       <FileText size={14} />
                       Ngày Ghi Nhận {sortConfig.key === 'record_date' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: '20%' }}>
                     <div className="flex items-center gap-2">
                       <Activity size={14} />
                       Chẩn Đoán
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Trạng Thái</th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Chi Tiết</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: '12.5%' }}>
+                    Tình Trạng
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: '12.5%' }}>
+                    Chuyển đến
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: '10%' }}>
+                    Chi Tiết
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-12 text-center">
+                    <td colSpan="8" className="px-6 py-12 text-center">
                       <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-4"></div>
                       <p className="text-gray-500">Đang tải dữ liệu...</p>
                     </td>
                   </tr>
                 ) : currentRecords.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-12 text-center">
+                    <td colSpan="8" className="px-6 py-12 text-center">
                       <FileText size={40} className="mx-auto text-gray-400 mb-4" />
                       <p className="text-gray-500 text-lg">Không tìm thấy hồ sơ nào</p>
                       <p className="text-gray-400 text-sm mt-2">Thử điều chỉnh bộ lọc hoặc thêm hồ sơ mới</p>
@@ -477,12 +511,12 @@ const DailyHealthRecord = () => {
                 ) : (
                   currentRecords.map((record, index) => (
                     <tr key={index} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap" style={{ width: '10%' }}>
                         <div className="flex items-center">
                           <span className="text-sm font-medium text-gray-900">{getStudentDisplay(record.student_id)}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap" style={{ width: '15%' }}>
                         <div className="flex items-center">
                           <button
                             onClick={() => navigate(`/${getUserRole()}/student-overview/${record.student_id}`)}
@@ -492,7 +526,7 @@ const DailyHealthRecord = () => {
                           </button>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap" style={{ width: '15%' }}>
                         <div className="flex items-center">
                           {isToday(record.detect_time) && (
                             <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
@@ -500,7 +534,7 @@ const DailyHealthRecord = () => {
                           <span className="text-sm text-gray-900">{formatDate(record.detect_time)}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap" style={{ width: '15%' }}>
                         <div className="flex items-center">
                           {isToday(record.record_date) && (
                             <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
@@ -508,15 +542,18 @@ const DailyHealthRecord = () => {
                           <span className="text-sm text-gray-900">{formatDate(record.record_date)}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3" style={{ width: '20%' }}>
                         <span className="text-sm text-gray-900">
                           {record.diagnosis || 'Chưa có chẩn đoán'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap" style={{ width: '12.5%' }}>
                         {getStatusBadge(record)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <td className="px-4 py-3 whitespace-nowrap" style={{ width: '12.5%' }}>
+                        {getStatusBadge(record, true)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center" style={{ width: '10%' }}>
                         <button
                           onClick={() => handleViewDetails(record)}
                           disabled={loading || downloading.has(`details_${record.id}`)}
