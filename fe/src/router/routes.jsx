@@ -59,11 +59,13 @@ import ParentSchedule from "../pages/Parent/ParentDashboard/ParentSchedule";
 import UserSettings from "../pages/UserSettings/UserSettings";
 import ResetPassword from "../pages/Auth/ResetPassword";
 import ParentEditStudentProfile from "../pages/Parent/StudentProfile/ParentEditStudentProfile";
-import { getUser, getUserRole } from "../service/authService";
 import DetailHealthRecord from "../pages/Parent/DailyHealth/DetailHealthRecord";
 import DetailHealthRecordForUpdate from "../pages/Admin&Nurse/DailyHealthManagement/DetailHealthRecordForUpdate";
 import VaccinationHistoryDetail from "../pages/Parent/VaccinationRecord/VaccinationHistoryDetail";
 import MedicalSupplyManagement from "../pages/Admin/MedicalSupplyManagement/MedicalSupplyManagement";
+import MedicalItemsList from "../pages/Admin/MedicalSupplyManagement/MedicalItemsList";
+import AddMedicationForm from "../pages/Parent/VaccineCampaign/AddMedicationForm";
+import AddMedicalSupplyForm from "../pages/Admin/MedicalSupplyManagement/AddMedicalSupplyForm";
 
 const routes = createBrowserRouter([
   {
@@ -142,8 +144,26 @@ const routes = createBrowserRouter([
           },
           {
             path: "medical-supply",
-            element: <MedicalSupplyManagement />,
+            element: <MedicalItemsList />,
           },
+          {
+            path: "medicine-item-form",
+            element: <AddMedicationForm />,
+          },
+          {
+            path: "medicine-item-form/:id",
+            element: <AddMedicationForm />,
+          },
+          {
+            path: "medical-supply-item-form",
+            element: <AddMedicalSupplyForm />,
+          },
+
+          {
+            path: "medical-supply-item-form/:id",
+            element: <AddMedicalSupplyForm />,
+          },
+
           {
             path: "vaccine-campaign",
             element: <VaccineCampaignManagement />,
@@ -460,6 +480,7 @@ const routes = createBrowserRouter([
             path: "vaccine/:id/students",
             element: <VaccineForStudentEligible />,
           },
+
         ],
       },
     ],

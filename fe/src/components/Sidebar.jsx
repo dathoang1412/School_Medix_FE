@@ -35,7 +35,6 @@ const Sidebar = () => {
   const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -47,11 +46,9 @@ const Sidebar = () => {
         });
       }
     };
-
     fetchUserData();
   }, []);
 
-  // Handle responsive design
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
@@ -66,7 +63,6 @@ const Sidebar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Update admin items based on role
   useEffect(() => {
     const role = getUserRole();
     if (role === "admin") {
@@ -87,11 +83,6 @@ const Sidebar = () => {
               path: "blog",
               icon: <LuNewspaper />,
             },
-            {
-              title: "Quản lý Vật Tư Y Tế",
-              path: "medical-supply",
-              icon: <FaVial />,
-            },
           ];
         }
         return prev;
@@ -99,7 +90,7 @@ const Sidebar = () => {
     }
   }, []);
 
-  const [commonItems, setCommonItems] = useState([
+  const [commonItems] = useState([
     { title: "Trang chủ", path: "/", icon: <RiHome9Line /> },
     {
       title: "Quản lý dặn thuốc",
@@ -175,6 +166,25 @@ const Sidebar = () => {
           title: "Kế hoạch tiêm chủng",
           path: "vaccine-campaign",
           icon: <LuSyringe />,
+        },
+        
+      ],
+    },
+        {
+      title: "Quản lý Y Tế",
+      path: "#",
+      icon: <MdOutlineMedicalInformation />,
+      hasDropdown: true,
+      children: [
+        {
+          title: "Quản lý vật tư/thuốc",
+          path: "medical-supply",
+          icon: <FaVial />,
+        },
+        {
+          title: "Quản lý nhà cung cấp",
+          path: "medical-suppliers",
+          icon: <MdOutlineSchool />,
         },
       ],
     },
@@ -399,17 +409,14 @@ const Sidebar = () => {
 
         {/* Main Navigation */}
         <div className="flex-1 py-1.5 px-1.5 overflow-y-auto scrollbar-hide">
-          {/* Common Items */}
           <div className="space-y-0.75">
             {commonItems.map((item) => renderMenuItem(item))}
           </div>
 
-          {/* Divider */}
           {adminItems.length > 0 && (
             <div className="my-3 border-t border-gray-100" />
           )}
 
-          {/* Admin Items */}
           <div className="space-y-0.75">
             {adminItems.map((item) => renderMenuItem(item))}
           </div>
