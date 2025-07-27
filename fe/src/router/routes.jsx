@@ -62,12 +62,10 @@ import ParentEditStudentProfile from "../pages/Parent/StudentProfile/ParentEditS
 import DetailHealthRecord from "../pages/Parent/DailyHealth/DetailHealthRecord";
 import DetailHealthRecordForUpdate from "../pages/Admin&Nurse/DailyHealthManagement/DetailHealthRecordForUpdate";
 import VaccinationHistoryDetail from "../pages/Parent/VaccinationRecord/VaccinationHistoryDetail";
-import MedicalSupplyManagement from "../pages/Admin/MedicalSupplyManagement/MedicalSupplyManagement";
-import MedicalItemsList from "../pages/Admin/MedicalSupplyManagement/MedicalItemsManagement";
-import AddMedicationForm from "../pages/Parent/VaccineCampaign/AddMedicationForm";
 import AddMedicalSupplyForm from "../pages/Admin/MedicalSupplyManagement/AddMedicalSupplyForm";
 import MedicalItemsManagement from "../pages/Admin/MedicalSupplyManagement/MedicalItemsManagement";
 import AddSupplierForm from "../pages/Admin/MedicalSupplyManagement/AddSupplierForm";
+import AddMedicationForm from "../pages/Admin/MedicalSupplyManagement/AddMedicationForm";
 
 const routes = createBrowserRouter([
   {
@@ -145,32 +143,31 @@ const routes = createBrowserRouter([
             element: <UserManagement />,
           },
           {
-            path: "medical-supply",
+            path: "medical-items-management",
             element: <MedicalItemsManagement />,
           },
           {
-            path: "medicine-item-form",
+            path: "medical-items-management/medicine-item-form",
             element: <AddMedicationForm />,
           },
           {
-            path: "medicine-item-form/:id",
+            path: "medical-items-management/medicine-item-form/:id",
             element: <AddMedicationForm />,
           },
           {
-            path: "medical-supply-item-form",
-            element: <AddMedicalSupplyForm />,
-          },
-
-          {
-            path: "medical-supply-item-form/:id",
+            path: "medical-items-management/medical-supply-item-form",
             element: <AddMedicalSupplyForm />,
           },
           {
-            path: "supplier-form",
+            path: "medical-items-management/medical-supply-item-form/:id",
+            element: <AddMedicalSupplyForm />,
+          },
+          {
+            path: "medical-items-management/supplier-form",
             element: <AddSupplierForm />,
           },
           {
-            path: "supplier-form/:id",
+            path: "medical-items-management/supplier-form/:id",
             element: <AddSupplierForm />,
           },
 

@@ -170,23 +170,10 @@ const Sidebar = () => {
         
       ],
     },
-        {
+    {
       title: "Quản lý Y Tế",
-      path: "#",
+      path: "medical-items-management",
       icon: <MdOutlineMedicalInformation />,
-      hasDropdown: true,
-      children: [
-        {
-          title: "Quản lý vật tư/thuốc",
-          path: "medical-supply",
-          icon: <FaVial />,
-        },
-        {
-          title: "Quản lý nhà cung cấp",
-          path: "medical-suppliers",
-          icon: <MdOutlineSchool />,
-        },
-      ],
     },
   ]);
 

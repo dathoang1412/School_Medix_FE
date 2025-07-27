@@ -12,6 +12,9 @@ const AddSupplierForm = () => {
     address: "",
     email: "",
     phone: "",
+    contact_person: "",
+    tax_code: "",
+    status: "UNKNOWN", // Default status
   });
   const [loading, setLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(!!id);
@@ -24,13 +27,16 @@ const AddSupplierForm = () => {
         try {
           const response = await axiosClient.get(`/supplier/${id}`); // Adjust endpoint if different
           if (response.data.error) throw new Error(response.data.message);
-          const { name, description, address, email, phone } = response.data.data;
+          const { name, description, address, email, phone, contact_person, tax_code, status } = response.data.data;
           setFormData({
             name,
             description: description || "",
             address: address || "",
             email: email || "",
             phone: phone || "",
+            contact_person: contact_person || "",
+            tax_code: tax_code || "",
+            status: status || "UNKNOWN",
           });
         } catch (err) {
           enqueueSnackbar(err.message || "Lỗi khi tải thông tin nhà cung cấp.", { variant: "error" });
@@ -57,7 +63,7 @@ const AddSupplierForm = () => {
     setLoading(true);
     try {
       const payload = { ...formData };
-      const response = await axiosClient[id ? "patch" : "post"](
+      const response = await axiosClient[id ? "put" : "post"](
         id ? `/supplier/${id}` : "/supplier",
         payload
       );
@@ -161,6 +167,47 @@ const AddSupplierForm = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
                 placeholder="Nhập số điện thoại"
               />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                Người liên hệ
+              </label>
+              <input
+                type="text"
+                name="contact_person"
+                value={formData.contact_person}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
+                placeholder="Nhập tên người liên hệ"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                Mã thuế
+              </label>
+              <input
+                type="text"
+                name="tax_code"
+                value={formData.tax_code}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
+                placeholder="Nhập mã thuế"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                Trạng thái
+              </label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
+              >
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
+                <option value="UNKNOWN">Không xác định</option>
+              </select>
             </div>
             <div className="flex justify-end gap-4">
               <button

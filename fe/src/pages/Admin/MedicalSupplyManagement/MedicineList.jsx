@@ -67,21 +67,6 @@ const MedicineList = () => {
     setExpanded(newExpanded);
   };
 
-  const handleDelete = async (item) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa ${item.name}?`)) return;
-    try {
-      const response = await axiosClient.delete(`/medication/${item.id}`);
-      if (response.data.error) {
-        throw new Error(response.data.message);
-      }
-      setItems((prev) => prev.filter((i) => i.id !== item.id));
-      setFilteredItems((prev) => prev.filter((i) => i.id !== item.id));
-      enqueueSnackbar("Xóa thuốc thành công!", { variant: "success" });
-    } catch (err) {
-      err && enqueueSnackbar("Không thể xóa thuốc.", { variant: "error" });
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -217,13 +202,6 @@ const MedicineList = () => {
                             >
                               <Edit size={14} />
                               Cập nhật
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item)}
-                              className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:underline text-sm font-medium transition-colors duration-200"
-                            >
-                              <Trash2 size={14} />
-                              Xóa
                             </button>
                             <button
                               onClick={() => toggleDetails(index)}
