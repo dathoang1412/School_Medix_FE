@@ -108,7 +108,7 @@ const MedicineList = () => {
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             </div>
             <button
-              onClick={() => navigate("/admin/medicine-item-form")}
+              onClick={() => navigate("/admin/medical-items-management/medicine-item-form")} // Updated navigation
               className="inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium"
             >
               <Pill className="w-4 h-4" />
@@ -197,7 +197,7 @@ const MedicineList = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-center w-[20%]">
                           <div className="flex justify-center gap-4">
                             <button
-                              onClick={() => navigate(`/admin/medicine-item-form/${item.id}`)}
+                              onClick={() => navigate(`/admin/medical-items-management/medicine-item-form/${item.id}`)} // Updated navigation
                               className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200"
                             >
                               <Edit size={14} />

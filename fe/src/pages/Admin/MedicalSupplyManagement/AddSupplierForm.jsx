@@ -71,7 +71,7 @@ const AddSupplierForm = () => {
       enqueueSnackbar(response.data.message || (id ? "Cập nhật thành công!" : "Thêm mới thành công!"), {
         variant: "success",
       });
-      navigate("/admin/medical-supply");
+      navigate("/admin/medical-items-management?tab=SUPPLIER"); // Updated navigation
     } catch (err) {
       enqueueSnackbar(err.response?.data?.message || (id ? "Lỗi khi cập nhật." : "Lỗi khi thêm mới."), {
         variant: "error",
@@ -89,7 +89,7 @@ const AddSupplierForm = () => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center py-12">
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
-          onClick={() => navigate("/admin/medical-supply")}
+          onClick={() => navigate("/admin/medical-items-management?tab=SUPPLIER")} // Updated navigation
           className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200 mb-6"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -212,7 +212,7 @@ const AddSupplierForm = () => {
             <div className="flex justify-end gap-4">
               <button
                 type="button"
-                onClick={() => navigate("/admin/medical-supply")}
+                onClick={() => navigate("/admin/medical-items-management?tab=SUPPLIER")} // Updated navigation
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors duration-200"
               >
                 Hủy

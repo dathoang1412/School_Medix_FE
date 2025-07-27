@@ -168,7 +168,7 @@ const InventoryTransactionList = () => {
                                 <strong>{item.name}</strong> ({item.unit}) - Số lượng: {item.transaction_quantity}
                                 <br />
                                 <span className="text-xs text-gray-500">
-                                  Mô tả: {item.description || "Không có"} | Hết hạn: {item.exp_date || "Không có"} | Loại: {item.category}
+                                  Mô tả: {item.description || "Không có"} | Hết hạn: {item.exp_date || "Không có"} | Loại: {item.category === "MEDICATION"? "Thuốc" : "Vật tư y tế"}
                                 </span>
                               </li>
                             ))}

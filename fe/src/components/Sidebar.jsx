@@ -41,7 +41,7 @@ const Sidebar = () => {
         const user = await getUser();
         setUserData(user);
       } catch (error) {
-        enqueueSnackbar("Không thể tải thông tin người dùng!", {
+        error && enqueueSnackbar("Không thể tải thông tin người dùng!", {
           variant: "error",
         });
       }
@@ -255,7 +255,6 @@ const Sidebar = () => {
     const hasActiveChild = item.children?.some(
       (child) => activeItem === child.title
     );
-    const shouldHighlightParent = isActive || hasActiveChild;
 
     return (
       <div key={item.title}>

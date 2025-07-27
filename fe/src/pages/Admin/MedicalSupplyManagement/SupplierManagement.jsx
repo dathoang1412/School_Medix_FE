@@ -105,7 +105,7 @@ const SupplierManagement = () => {
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             </div>
             <button
-              onClick={() => navigate("/admin/supplier-form")}
+              onClick={() => navigate("/admin/medical-items-management/supplier-form")} // Updated navigation
               className="inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium"
             >
               <Package className="w-4 h-4" />
@@ -185,13 +185,13 @@ const SupplierManagement = () => {
                                 : "bg-yellow-50 text-yellow-800 border border-yellow-200"
                             }`}
                           >
-                            {supplier.status === "ACTIVE" ? "Đang hoạt động": supplier.status === "INACTIVE" ? "Ngừng hoạt động": "Không xác định"}
+                            {supplier.status === "ACTIVE" ? "Đang hoạt động" : supplier.status === "INACTIVE" ? "Ngừng hoạt động" : "Không xác định"}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center w-[40%]">
                           <div className="flex justify-center gap-4">
                             <button
-                              onClick={() => navigate(`/admin/supplier-form/${supplier.id}`)}
+                              onClick={() => navigate(`/admin/medical-items-management/supplier-form/${supplier.id}`)} // Updated navigation
                               className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200"
                             >
                               <Edit size={14} />
