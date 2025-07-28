@@ -22,6 +22,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axiosClient from "../config/axiosClient";
 import { MdOutlineSchool } from "react-icons/md";
 import Footer from "../components/Footer";
+import AIChat from "../components/AIChat";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -31,8 +32,8 @@ const LandingPage = () => {
   const [error, setError] = useState(null);
 
   // Determine the base path for navigation
-  const isAdminSection = location.pathname.includes('/admin');
-  const basePath = isAdminSection ? '/admin/blog' : '/blog';
+  const isAdminSection = location.pathname.includes("/admin");
+  const basePath = isAdminSection ? "/admin/blog" : "/blog";
 
   const features = [
     {
@@ -226,11 +227,14 @@ const LandingPage = () => {
                     <div className="p-6">
                       <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                         <span>
-                          {new Date(post.created_at).toLocaleDateString("vi-VN", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })}
+                          {new Date(post.created_at).toLocaleDateString(
+                            "vi-VN",
+                            {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }
+                          )}
                         </span>
                         <span>•</span>
                         <span>
@@ -288,7 +292,9 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <Footer/>
+      <Footer />
+
+      <AIChat />
     </div>
   );
 };
