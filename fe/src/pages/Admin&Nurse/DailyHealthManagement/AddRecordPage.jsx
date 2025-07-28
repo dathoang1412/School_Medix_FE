@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, X } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import { getUserRole } from '../../../service/authService';
 
@@ -12,10 +12,27 @@ const AddRecordPage = () => {
     diagnosis: '',
     on_site_treatment: '',
     transferred_to: '',
-    items_usage: '',
+    medical_items: [], // Changed to array to store items
     status: ''
   });
   const [error, setError] = useState('');
+  const [items, setItems] = useState([]); // Array to store selected items
+  const [availableItems, setAvailableItems] = useState([]); // Fetch from DB
+  const [selectedItem, setSelectedItem] = useState('');
+  const [quantity, setQuantity] = useState(0);
+
+  // Fetch available items from database
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const response = await axiosClient.get('/medical-item');
+        setAvailableItems(response.data.data || []);
+      } catch (error) {
+        console.error('Error fetching items:', error);
+      }
+    };
+    fetchItems();
+  }, []);
 
   // Handle form input change
   const handleInputChange = (e) => {
@@ -30,6 +47,48 @@ const AddRecordPage = () => {
     return date.toISOString().split('T')[0];
   };
 
+  // Handle item selection and quantity change
+  const handleItemChange = (e) => {
+    const itemId = e.target.value;
+    setSelectedItem(itemId);
+    const item = availableItems.find(i => i.id === parseInt(itemId));
+    if (item) {
+      setQuantity(item.quantity > 0 ? item.quantity : 0);
+    }
+  };
+
+  const handleQuantityChange = (e) => {
+    const selectedItemObj = availableItems.find(i => i.id === parseInt(selectedItem));
+    const maxQuantity = selectedItemObj ? selectedItemObj.quantity : 0;
+    const value = Math.min(Math.max(0, parseInt(e.target.value) || 0), maxQuantity);
+    setQuantity(value);
+  };
+  // Handle adding item to items array
+  const handleAddItem = () => {
+    if (!selectedItem || quantity <= 0) {
+      setError('Vui lòng chọn vật tư và nhập số lượng hợp lệ.');
+      return;
+    }
+    const item = availableItems.find(i => i.id === parseInt(selectedItem));
+    if (!item) return;
+
+    const newItem = {
+      id: item.id,
+      name: item.name,
+      quantity: quantity,
+      unit: item.unit
+    };
+    setItems([...items, newItem]);
+    setSelectedItem('');
+    setQuantity(0);
+    setError('');
+  };
+
+  // Handle removing item from items array
+  const handleRemoveItem = (index) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,10 +100,11 @@ const AddRecordPage = () => {
       const payload = {
         ...formData,
         detect_time: formatDateForAPI(formData.detect_time),
+        medical_items: items // Send items array to API
       };
       console.log("Health record POST: ", payload);
       await axiosClient.post('/daily-health-record', payload);
-      navigate( '/'  + getUserRole() +'/daily-health', { state: { success: 'Hồ sơ y tế đã được tạo thành công!' } });
+      navigate('/' + getUserRole() + '/daily-health', { state: { success: 'Hồ sơ y tế đã được tạo thành công!' } });
     } catch (error) {
       setError(error.response?.data?.message || 'Không thể tạo hồ sơ y tế');
       console.error(error);
@@ -53,9 +113,10 @@ const AddRecordPage = () => {
 
   // Handle back navigation
   const handleBack = () => {
-    if (Object.values(formData).some((value) => value !== '') &&
-        !window.confirm('Bạn có chắc muốn quay lại? Các thay đổi sẽ không được lưu.')) {
-      return;
+    if (Object.values(formData).some((value) => value !== '') || items.length > 0) {
+      if (!window.confirm('Bạn có chắc muốn quay lại? Các thay đổi sẽ không được lưu.')) {
+        return;
+      }
     }
     navigate(`/${getUserRole()}/daily-health`);
   };
@@ -68,7 +129,7 @@ const AddRecordPage = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={handleBack}
-              className=" cursor-pointer  inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               title="Quay lại danh sách"
             >
               <ArrowLeft size={18} />
@@ -156,18 +217,60 @@ const AddRecordPage = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Vật Tư Sử Dụng</label>
-            <textarea
-              name="items_usage"
-              value={formData.items_usage}
-              onChange={handleInputChange}
-              rows="4"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm resize-none"
-              placeholder="Liệt kê vật tư y tế đã sử dụng (nếu có)"
-            />
+            <div className="space-y-4">
+              <div className="flex gap-4 items-end">
+                <select
+                  value={selectedItem}
+                  onChange={handleItemChange}
+                  className="w-1/2 px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+                >
+                  <option value="">Chọn vật tư</option>
+                  {availableItems.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name} (Còn: {item.quantity} {item.unit})
+                    </option>
+                  ))}
+                </select>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    min={0}
+                    max={availableItems.find(i => i.id === parseInt(selectedItem))?.quantity || 0}
+                    className="w-20 px-2 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+                    placeholder="Số lượng"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddItem}
+                    className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+                  >
+                    Thêm
+                  </button>
+                </div>
+              </div>
+              <div className="border border-gray-200 rounded-md p-2 bg-gray-50 min-h-[100px]">
+                {items.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between py-1 border-b border-gray-300 last:border-b-0">
+                    <span className="text-sm text-gray-800">{`${item.name} - ${item.quantity} ${item.unit}`}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(index)}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Tình Trạng</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tình Trạng <span className="text-red-500">*</span>
+            </label>
             <select
               name="status"
               value={formData.status}
