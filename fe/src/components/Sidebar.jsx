@@ -41,7 +41,7 @@ const Sidebar = () => {
         const user = await getUser();
         setUserData(user);
       } catch (error) {
-        enqueueSnackbar("Không thể tải thông tin người dùng!", {
+        error && enqueueSnackbar("Không thể tải thông tin người dùng!", {
           variant: "error",
         });
       }
@@ -170,23 +170,10 @@ const Sidebar = () => {
         
       ],
     },
-        {
+    {
       title: "Quản lý Y Tế",
-      path: "#",
+      path: "medical-items-management",
       icon: <MdOutlineMedicalInformation />,
-      hasDropdown: true,
-      children: [
-        {
-          title: "Quản lý vật tư/thuốc",
-          path: "medical-supply",
-          icon: <FaVial />,
-        },
-        {
-          title: "Quản lý nhà cung cấp",
-          path: "medical-suppliers",
-          icon: <MdOutlineSchool />,
-        },
-      ],
     },
   ]);
 
@@ -268,7 +255,6 @@ const Sidebar = () => {
     const hasActiveChild = item.children?.some(
       (child) => activeItem === child.title
     );
-    const shouldHighlightParent = isActive || hasActiveChild;
 
     return (
       <div key={item.title}>

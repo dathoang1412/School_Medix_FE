@@ -65,7 +65,7 @@ const AddMedicationForm = () => {
       enqueueSnackbar(response.data.message || (id ? "Cập nhật thành công!" : "Tạo thuốc thành công!"), {
         variant: "success",
       });
-      navigate("/admin/medical-supply");
+      navigate("/admin/medical-items-management");
     } catch (err) {
       console.error("API Error:", err);
       enqueueSnackbar(
@@ -85,7 +85,7 @@ const AddMedicationForm = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-white flex items-center justify-center py-12">
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
-          onClick={() => navigate("/admin/medical-supply")}
+          onClick={() => navigate("/admin/medical-items-management")}
           className="flex items-center gap-2 text-green-600 hover:text-green-800 hover:underline text-sm font-medium transition-colors duration-200 mb-6"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -156,7 +156,7 @@ const AddMedicationForm = () => {
             <div className="flex justify-end gap-4">
               <button
                 type="button"
-                onClick={() => navigate("/admin/medical-supply")}
+                onClick={() => navigate("/admin/medical-items-management")}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors duration-200"
               >
                 Hủy
