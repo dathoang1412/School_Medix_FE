@@ -343,19 +343,6 @@ const VaccineCampaignManagement = () => {
             <span>Xem danh sách học sinh</span>
           </button>
         );
-      } else if (status === "CANCELLED") {
-        buttons.push(
-          <button
-            key="view-register-list"
-            onClick={() =>
-              navigate(`/admin/vaccine-campaign/${campaignId}/register-list`)
-            }
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
-          >
-            <Users className="w-4 h-4" />
-            <span>Xem danh sách học sinh</span>
-          </button>
-        );
       }
     } else if (userRole === "nurse") {
       if (["PREPARING", "UPCOMING", "ONGOING"].includes(status)) {
