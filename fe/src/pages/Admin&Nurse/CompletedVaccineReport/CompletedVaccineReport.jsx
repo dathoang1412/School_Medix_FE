@@ -204,7 +204,8 @@ const CompletedVaccineReport = () => {
           <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
             <button
               // onClick={handleSubmitDiagnosis}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              onClick={() => {navigate(`/${getUserRole()}/${selectedRecord.student_id}/vaccine-info/${selectedRecord.record_id}`)}}
+              className="px-4 cursor-pointer py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               Xem chi tiết
             </button>
@@ -214,7 +215,7 @@ const CompletedVaccineReport = () => {
                 onClick={
                   closeModal
                 }
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+                className="px-4 py-2 cursor-pointer bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
               >
                 Đóng
               </button>

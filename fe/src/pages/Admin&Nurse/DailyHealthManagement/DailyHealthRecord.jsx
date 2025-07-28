@@ -54,6 +54,7 @@ const DailyHealthRecord = () => {
     setLoading(true);
     try {
       const res = await axiosClient.get('/daily-health-record');
+      console.log("Daily health record: " ,res.data.data);
       setRecords(res.data.data);
       setFilteredRecords(res.data.data);
     } catch (error) {
@@ -522,7 +523,7 @@ const DailyHealthRecord = () => {
                             onClick={() => navigate(`/${getUserRole()}/student-overview/${record.student_id}`)}
                             className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
                           >
-                            {record.name || 'N/A'}
+                            {record.student_name || 'N/A'}
                           </button>
                         </div>
                       </td>

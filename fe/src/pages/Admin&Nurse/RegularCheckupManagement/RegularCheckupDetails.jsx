@@ -24,16 +24,43 @@ import {
 import { getUserRole } from "../../../service/authService";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import Modal from 'react-modal';
+
+// Set app element for react-modal (for accessibility)
+Modal.setAppElement('#root');
 
 const RegularCheckupDetails = () => {
   const [details, setDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [cancelModalIsOpen, setCancelModalIsOpen] = useState(false);
   const { campaign_id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const userRole = getUserRole();
+
+  // Modal styles (consistent with RegularCheckup)
+  const customStyles = {
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+      maxWidth: '500px',
+      width: '90%',
+      borderRadius: '0.5rem',
+      border: 'none',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      padding: '0',
+    },
+    overlay: {
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 1000,
+    },
+  };
 
   const fetchCampaign = async () => {
     try {
@@ -68,16 +95,38 @@ const RegularCheckupDetails = () => {
     fetchCampaign();
   }, [campaign_id]);
 
+  const openCancelModal = () => {
+    console.log("Opening cancel modal for campaignId:", campaign_id);
+    setCancelModalIsOpen(true);
+  };
+
+  const closeCancelModal = () => {
+    console.log("Closing cancel modal");
+    setCancelModalIsOpen(false);
+  };
+
   const handleCampaignAction = async (action) => {
     if (userRole !== "admin") return;
+    if (!campaign_id) {
+      enqueueSnackbar("Không tìm thấy ID chiến dịch", { variant: "error" });
+      return;
+    }
+
+    if (action === "cancel" && !cancelModalIsOpen) {
+      openCancelModal();
+      return;
+    }
+
     setLoadingAction(true);
     try {
       const endpoint =
         action === "send-register"
           ? `/checkup/${campaign_id}/send-register`
           : `/checkup-campaign/${campaign_id}/${action}`;
-      const method = action === "send-register" ? axiosClient.post : axiosClient.patch;
-      const response = await method(endpoint);
+      console.log("Sending request to:", endpoint);
+      const response = await (action === "send-register"
+        ? axiosClient.post(endpoint)
+        : axiosClient.patch(endpoint, { reason: "User requested cancellation" }));
       setDetails((prev) => ({
         ...prev,
         status:
@@ -93,16 +142,15 @@ const RegularCheckupDetails = () => {
             ? "ONGOING"
             : prev.status,
       }));
-      enqueueSnackbar(response?.data.message || "Thành công!", {
-        variant: "info",
-      });
+      enqueueSnackbar(response?.data.message || "Thành công!", { variant: "info" });
     } catch (error) {
       console.error(`Error performing ${action} on campaign ${campaign_id}:`, error);
-      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", {
-        variant: "error",
-      });
+      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", { variant: "error" });
     } finally {
       setLoadingAction(false);
+      if (action === "cancel") {
+        closeCancelModal();
+      }
     }
   };
 
@@ -365,17 +413,6 @@ const RegularCheckupDetails = () => {
       }
     }
 
-    buttons.unshift(
-      <button
-        key="view-details"
-        onClick={() => navigate(`/${userRole}/checkup-campaign/${campaignId}`)}
-        className="flex items-center px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors cursor-pointer"
-      >
-        <FileText className="w-4 h-4 mr-2" />
-        <span>Xem chi tiết</span>
-      </button>
-    );
-
     return buttons;
   };
 
@@ -411,6 +448,53 @@ const RegularCheckupDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      {/* Cancel Confirmation Modal */}
+      <Modal
+        isOpen={cancelModalIsOpen}
+        onRequestClose={closeCancelModal}
+        style={customStyles}
+        contentLabel="Xác nhận hủy chiến dịch"
+      >
+        <div className="bg-white rounded-lg">
+          <div className="p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <XCircle className="h-6 w-6 text-red-600" />
+              <h3 className="text-lg font-semibold text-slate-900">Xác nhận hủy chiến dịch</h3>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Bạn có chắc chắn muốn hủy chiến dịch này không? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeCancelModal}
+                className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() => handleCampaignAction("cancel")}
+                disabled={loadingAction}
+                className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
+                  loadingAction ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {loadingAction ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4" />
+                    <span>Xác nhận hủy</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-6">

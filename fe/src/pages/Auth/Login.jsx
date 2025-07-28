@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { loginWithEmailAndPassword } from "../../config/Supabase";
 import { saveUser } from "../../service/authService";
 import { useState } from "react";
-import { ClipLoader } from "react-spinners";
+import { Loader2 } from "lucide-react"; // Import Loader2 from lucide-react
 import axiosClient from '../../config/axiosClient';
 
 const Login = () => {
@@ -41,7 +41,7 @@ const Login = () => {
       const user = res.data.data;
       saveUser(user);
       console.log(user);
-      if(user?.email_confirmed === false) {
+      if (user?.email_confirmed === false) {
         console.log("EMAIL CONFIRMED FOR: ", email);
         await axiosClient.patch(`/role/${role}/user/${user.id}/confirm-email`);
       }
@@ -137,7 +137,7 @@ const Login = () => {
                   navigate('/forgot-password');
                 }}
               >
-                Forgot Password
+                Forgot Password?
               </button>
             </div>
 
@@ -148,11 +148,14 @@ const Login = () => {
               className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 
               px-4 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-700 
               focus:outline-none focus:ring-2 focus:ring-blue-500/20 transform hover:scale-[1.02] 
-              transition-all duration-200 shadow-lg hover:shadow-xl"
+              transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center"
+              disabled={isLoading}
             >
-              {
-                isLoading ? <ClipLoader color="#36d7b7" loading={true} size={50} /> : "Log In"
-              }
+              {isLoading ? (
+                <Loader2 className="w-6 h-6 text-white animate-spin" />
+              ) : (
+                "Log In"
+              )}
             </button>
           </div>
 
