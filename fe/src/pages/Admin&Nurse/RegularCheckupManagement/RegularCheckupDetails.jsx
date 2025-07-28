@@ -24,10 +24,10 @@ import {
 import { getUserRole } from "../../../service/authService";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import Modal from 'react-modal';
+import Modal from "react-modal";
 
 // Set app element for react-modal (for accessibility)
-Modal.setAppElement('#root');
+Modal.setAppElement("#root");
 
 const RegularCheckupDetails = () => {
   const [details, setDetails] = useState({});
@@ -35,6 +35,7 @@ const RegularCheckupDetails = () => {
   const [error, setError] = useState(null);
   const [loadingAction, setLoadingAction] = useState(false);
   const [cancelModalIsOpen, setCancelModalIsOpen] = useState(false);
+  const [sendModalIsOpen, setSendModalIsOpen] = useState(false);
   const { campaign_id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,21 +44,21 @@ const RegularCheckupDetails = () => {
   // Modal styles (consistent with RegularCheckup)
   const customStyles = {
     content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      marginRight: '-50%',
-      transform: 'translate(-50%, -50%)',
-      maxWidth: '500px',
-      width: '90%',
-      borderRadius: '0.5rem',
-      border: 'none',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      padding: '0',
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "500px",
+      width: "90%",
+      borderRadius: "0.5rem",
+      border: "none",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+      padding: "0",
     },
     overlay: {
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
       zIndex: 1000,
     },
   };
@@ -105,8 +106,21 @@ const RegularCheckupDetails = () => {
     setCancelModalIsOpen(false);
   };
 
+  const openSendModal = () => {
+    console.log("Opening send modal for campaignId:", campaign_id);
+    setSendModalIsOpen(true);
+  };
+
+  const closeSendModal = () => {
+    console.log("Closing send modal");
+    setSendModalIsOpen(false);
+  };
+
   const handleCampaignAction = async (action) => {
-    if (userRole !== "admin") return;
+    if (userRole !== "admin") {
+      enqueueSnackbar("Chỉ admin mới có thể thực hiện hành động này", { variant: "error" });
+      return;
+    }
     if (!campaign_id) {
       enqueueSnackbar("Không tìm thấy ID chiến dịch", { variant: "error" });
       return;
@@ -116,40 +130,72 @@ const RegularCheckupDetails = () => {
       openCancelModal();
       return;
     }
+    if (action === "send-register" && !sendModalIsOpen) {
+      openSendModal();
+      return;
+    }
 
     setLoadingAction(true);
     try {
-      const endpoint =
-        action === "send-register"
-          ? `/checkup/${campaign_id}/send-register`
-          : `/checkup-campaign/${campaign_id}/${action}`;
-      console.log("Sending request to:", endpoint);
-      const response = await (action === "send-register"
-        ? axiosClient.post(endpoint)
-        : axiosClient.patch(endpoint, { reason: "User requested cancellation" }));
-      setDetails((prev) => ({
-        ...prev,
-        status:
-          action === "send-register"
-            ? "PREPARING"
-            : action === "cancel"
-            ? "CANCELLED"
-            : action === "finish"
-            ? "DONE"
-            : action === "close"
-            ? "UPCOMING"
-            : action === "start"
-            ? "ONGOING"
-            : prev.status,
-      }));
-      enqueueSnackbar(response?.data.message || "Thành công!", { variant: "info" });
+      if (action === "send-register") {
+        // Call send-register endpoint
+        const sendRegisterEndpoint = `/checkup/${campaign_id}/send-register`;
+        console.log("Sending request to:", sendRegisterEndpoint);
+        const sendRegisterResponse = await axiosClient.post(sendRegisterEndpoint);
+        enqueueSnackbar(sendRegisterResponse?.data.message || "Gửi đơn thành công!", { variant: "success" });
+
+        // Update status to PREPARING
+        setDetails((prev) => ({ ...prev, status: "PREPARING" }));
+
+        // Call send-mail-register endpoint in the background
+        const sendMailEndpoint = `/checkup/${campaign_id}/send-mail-register`;
+        console.log("Sending email request to:", sendMailEndpoint);
+        axiosClient
+          .post(sendMailEndpoint)
+          .then((mailResponse) => {
+            enqueueSnackbar(mailResponse?.data.message || "Gửi email thông báo thành công!", {
+              variant: "success",
+            });
+          })
+          .catch((mailError) => {
+            console.error("Error sending emails:", mailError.response?.data);
+            enqueueSnackbar(
+              mailError.response?.data?.message || "Lỗi khi gửi email thông báo!",
+              { variant: "error" }
+            );
+          });
+      } else {
+        // Handle other actions (e.g., cancel, close, start, finish)
+        const endpoint = `/checkup-campaign/${campaign_id}/${action}`;
+        console.log("Sending request to:", endpoint);
+        const response = await axiosClient.patch(endpoint, {
+          reason: `User requested ${action}`,
+        });
+        setDetails((prev) => ({
+          ...prev,
+          status:
+            action === "cancel"
+              ? "CANCELLED"
+              : action === "finish"
+              ? "DONE"
+              : action === "close"
+              ? "UPCOMING"
+              : action === "start"
+              ? "ONGOING"
+              : prev.status,
+        }));
+        enqueueSnackbar(response?.data.message || "Thành công!", { variant: "success" });
+      }
     } catch (error) {
       console.error(`Error performing ${action} on campaign ${campaign_id}:`, error);
-      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", { variant: "error" });
+      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra khi thực hiện hành động!";
+      enqueueSnackbar(errorMessage, { variant: "error" });
     } finally {
       setLoadingAction(false);
       if (action === "cancel") {
         closeCancelModal();
+      } else if (action === "send-register") {
+        closeSendModal();
       }
     }
   };
@@ -342,17 +388,6 @@ const RegularCheckupDetails = () => {
             <span>Xem danh sách học sinh</span>
           </button>
         );
-      } else if (status === "CANCELLED") {
-        buttons.push(
-          <button
-            key="view-register-list"
-            onClick={() => navigate(`/admin/checkup-campaign/${campaignId}/register-list`)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            <span>Xem danh sách học sinh</span>
-          </button>
-        );
       }
     } else if (userRole === "nurse") {
       if (["PREPARING", "UPCOMING", "ONGOING"].includes(status)) {
@@ -487,6 +522,53 @@ const RegularCheckupDetails = () => {
                   <>
                     <XCircle className="w-4 h-4" />
                     <span>Xác nhận hủy</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Send Register Confirmation Modal */}
+      <Modal
+        isOpen={sendModalIsOpen}
+        onRequestClose={closeSendModal}
+        style={customStyles}
+        contentLabel="Xác nhận gửi đơn"
+      >
+        <div className="bg-white rounded-lg">
+          <div className="p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Send className="h-6 w-6 text-blue-600" />
+              <h3 className="text-lg font-semibold text-slate-900">Xác nhận gửi đơn</h3>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Bạn có chắc chắn muốn gửi đơn đăng ký cho chiến dịch này không? Hành động này sẽ thông báo cho tất cả phụ huynh qua email.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeSendModal}
+                className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() => handleCampaignAction("send-register")}
+                disabled={loadingAction}
+                className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 ${
+                  loadingAction ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {loadingAction ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Xác nhận gửi</span>
                   </>
                 )}
               </button>
