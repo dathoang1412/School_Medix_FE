@@ -86,7 +86,7 @@ const AddMedicationForm = () => {
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
           onClick={() => navigate("/admin/medical-items-management")}
-          className="flex items-center gap-2 text-green-600 hover:text-green-800 hover:underline text-sm font-medium transition-colors duration-200 mb-6"
+          className="flex cursor-pointer items-center gap-2 text-green-600 hover:text-green-800 hover:underline text-sm font-medium transition-colors duration-200 mb-6"
         >
           <ChevronLeft className="w-5 h-5" />
           Quay lại danh sách
