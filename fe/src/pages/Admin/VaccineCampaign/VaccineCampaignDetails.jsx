@@ -24,6 +24,10 @@ import {
   getStatusText,
 } from "../../../utils/campaignUtils";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import Modal from 'react-modal';
+
+// Set app element for react-modal (for accessibility)
+Modal.setAppElement('#root');
 
 const VaccineCampaignDetails = () => {
   const { id } = useParams();
@@ -34,6 +38,39 @@ const VaccineCampaignDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [cancelModalIsOpen, setCancelModalIsOpen] = useState(false);
+
+  // Modal styles (consistent with RegularCheckup)
+  const customStyles = {
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+      maxWidth: '500px',
+      width: '90%',
+      borderRadius: '0.5rem',
+      border: 'none',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      padding: '0',
+    },
+    overlay: {
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 1000,
+    },
+  };
+
+  const openCancelModal = () => {
+    console.log("Opening cancel modal for campaignId:", id);
+    setCancelModalIsOpen(true);
+  };
+
+  const closeCancelModal = () => {
+    console.log("Closing cancel modal");
+    setCancelModalIsOpen(false);
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -71,27 +108,33 @@ const VaccineCampaignDetails = () => {
 
   const handleCampaignAction = async (action) => {
     if (userRole !== "admin") return;
+    if (action === "cancel" && !cancelModalIsOpen) {
+      openCancelModal();
+      return;
+    }
+
     setLoadingAction(true);
     try {
       const endpoint =
         action === "send-register"
           ? `/vaccination-campaign/${id}/send-register`
           : `/vaccination-campaign/${id}/${action}`;
-      const method = action === "send-register" ? axiosClient.post : axiosClient.patch;
-      const response = await method(endpoint);
+      const response = await (action === "send-register"
+        ? axiosClient.post(endpoint)
+        : axiosClient.patch(endpoint, { reason: "User requested cancellation" }));
       setDetails((prev) => ({
         ...prev,
         status:
           action === "send-register"
             ? "PREPARING"
-            : action === "cancel"
-            ? "CANCELLED"
-            : action === "complete"
-            ? "COMPLETED"
             : action === "close-register"
             ? "UPCOMING"
             : action === "start"
             ? "ONGOING"
+            : action === "complete"
+            ? "COMPLETED"
+            : action === "cancel"
+            ? "CANCELLED"
             : prev.status,
       }));
       enqueueSnackbar(response?.data.message || "Thành công!", {
@@ -104,6 +147,9 @@ const VaccineCampaignDetails = () => {
       });
     } finally {
       setLoadingAction(false);
+      if (action === "cancel") {
+        closeCancelModal();
+      }
     }
   };
 
@@ -405,6 +451,53 @@ const VaccineCampaignDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      {/* Cancel Confirmation Modal */}
+      <Modal
+        isOpen={cancelModalIsOpen}
+        onRequestClose={closeCancelModal}
+        style={customStyles}
+        contentLabel="Xác nhận hủy chiến dịch"
+      >
+        <div className="bg-white rounded-lg">
+          <div className="p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <XCircle className="h-6 w-6 text-red-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Xác nhận hủy chiến dịch</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn hủy chiến dịch này không? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeCancelModal}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() => handleCampaignAction("cancel")}
+                disabled={loadingAction}
+                className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
+                  loadingAction ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {loadingAction ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4" />
+                    <span>Xác nhận hủy</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-6">

@@ -27,6 +27,10 @@ import {
   getStatusText,
   formatDate,
 } from "../../../utils/campaignUtils";
+import Modal from 'react-modal';
+
+// Set app element for react-modal (for accessibility)
+Modal.setAppElement('#root');
 
 const VaccineCampaignManagement = () => {
   const [campaignList, setCampaignList] = useState([]);
@@ -36,7 +40,31 @@ const VaccineCampaignManagement = () => {
   const [loadingActions, setLoadingActions] = useState({});
   const [userRole, setUserRole] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [cancelModalIsOpen, setCancelModalIsOpen] = useState(false);
+  const [campaignToCancel, setCampaignToCancel] = useState(null);
   const navigate = useNavigate();
+
+  // Modal styles (consistent with RegularCheckup)
+  const customStyles = {
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+      maxWidth: '500px',
+      width: '90%',
+      borderRadius: '0.5rem',
+      border: 'none',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      padding: '0',
+    },
+    overlay: {
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 1000,
+    },
+  };
 
   const fetchCampaigns = useCallback(async () => {
     try {
@@ -81,8 +109,25 @@ const VaccineCampaignManagement = () => {
     navigate("/admin/vaccine-campaign-creation");
   };
 
+  const openCancelModal = (campaignId) => {
+    console.log("Opening cancel modal for campaignId:", campaignId);
+    setCampaignToCancel(campaignId);
+    setCancelModalIsOpen(true);
+  };
+
+  const closeCancelModal = () => {
+    console.log("Closing cancel modal");
+    setCancelModalIsOpen(false);
+    setCampaignToCancel(null);
+  };
+
   const handleCampaignAction = async (campaignId, action) => {
     if (userRole !== "admin") return;
+    if (action === "cancel" && !cancelModalIsOpen) {
+      openCancelModal(campaignId);
+      return;
+    }
+
     setLoadingActions((prev) => ({ ...prev, [campaignId]: true }));
     try {
       let endpoint = `/vaccination-campaign/${campaignId}/${action}`;
@@ -91,7 +136,7 @@ const VaccineCampaignManagement = () => {
       }
       const response = await (action === "send-register"
         ? axiosClient.post(endpoint)
-        : axiosClient.patch(endpoint));
+        : axiosClient.patch(endpoint, { reason: "User requested cancellation" }));
       await fetchCampaigns();
       enqueueSnackbar(response?.data.message || "Thành công!", {
         variant: "info",
@@ -106,6 +151,9 @@ const VaccineCampaignManagement = () => {
       });
     } finally {
       setLoadingActions((prev) => ({ ...prev, [campaignId]: false }));
+      if (action === "cancel") {
+        closeCancelModal();
+      }
     }
   };
 
@@ -422,6 +470,53 @@ const VaccineCampaignManagement = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Cancel Confirmation Modal */}
+      <Modal
+        isOpen={cancelModalIsOpen}
+        onRequestClose={closeCancelModal}
+        style={customStyles}
+        contentLabel="Xác nhận hủy chiến dịch"
+      >
+        <div className="bg-white rounded-lg">
+          <div className="p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <XCircle className="h-6 w-6 text-red-600" />
+              <h3 className="text-lg font-semibold text-slate-900">Xác nhận hủy chiến dịch</h3>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Bạn có chắc chắn muốn hủy chiến dịch này không? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeCancelModal}
+                className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() => handleCampaignAction(campaignToCancel, "cancel")}
+                disabled={loadingActions[campaignToCancel]}
+                className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
+                  loadingActions[campaignToCancel] ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {loadingActions[campaignToCancel] ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4" />
+                    <span>Xác nhận hủy</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
