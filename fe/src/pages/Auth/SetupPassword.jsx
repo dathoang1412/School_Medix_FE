@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import { supabase } from "../../config/Supabase";
-import { ClipLoader } from "react-spinners";
+import { Loader2 } from "lucide-react"; // Import Loader2
 
 const SetupPassword = () => {
   const [password, setPassword] = useState("");
@@ -94,9 +94,14 @@ const SetupPassword = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center"
+              disabled={isLoading}
             >
-              {isLoading ? <ClipLoader color="#fff" size={25} /> : "Set Password"}
+              {isLoading ? (
+                <Loader2 className="w-6 h-6 text-white animate-spin" />
+              ) : (
+                "Set Password"
+              )}
             </button>
           </form>
         </div>

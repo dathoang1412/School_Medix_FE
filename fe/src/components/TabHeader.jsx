@@ -6,7 +6,7 @@ const TabHeader = () => {
   const { children, selectedChild, handleSelectChild } = useContext(ChildContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to manage dropdown visibility
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const menu = useMemo(
     () => [
@@ -68,41 +68,16 @@ const TabHeader = () => {
   };
 
   return (
-    <nav className="w-full bg-white text-[14px] pt-5">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row gap-2 px-2 sm:px-4">
-        {/* Child Selector Dropdown */}
-        <div className="mb-4 sm:mb-0">
-          <select
-            value={selectedChild?.id || ""}
-            onChange={(e) => {
-              const child = children.find((c) => c.id === e.target.value);
-              if (child) {
-                handleSelectChild(child);
-                updateChildIdInPath(child.id);
-              }
-            }}
-            className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={!children.length}
-          >
-            <option value="" disabled>
-              {children.length ? "Chọn con" : "Không có dữ liệu con"}
-            </option>
-            {children.map((child) => (
-              <option key={child.id} value={child.id}>
-                {child.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
+    <nav className="w-full bg-white text-[14px] pt-5 pb-2">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2 sm:px-4">
         {/* Tab Navigation */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2 order-2 sm:order-1">
           {menu.map((item) => (
             <div
               key={item.to}
               className="relative"
-              onMouseEnter={() => item.subMenu && setIsDropdownOpen(true)} // Show dropdown on hover
-              onMouseLeave={() => item.subMenu && setIsDropdownOpen(false)} // Hide dropdown when leaving
+              onMouseEnter={() => item.subMenu && setIsDropdownOpen(true)}
+              onMouseLeave={() => item.subMenu && setIsDropdownOpen(false)}
             >
               <NavLink
                 to={item.to}
@@ -136,6 +111,31 @@ const TabHeader = () => {
               )}
             </div>
           ))}
+        </div>
+
+        {/* Child Selector - Moved to right */}
+        <div className="order-1 sm:order-2">
+          <select
+            value={selectedChild?.id || ""}
+            onChange={(e) => {
+              const child = children.find((c) => c.id === e.target.value);
+              if (child) {
+                handleSelectChild(child);
+                updateChildIdInPath(child.id);
+              }
+            }}
+            className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={!children.length}
+          >
+            <option value="" disabled>
+              {children.length ? "Chọn con" : "Không có dữ liệu con"}
+            </option>
+            {children.map((child) => (
+              <option key={child.id} value={child.id}>
+                {child.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </nav>

@@ -67,26 +67,7 @@ const RegularCheckupRegisterList = () => {
     }
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case "SUBMITTED":
-        return "Đã gửi";
-      case "CANCELLED":
-        return "Đã hủy";
-      case "APPROVED":
-        return "Đã duyệt";
-      case "REJECTED":
-        return "Từ chối";
-      case "UPCOMING":
-        return "Sắp tới";
-      case "ONGOING":
-        return "Đang diễn ra";
-      case "COMPLETED":
-        return "Hoàn thành";
-      default:
-        return status;
-    }
-  };
+
 
   if (loading && !isRefreshing) {
     return (
@@ -217,7 +198,7 @@ const RegularCheckupRegisterList = () => {
                           item.status
                         )}`}
                       >
-                        {getStatusText(item.status)}
+                        {item.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -226,7 +207,7 @@ const RegularCheckupRegisterList = () => {
                           item.register_status
                         )}`}
                       >
-                        {getStatusText(item.register_status)}
+                        {item.register_status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">

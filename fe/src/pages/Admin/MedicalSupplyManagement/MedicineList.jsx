@@ -69,7 +69,7 @@ const MedicineList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
@@ -77,7 +77,7 @@ const MedicineList = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
@@ -92,24 +92,24 @@ const MedicineList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-6">Danh sách thuốc</h1>
+        <div className="flex flex-col mb-6">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-6 ">Danh sách kho thuốc</h1>
           <div className="flex gap-3 items-center">
-            <div className="relative">
+            <div className="relative w-1/2">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Tìm theo tên hoặc mô tả..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm w-64"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm w-full"
               />
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             </div>
             <button
-              onClick={() => navigate("/admin/medical-items-management/medicine-item-form")} // Updated navigation
-              className="inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium"
+              onClick={() => navigate("/admin/medical-items-management/medicine-item-form")}
+              className="inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium ml-auto"
             >
               <Pill className="w-4 h-4" />
               Thêm thuốc
@@ -119,7 +119,7 @@ const MedicineList = () => {
         <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse table-fixed">
-              <thead className="bg-gray-50">
+              <thead className="bg-white-50">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[20%]">
                     <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ const MedicineList = () => {
                 ) : (
                   filteredItems.map((item, index) => (
                     <React.Fragment key={item.id}>
-                      <tr className="hover:bg-gray-50 transition-colors">
+                      <tr className="hover:bg-white-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap w-[15%]">
                           <div className="flex items-center">
                             <span className="text-sm font-medium text-gray-900">{item.name}</span>
@@ -197,7 +197,7 @@ const MedicineList = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-center w-[20%]">
                           <div className="flex justify-center gap-4">
                             <button
-                              onClick={() => navigate(`/admin/medical-items-management/medicine-item-form/${item.id}`)} // Updated navigation
+                              onClick={() => navigate(`/admin/medical-items-management/medicine-item-form/${item.id}`)}
                               className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200"
                             >
                               <Edit size={14} />
@@ -229,7 +229,7 @@ const MedicineList = () => {
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="bg-gray-50"
+                            className="bg-white-50"
                           >
                             <td colSpan="6" className="px-6 py-6">
                               <motion.div

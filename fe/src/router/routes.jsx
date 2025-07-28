@@ -66,6 +66,7 @@ import AddMedicalSupplyForm from "../pages/Admin/MedicalSupplyManagement/AddMedi
 import MedicalItemsManagement from "../pages/Admin/MedicalSupplyManagement/MedicalItemsManagement";
 import AddSupplierForm from "../pages/Admin/MedicalSupplyManagement/AddSupplierForm";
 import AddMedicationForm from "../pages/Admin/MedicalSupplyManagement/AddMedicationForm";
+import AddTransactionForm from "../pages/Admin/MedicalSupplyManagement/AddTransactionForm";
 
 const routes = createBrowserRouter([
   {
@@ -170,6 +171,14 @@ const routes = createBrowserRouter([
             path: "medical-items-management/supplier-form/:id",
             element: <AddSupplierForm />,
           },
+          {
+            path: "medical-items-management/transaction-form",
+            element: <AddTransactionForm />,
+          },
+          {
+            path: "medical-items-management/transaction-form/:id",
+            element: <AddTransactionForm />,
+          },
 
           {
             path: "vaccine-campaign",
@@ -181,7 +190,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "daily-health/:record_id",
-            element: <DetailHealthRecordForUpdate />
+            element: <DetailHealthRecordForUpdate />,
           },
           {
             path: "vaccine-campaign-creation",
@@ -287,6 +296,10 @@ const routes = createBrowserRouter([
             path: "vaccine/:id/students",
             element: <VaccineForStudentEligible />,
           },
+          {
+            path: ":student_id/vaccine-info/:record_id",
+            element: <VaccinationHistoryDetail />,
+          }
         ],
       },
     ],
@@ -353,7 +366,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "health-record/:record_id",
-            element: <DetailHealthRecord />
+            element: <DetailHealthRecord />,
           },
           {
             path: "regular-checkup",
@@ -389,7 +402,7 @@ const routes = createBrowserRouter([
   },
   {
     path: "/nurse",
-    element: <PrivateRoute allowedRoles={"nurse"}/>,
+    element: <PrivateRoute allowedRoles={"nurse"} />,
     children: [
       {
         element: <AdminLayout />,
@@ -412,12 +425,16 @@ const routes = createBrowserRouter([
             element: <SendDrugManagement />,
           },
           {
+            path: ":student_id/vaccine-info/:record_id",
+            element: <VaccinationHistoryDetail />,
+          },
+          {
             path: "daily-health",
             element: <DailyHealthRecord />,
           },
           {
             path: "daily-health/:record_id",
-            element: <DetailHealthRecordForUpdate />
+            element: <DetailHealthRecordForUpdate />,
           },
           {
             path: "add-record",
@@ -487,7 +504,6 @@ const routes = createBrowserRouter([
             path: "vaccine/:id/students",
             element: <VaccineForStudentEligible />,
           },
-
         ],
       },
     ],
