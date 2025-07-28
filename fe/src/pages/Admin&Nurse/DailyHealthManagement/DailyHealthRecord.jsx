@@ -324,7 +324,11 @@ const DailyHealthRecord = () => {
                                 ].map(({ label, value }) => (
                                     <div key={label} className="flex items-start">
                                     <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
-                                    <p className="flex-1 text-sm text-gray-800">{value}</p>
+                                    <p className="flex-1 text-sm text-gray-800">
+                                      <div dangerouslySetInnerHTML={{ 
+                                        __html: value.replace(/\n/g, '<br/>') 
+                                      }} 
+                                    /></p>
                                     </div>
                                 ))}
                             </div>
