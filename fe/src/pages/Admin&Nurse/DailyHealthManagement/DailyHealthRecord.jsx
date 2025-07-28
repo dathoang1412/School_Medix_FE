@@ -284,7 +284,7 @@ const DailyHealthRecord = () => {
                     Thông tin học sinh
                   </h4>
                   <p className="text-sm text-gray-600 mt-1">
-                    Mã học sinh: {selectedRecord.student_id} | Họ tên: {selectedRecord.name || 'N/A'}
+                    Mã học sinh: {selectedRecord.student_id} | Họ tên: {selectedRecord.student_name || 'N/A'}
                   </p>
                 </div>
                     <div className="space-y-4">

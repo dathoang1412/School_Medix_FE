@@ -28,6 +28,7 @@ const DetailHealthRecord = () => {
         try {
             const response = await axiosClient.get(`/daily-health-record/${record_id}`);
             const fetchedRecord = response.data.data;
+            console.log("Daily Detail: ", response.data.data);
             if (!fetchedRecord) {
                 setError('Không tìm thấy hồ sơ y tế.');
                 setLoading(false);
@@ -104,7 +105,7 @@ const DetailHealthRecord = () => {
                         </h4>
                         {[
                         { label: "Mã học sinh", value: record?.student_id || 'N/A' },
-                        { label: "Họ tên", value: record?.name || 'N/A' },
+                        { label: "Họ tên", value: record?.student_name || 'N/A' },
                         ].map(({ label, value }) => (
                         <div key={label} className="flex items-start">
                             <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
