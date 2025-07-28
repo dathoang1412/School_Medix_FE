@@ -129,7 +129,7 @@ const BlogEditor = () => {
     };
 
     // Initialize Quill after a small delay to ensure DOM is ready
-    const timer = setTimeout(initializeQuill, 100);
+    const timer = setTimeout(initializeQuill, 200);
 
     return () => {
       clearTimeout(timer);
