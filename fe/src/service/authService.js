@@ -3,6 +3,7 @@ export const saveUser = (user) => {
 }
 
 export const removeUser = () => {
+    localStorage.removeItem("aiMessages");
     localStorage.removeItem("user");
     localStorage.removeItem("selectedChild");
 }
