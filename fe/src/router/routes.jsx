@@ -66,6 +66,7 @@ import AddMedicalSupplyForm from "../pages/Admin/MedicalSupplyManagement/AddMedi
 import MedicalItemsManagement from "../pages/Admin/MedicalSupplyManagement/MedicalItemsManagement";
 import AddSupplierForm from "../pages/Admin/MedicalSupplyManagement/AddSupplierForm";
 import AddMedicationForm from "../pages/Admin/MedicalSupplyManagement/AddMedicationForm";
+import AddTransactionForm from "../pages/Admin/MedicalSupplyManagement/AddTransactionForm";
 
 const routes = createBrowserRouter([
   {
@@ -169,6 +170,14 @@ const routes = createBrowserRouter([
           {
             path: "medical-items-management/supplier-form/:id",
             element: <AddSupplierForm />,
+          },
+          {
+            path: "medical-items-management/transaction-form",
+            element: <AddTransactionForm />,
+          },
+          {
+            path: "medical-items-management/transaction-form/:id",
+            element: <AddTransactionForm />,
           },
 
           {

@@ -24,7 +24,12 @@ const AddMedicationForm = () => {
           const response = await axiosClient.get(`/medical-item/${id}`);
           if (response.data.error) throw new Error(response.data.message);
           const { name, unit, description, exp_date } = response.data.data;
-          setFormData({ name, unit, description: description || "", exp_date });
+          setFormData({
+            name,
+            unit,
+            description: description || "",
+            exp_date: exp_date ? new Date(exp_date).toISOString().split("T")[0] : "", // Chuyển đổi ISO sang YYYY-MM-DD
+          });
         } catch (err) {
           enqueueSnackbar(err.message || "Lỗi khi tải thông tin thuốc.", { variant: "error" });
         } finally {
@@ -56,9 +61,13 @@ const AddMedicationForm = () => {
 
     setLoading(true);
     try {
-      const payload = { ...formData, category: "MEDICATION" };
+      const payload = {
+        ...formData,
+        category: "MEDICATION",
+        exp_date: new Date(formData.exp_date).toISOString(), // Chuyển lại thành ISO nếu backend yêu cầu
+      };
       const response = await axiosClient[id ? "patch" : "post"](
-        id ? `/medical-item/${id}` : "/medical-supply", // Adjust endpoint for medications if different
+        id ? `/medical-item/${id}` : "/medication", // Adjust endpoint for medications if different
         payload
       );
       if (response.data.error) throw new Error(response.data.message);
@@ -80,7 +89,6 @@ const AddMedicationForm = () => {
   if (isLoadingData) {
     return <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-green-600" /></div>;
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-white flex items-center justify-center py-12">
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
