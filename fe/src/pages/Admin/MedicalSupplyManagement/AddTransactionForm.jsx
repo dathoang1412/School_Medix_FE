@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Loader2, Calendar, Package, Save, X, Plus, ChevronLeft } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader2, Plus, X, ChevronLeft } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 
 const AddTransactionForm = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const { id } = useParams(); // Get ID from URL parameters
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
@@ -18,19 +20,49 @@ const AddTransactionForm = () => {
   });
   const [medicalItems, setMedicalItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
+  const isUpdate = !!id; // Determine if this is an update operation
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const medicalItemsResponse = await axiosClient.get("/medical-item");
+        // Fetch medical items and suppliers
+        const [medicalItemsResponse, suppliersResponse] = await Promise.all([
+          axiosClient.get("/medical-item"),
+          axiosClient.get("/supplier"),
+        ]);
+
         if (medicalItemsResponse.data.error) throw new Error(medicalItemsResponse.data.message);
         setMedicalItems(medicalItemsResponse.data.data || []);
 
-        const suppliersResponse = await axiosClient.get("/supplier");
         if (suppliersResponse.data.error) throw new Error(suppliersResponse.data.message);
         setSuppliers(suppliersResponse.data.data || []);
-        console.log("Suppliers:", suppliersResponse.data.data);
+
+        // Fetch transaction data if ID is present
+        if (isUpdate) {
+          const transactionResponse = await axiosClient.get(`/inventory-transaction/${id}`);
+          if (transactionResponse.data.error) throw new Error(transactionResponse.data.message);
+          const transaction = transactionResponse.data.data;
+
+          // Format transaction_date to YYYY-MM-DD for input[type=date]
+          const formattedDate = transaction.transaction_date
+            ? new Date(transaction.transaction_date).toISOString().split("T")[0]
+            : "";
+
+          // Map medical_items to match formData structure
+          const formattedMedicalItems = transaction.medical_items.map((item) => ({
+            id: item.id,
+            quantity: item.transaction_quantity,
+          }));
+
+          setFormData({
+            purpose_id: transaction.purpose_id || "",
+            transaction_date: formattedDate,
+            note: transaction.note || "",
+            medical_items: formattedMedicalItems.length > 0 ? formattedMedicalItems : [{ id: "", quantity: 0 }],
+            supplier_id: transaction.supplier_id || "",
+          });
+        }
       } catch (err) {
         setError(err.message || "Không thể tải dữ liệu.");
         enqueueSnackbar(err.message || "Không thể tải dữ liệu.", { variant: "error" });
@@ -39,7 +71,7 @@ const AddTransactionForm = () => {
       }
     };
     fetchData();
-  }, [enqueueSnackbar]);
+  }, [enqueueSnackbar, isUpdate, id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -82,7 +114,7 @@ const AddTransactionForm = () => {
         transaction_date: formData.transaction_date,
         note: formData.note,
         medical_items: formData.medical_items.map((item) => ({
-          medical_item_id: item.id, // Đổi sang medical_item_id theo backend
+          medical_item_id: item.id,
           transaction_quantity: item.quantity,
         })),
         supplier_id: formData.supplier_id || null,
@@ -92,13 +124,19 @@ const AddTransactionForm = () => {
         throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc.");
       }
 
-      const response = await axiosClient.post("/inventory-transaction", payload);
+      let response;
+      if (isUpdate) {
+        response = await axiosClient.put(`/inventory-transaction/${id}`, payload);
+      } else {
+        response = await axiosClient.post("/inventory-transaction", payload);
+      }
+
       if (response.data.error) throw new Error(response.data.message);
-      enqueueSnackbar(response.data.message || "Tạo giao dịch thành công.", { variant: "success" });
+      enqueueSnackbar(response.data.message || (isUpdate ? "Cập nhật giao dịch thành công." : "Tạo giao dịch thành công."), { variant: "success" });
       navigate("/admin/medical-items-management?tab=TRANSACTION");
     } catch (err) {
       setError(err.message);
-      enqueueSnackbar(err.message || "Lỗi khi tạo giao dịch.", { variant: "error" });
+      enqueueSnackbar(err.message || (isUpdate ? "Lỗi khi cập nhật giao dịch." : "Lỗi khi tạo giao dịch."), { variant: "error" });
     } finally {
       setLoading(false);
     }
@@ -141,7 +179,7 @@ const AddTransactionForm = () => {
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-6 bg-gradient-to-r from-blue-100 to-white rounded-lg p-4">
             <h1 className="text-2xl font-semibold text-gray-900">
-              Thêm giao dịch mới
+              {isUpdate ? "Cập nhật giao dịch" : "Thêm giao dịch mới"}
             </h1>
           </div>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -269,7 +307,7 @@ const AddTransactionForm = () => {
                 className="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                Thêm mới
+                {isUpdate ? "Cập nhật" : "Thêm mới"}
               </button>
             </div>
           </form>

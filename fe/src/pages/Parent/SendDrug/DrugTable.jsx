@@ -516,7 +516,7 @@ const DrugTable = () => {
                 </div>
                 <button
                   onClick={handleCloseModal}
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
+                  className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
                 >
                   <X size={20} />
                 </button>
@@ -531,7 +531,7 @@ const DrugTable = () => {
               <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
                 <button
                   onClick={handleCloseModal}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-sm"
+                  className="px-4 cursor-pointer py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-sm"
                 >
                   Đóng
                 </button>

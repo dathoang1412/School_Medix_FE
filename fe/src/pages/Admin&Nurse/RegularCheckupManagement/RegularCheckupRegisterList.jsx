@@ -67,8 +67,6 @@ const RegularCheckupRegisterList = () => {
     }
   };
 
-
-
   if (loading && !isRefreshing) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -84,13 +82,26 @@ const RegularCheckupRegisterList = () => {
     return (
       <div className="bg-red-50 border border-red-200 rounded-md p-4">
         <div className="text-red-800 mb-4">{error}</div>
-        <button
-          onClick={handleRefresh}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
-        >
-          <Loader2 className={`w-5 h-5 ${isRefreshing ? "animate-spin" : "hidden"}`} />
-          <span>Thử lại</span>
-        </button>
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={handleRefresh}
+            className="flex cursor-pointer items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+          >
+            <Loader2
+              className={`w-5 h-5 ${isRefreshing ? "animate-spin" : "hidden"}`}
+            />
+            <span>Thử lại</span>
+          </button>
+          <button
+            onClick={() => {
+              navigate(-1);
+            }}
+            className="flex cursor-pointer items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+          >
+            <ArrowLeft />
+            <span>Quay lại</span>
+          </button>
+        </div>
       </div>
     );
   }
@@ -101,7 +112,7 @@ const RegularCheckupRegisterList = () => {
         <div>
           <button
             onClick={() => navigate(`/${getUserRole()}/regular-checkup`)}
-            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+            className="flex cursor-pointer items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Quay lại
@@ -170,7 +181,10 @@ const RegularCheckupRegisterList = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {list.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
                     Không có dữ liệu đăng ký
                   </td>
                 </tr>
@@ -182,12 +196,16 @@ const RegularCheckupRegisterList = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link
-                        to={`/${getUserRole()}/student-overview/${item.student_id}`}
+                        to={`/${getUserRole()}/student-overview/${
+                          item.student_id
+                        }`}
                         className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
                       >
                         {item.student_name}
                       </Link>
-                      <div className="text-sm text-gray-500">ID: {item.student_id}</div>
+                      <div className="text-sm text-gray-500">
+                        ID: {item.student_id}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {item.class_name}
@@ -224,7 +242,9 @@ const RegularCheckupRegisterList = () => {
       </div>
 
       {list.length > 0 && (
-        <div className="mt-4 text-sm text-gray-600">Hiển thị {list.length} kết quả</div>
+        <div className="mt-4 text-sm text-gray-600">
+          Hiển thị {list.length} kết quả
+        </div>
       )}
     </div>
   );

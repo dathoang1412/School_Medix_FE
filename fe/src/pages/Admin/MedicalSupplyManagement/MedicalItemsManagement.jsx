@@ -29,7 +29,7 @@ const MedicalItemsManagement = () => {
             <div className="w-full flex justify-center border-b border-gray-200 p-2">
               <button
                 onClick={() => setActiveTab("MEDICATION")}
-                className={`cursor-pointer flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
+                className={`flex cursor-pointer items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
                   activeTab === "MEDICATION"
                     ? "text-green-600 border-b-2 border-green-600"
                     : "text-gray-600 hover:text-gray-800"
@@ -41,7 +41,7 @@ const MedicalItemsManagement = () => {
               </button>
               <button
                 onClick={() => setActiveTab("MEDICAL_SUPPLY")}
-                className={`cursor-pointer flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
+                className={`flex cursor-pointer items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
                   activeTab === "MEDICAL_SUPPLY"
                     ? "text-blue-600 border-b-2 border-blue-600"
                     : "text-gray-600 hover:text-gray-800"
@@ -53,7 +53,7 @@ const MedicalItemsManagement = () => {
               </button>
               <button
                 onClick={() => setActiveTab("SUPPLIER")}
-                className={`cursor-pointer flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
+                className={`flex cursor-pointer items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
                   activeTab === "SUPPLIER"
                     ? "text-purple-600 border-b-2 border-purple-600"
                     : "text-gray-600 hover:text-gray-800"
@@ -65,7 +65,7 @@ const MedicalItemsManagement = () => {
               </button>
               <button
                 onClick={() => setActiveTab("TRANSACTION")}
-                className={`cursor-pointer flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out ${
+                className={`flex cursor-pointer items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out ${
                   activeTab === "TRANSACTION"
                     ? "text-indigo-600 border-b-2 border-indigo-600"
                     : "text-gray-600 hover:text-gray-800"
