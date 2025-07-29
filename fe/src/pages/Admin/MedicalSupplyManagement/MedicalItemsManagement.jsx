@@ -18,8 +18,8 @@ const MedicalItemsManagement = () => {
   }, [location.search]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl">
+    <div className="min-h-screen bg-gray-50 w-full flex justify-center">
+      <div className="max-w-7xl ">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="flex flex-col items-center">
             <div className="w-full flex justify-center border-b border-gray-200 p-2">

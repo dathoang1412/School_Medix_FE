@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Eye, EyeClosed, Loader2 } from "lucide-react";
 import { supabase } from "../../../config/Supabase";
 import { useNavigate } from "react-router-dom";
+import { enqueueSnackbar } from "notistack";
 
 const ChangePassword = ({ onNext }) => {
   const [password, setPassword] = useState("");
@@ -105,7 +106,7 @@ const ChangePassword = ({ onNext }) => {
 
         <button
           onClick={handleChangePassword}
-          className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium flex items-center justify-center space-x-2"
+          className="w-full cursor-pointer bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium flex items-center justify-center space-x-2"
           disabled={loading}
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}

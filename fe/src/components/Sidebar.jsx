@@ -139,19 +139,6 @@ const Sidebar = () => {
       title: "Hồ sơ bệnh",
       path: "disease",
       icon: <MdOutlineMedicalInformation />,
-      hasDropdown: true,
-      children: [
-        {
-          title: "Quản lý bệnh",
-          path: "#",
-          icon: <SquareActivity />,
-        },
-        {
-          title: "Quản lý hồ sơ bệnh",
-          path: "disease",
-          icon: <MdOutlineMedicalInformation size={22} />,
-        },
-      ],
     },
     {
       title: "Khám định kỳ",

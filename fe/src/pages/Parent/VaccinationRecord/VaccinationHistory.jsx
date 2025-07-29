@@ -3,15 +3,18 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import { getStudentInfo } from "../../../service/childenService";
-import { ChevronDown, FileText, X } from "lucide-react";
+import { ChevronDown, FileText, X, Filter } from "lucide-react";
 
 const VaccinationHistory = () => {
   const { student_id } = useParams();
   const [list, setList] = useState([]);
+  const [filteredList, setFilteredList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
   const [showFullDetailsModal, setShowFullDetailsModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [selectedDoseFilter, setSelectedDoseFilter] = useState("all");
+  const [availableDoses, setAvailableDoses] = useState([]);
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [selectedChild, setSelectedChild] = useState(null);
@@ -42,6 +45,10 @@ const VaccinationHistory = () => {
         const res = await axiosClient.get(`/student/${selectedChild.id}/vaccination-record`);
         console.log("Vaccination history detail: ", res.data.data);
         setList(res.data.data);
+        
+        // Extract unique doses for filter options
+        const doses = [...new Set(res.data.data.map(item => item.disease_name).filter(Boolean))];
+        setAvailableDoses(doses);
       } catch (error) {
         console.error("Error fetching vaccination history:", error);
         enqueueSnackbar(
@@ -55,6 +62,20 @@ const VaccinationHistory = () => {
 
     fetchHistory();
   }, [selectedChild?.id, enqueueSnackbar]);
+
+  // Filter vaccination records based on selected dose
+  useEffect(() => {
+    if (selectedDoseFilter === "all") {
+      setFilteredList(list);
+    } else {
+      setFilteredList(list.filter(item => item.disease_name === selectedDoseFilter));
+    }
+  }, [list, selectedDoseFilter]);
+
+  const handleDoseFilterChange = (dose) => {
+    setSelectedDoseFilter(dose);
+    setExpandedRow(null); // Close any expanded rows when filter changes
+  };
 
   const toggleRow = (vaccinationRecordId) => {
     setExpandedRow((prev) => (prev === vaccinationRecordId ? null : vaccinationRecordId));
@@ -98,6 +119,42 @@ const VaccinationHistory = () => {
         );
     }
   };
+
+  const renderFilterSection = () => (
+    <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-gray-600" />
+          <span className="text-sm font-medium text-gray-700">Lọc theo mũi tiêm:</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => handleDoseFilterChange("all")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+              selectedDoseFilter === "all"
+                ? "bg-blue-100 text-blue-700 border-blue-300"
+                : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+            }`}
+          >
+            Tất cả ({list.length})
+          </button>
+          {availableDoses.map((dose) => (
+            <button
+              key={dose}
+              onClick={() => handleDoseFilterChange(dose)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                selectedDoseFilter === dose
+                  ? "bg-blue-100 text-blue-700 border-blue-300"
+                  : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              {dose} ({list.filter(item => item.disease_name === dose).length})
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   const renderFullDetailsModal = () => {
     if (!selectedRecord) return null;
@@ -168,7 +225,7 @@ const VaccinationHistory = () => {
                     </div>
                     <div className="flex items-start">
                       <label className="w-1/3 text-sm font-medium text-gray-600">
-                        Chẩn đoán
+                        Theo dõi sau tiêm
                       </label>
                       <p className="flex-1 text-sm text-gray-800">
                         {selectedRecord.description || "Không có chẩn đoán"}
@@ -213,10 +270,13 @@ const VaccinationHistory = () => {
           <div className="w-8 h-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent mx-auto mb-4" />
           <p className="text-gray-600 text-sm">Đang tải dữ liệu...</p>
         </div>
-      ) : list.length === 0 ? (
+      ) : filteredList.length === 0 ? (
         <div className="text-center py-12 bg-white">
           <p className="text-gray-600 text-sm">
-            Không có dữ liệu lịch sử tiêm chủng
+            {selectedDoseFilter === "all" 
+              ? "Không có dữ liệu lịch sử tiêm chủng" 
+              : `Không có dữ liệu cho mũi tiêm "${selectedDoseFilter}"`
+            }
           </p>
         </div>
       ) : (
@@ -233,7 +293,7 @@ const VaccinationHistory = () => {
                 Vaccine
               </th>
               <th className="px-4 py-3 text-left border-r border-gray-200">
-                Bệnh
+                Mũi tiêm
               </th>
               <th className="px-4 py-3 text-left border-r border-gray-200">
                 Ngày tiêm
@@ -245,7 +305,7 @@ const VaccinationHistory = () => {
             </tr>
           </thead>
           <tbody>
-            {list.map((item) => (
+            {filteredList.map((item) => (
               <>
                 <tr
                   key={item.id}
@@ -294,7 +354,7 @@ const VaccinationHistory = () => {
                           </div>
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-gray-800 font-medium text-sm">
-                              Mô tả: {item.description || "Không có"}
+                              Theo dõi sau tiêm: {item.description || "Không có"}
                             </span>
                           </div>
                         </div>
@@ -321,6 +381,7 @@ const VaccinationHistory = () => {
             Xem lịch sử tiêm chủng của {selectedChild?.name || "học sinh"}
           </p>
         </div>
+        {availableDoses.length > 0 && renderFilterSection()}
         {renderVaccinationTable()}
         {renderFullDetailsModal()}
       </div>

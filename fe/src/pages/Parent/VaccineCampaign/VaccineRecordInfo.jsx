@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Syringe, Loader2, AlertCircle, ChevronDown, ChevronUp, Filter } from "lucide-react";
+import { Syringe, Loader2, AlertCircle, ChevronDown, ChevronUp, Filter, Info } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { getStudentInfo } from "../../../service/childenService";
 import { getSession } from "../../../config/Supabase";
@@ -53,7 +53,7 @@ const VaccineRecordInfo = () => {
         setCurrChild(child);
 
         // Fetch completed doses
-        const dosesRes = await axiosClient.get(`/student/${child.id}/completed-doses`);
+        const dosesRes = await axiosClient.get(`/student/${child.id}/vnvc/completed-doses`);
         const dosesData = dosesRes.data.diseases || [];
         setRecords(dosesData);
         setError(null);
@@ -190,6 +190,30 @@ const VaccineRecordInfo = () => {
         >
           Đã đủ mũi
         </button>
+      </div>
+
+      {/* Information Note */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-blue-800">
+            <p className="mb-2">
+              <strong>Ghi chú:</strong> Đây là danh sách các mũi tiêm khuyến nghị tham khảo từ{" "}
+              <a 
+                href="https://vnvc.vn/lich-tiem-chung-cho-be/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-700 underline hover:text-blue-900"
+              >
+                lịch tiêm chủng cho bé của VNVC
+              </a>.
+            </p>
+            <p>
+              Đây chỉ là danh sách các mũi tiêm khuyến nghị được nhà trường tham khảo được và cung cấp cho phụ huynh, không có ý nghĩa ràng buộc y tế rằng học sinh phải tiêm đủ hết tất cả mũi. 
+              <br />Có thể học sinh đã được tiêm những mũi tiêm khác ngoài các mũi tiêm được liệt kê, xem đầy đủ lịch sử các mũi tiêm của học sinh ở phần <strong>Lịch sử tiêm chủng</strong>.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Content */}

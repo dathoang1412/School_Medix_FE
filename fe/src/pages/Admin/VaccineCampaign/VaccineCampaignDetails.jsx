@@ -39,6 +39,7 @@ const VaccineCampaignDetails = () => {
   const [error, setError] = useState(null);
   const [loadingAction, setLoadingAction] = useState(false);
   const [cancelModalIsOpen, setCancelModalIsOpen] = useState(false);
+  const [sendModalIsOpen, setSendModalIsOpen] = useState(false); // Added state for send modal
 
   // Modal styles (consistent with RegularCheckup)
   const customStyles = {
@@ -70,6 +71,16 @@ const VaccineCampaignDetails = () => {
   const closeCancelModal = () => {
     console.log("Closing cancel modal");
     setCancelModalIsOpen(false);
+  };
+
+  const openSendModal = () => {
+    console.log("Opening send modal for campaignId:", id);
+    setSendModalIsOpen(true);
+  };
+
+  const closeSendModal = () => {
+    console.log("Closing send modal");
+    setSendModalIsOpen(false);
   };
 
   useEffect(() => {
@@ -107,48 +118,80 @@ const VaccineCampaignDetails = () => {
   }, [id]);
 
   const handleCampaignAction = async (action) => {
-    if (userRole !== "admin") return;
+    if (userRole !== "admin") {
+      enqueueSnackbar("Chỉ admin mới có thể thực hiện hành động này", { variant: "error" });
+      return;
+    }
     if (action === "cancel" && !cancelModalIsOpen) {
       openCancelModal();
+      return;
+    }
+    if (action === "send-register" && !sendModalIsOpen) {
+      openSendModal();
       return;
     }
 
     setLoadingAction(true);
     try {
-      const endpoint =
-        action === "send-register"
-          ? `/vaccination-campaign/${id}/send-register`
-          : `/vaccination-campaign/${id}/${action}`;
-      const response = await (action === "send-register"
-        ? axiosClient.post(endpoint)
-        : axiosClient.patch(endpoint, { reason: "User requested cancellation" }));
-      setDetails((prev) => ({
-        ...prev,
-        status:
-          action === "send-register"
-            ? "PREPARING"
-            : action === "close-register"
-            ? "UPCOMING"
-            : action === "start"
-            ? "ONGOING"
-            : action === "complete"
-            ? "COMPLETED"
-            : action === "cancel"
-            ? "CANCELLED"
-            : prev.status,
-      }));
-      enqueueSnackbar(response?.data.message || "Thành công!", {
-        variant: "info",
-      });
+      if (action === "send-register") {
+        // Call send-register endpoint
+        const sendRegisterEndpoint = `/vaccination-campaign/${id}/send-register`;
+        console.log("Sending request to:", sendRegisterEndpoint);
+        const sendRegisterResponse = await axiosClient.post(sendRegisterEndpoint);
+        enqueueSnackbar(sendRegisterResponse?.data.message || "Gửi đơn thành công!", { variant: "success" });
+
+        // Update status to PREPARING
+        setDetails((prev) => ({ ...prev, status: "PREPARING" }));
+
+        // Call send-mail-register endpoint in the background
+        const sendMailEndpoint = `/vaccination-campaign/${id}/send-mail-register`;
+        console.log("Sending email request to:", sendMailEndpoint);
+        axiosClient
+          .post(sendMailEndpoint)
+          .then((mailResponse) => {
+            enqueueSnackbar(mailResponse?.data.message || "Gửi email thông báo thành công!", {
+              variant: "success",
+            });
+          })
+          .catch((mailError) => {
+            console.error("Error sending emails:", mailError.response?.data);
+            enqueueSnackbar(
+              mailError.response?.data?.message || "Lỗi khi gửi email thông báo!",
+              { variant: "error" }
+            );
+          });
+      } else {
+        // Handle other actions (e.g., cancel, close-register, start, complete)
+        const endpoint = `/vaccination-campaign/${id}/${action}`;
+        console.log("Sending request to:", endpoint);
+        const response = await axiosClient.patch(endpoint, {
+          reason: `User requested ${action}`,
+        });
+        setDetails((prev) => ({
+          ...prev,
+          status:
+            action === "cancel"
+              ? "CANCELLED"
+              : action === "complete"
+              ? "COMPLETED"
+              : action === "close-register"
+              ? "UPCOMING"
+              : action === "start"
+              ? "ONGOING"
+              : prev.status,
+        }));
+        enqueueSnackbar(response?.data.message || "Thành công!", { variant: "success" });
+      }
     } catch (error) {
       console.error(`Error performing ${action} on campaign ${id}:`, error);
-      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", {
-        variant: "error",
-      });
+      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra khi thực hiện hành động!";
+      enqueueSnackbar(errorMessage, { variant: "error" });
     } finally {
       setLoadingAction(false);
       if (action === "cancel") {
         closeCancelModal();
+      } else if (action === "send-register") {
+        closeSendModal();
       }
     }
   };
@@ -195,7 +238,7 @@ const VaccineCampaignDetails = () => {
         buttons.push(
           <button
             key="send-register"
-            onClick={() => handleCampaignAction("send-register")}
+            onClick={() => handleCampaignAction("send-register")} // Updated to trigger modal
             disabled={loadingAction}
             className={`flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer ${
               loadingAction ? "opacity-75 cursor-not-allowed" : ""
@@ -431,7 +474,7 @@ const VaccineCampaignDetails = () => {
             className="mt-4 flex items-center justify-center mx-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Quay lại
+            <span>Quay lại</span>
           </button>
         </div>
       </div>
@@ -451,15 +494,15 @@ const VaccineCampaignDetails = () => {
           <div className="p-6">
             <div className="flex items-center space-x-3 mb-4">
               <XCircle className="h-6 w-6 text-red-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Xác nhận hủy chiến dịch</h3>
+              <h3 className="text-lg font-semibold text-slate-900">Xác nhận hủy chiến dịch</h3>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="text-slate-600 mb-6">
               Bạn có chắc chắn muốn hủy chiến dịch này không? Hành động này không thể hoàn tác.
             </p>
             <div className="flex justify-end space-x-3">
               <button
                 onClick={closeCancelModal}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 Quay lại
               </button>
@@ -487,6 +530,53 @@ const VaccineCampaignDetails = () => {
         </div>
       </Modal>
 
+      {/* Send Register Confirmation Modal */}
+      <Modal
+        isOpen={sendModalIsOpen}
+        onRequestClose={closeSendModal}
+        style={customStyles}
+        contentLabel="Xác nhận gửi đơn"
+      >
+        <div className="bg-white rounded-lg">
+          <div className="p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Send className="h-6 w-6 text-blue-600" />
+              <h3 className="text-lg font-semibold text-slate-900">Xác nhận gửi đơn</h3>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Bạn có chắc chắn muốn gửi đơn đăng ký cho chiến dịch này không? Hành động này sẽ thông báo cho tất cả phụ huynh qua email.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeSendModal}
+                className="px-4 cursor-pointer py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() => handleCampaignAction("send-register")}
+                disabled={loadingAction}
+                className={`px-4 cursor-pointer py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 ${
+                  loadingAction ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {loadingAction ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Xác nhận gửi</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-6">
@@ -495,13 +585,13 @@ const VaccineCampaignDetails = () => {
             className="flex items-center text-blue-600 hover:text-blue-800 mb-4 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
-            Quay lại danh sách
+            <span>Quay lại danh sách</span>
           </button>
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Chi tiết Chiến dịch Tiêm chủng #{details.campaign_id}: {details.title}
+                  {details.title}
                 </h1>
                 <div className="flex items-center gap-2 mb-4">
                   {getStatusIcon(details.status)}
@@ -615,7 +705,12 @@ const VaccineCampaignDetails = () => {
                 <FileText className="w-5 h-5 text-gray-700 mr-2" />
                 <h2 className="text-lg font-semibold text-gray-900">Mô tả chi tiết</h2>
               </div>
-              <p className="text-sm text-gray-700">{details.description || "Chưa có mô tả"}</p>
+              <p className="text-sm text-gray-700">
+                <div dangerouslySetInnerHTML={{ 
+                  __html: details.description.replace(/\n/g, '<br/>') || null                      
+                }} 
+                />
+              </p>
             </div>
           </div>
 

@@ -41,10 +41,12 @@ const VaccineCampaignManagement = () => {
   const [userRole, setUserRole] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [cancelModalIsOpen, setCancelModalIsOpen] = useState(false);
+  const [sendModalIsOpen, setSendModalIsOpen] = useState(false); // Added state for send modal
   const [campaignToCancel, setCampaignToCancel] = useState(null);
+  const [campaignToSend, setCampaignToSend] = useState(null); // Added state for send campaign
   const navigate = useNavigate();
 
-  // Modal styles (consistent with RegularCheckup)
+  // Modal styles (consistent with VaccineCampaignDetails)
   const customStyles = {
     content: {
       top: '50%',
@@ -121,38 +123,89 @@ const VaccineCampaignManagement = () => {
     setCampaignToCancel(null);
   };
 
+  const openSendModal = (campaignId) => {
+    console.log("Opening send modal for campaignId:", campaignId);
+    setCampaignToSend(campaignId);
+    setSendModalIsOpen(true);
+  };
+
+  const closeSendModal = () => {
+    console.log("Closing send modal");
+    setSendModalIsOpen(false);
+    setCampaignToSend(null);
+  };
+
   const handleCampaignAction = async (campaignId, action) => {
-    if (userRole !== "admin") return;
+    if (userRole !== "admin") {
+      enqueueSnackbar("Chỉ admin mới có thể thực hiện hành động này", { variant: "error" });
+      return;
+    }
     if (action === "cancel" && !cancelModalIsOpen) {
       openCancelModal(campaignId);
+      return;
+    }
+    if (action === "send-register" && !sendModalIsOpen) {
+      openSendModal(campaignId);
       return;
     }
 
     setLoadingActions((prev) => ({ ...prev, [campaignId]: true }));
     try {
-      let endpoint = `/vaccination-campaign/${campaignId}/${action}`;
       if (action === "send-register") {
-        endpoint = `/vaccination-campaign/${campaignId}/send-register`;
+        // Call send-register endpoint
+        const sendRegisterEndpoint = `/vaccination-campaign/${campaignId}/send-register`;
+        console.log("Sending request to:", sendRegisterEndpoint);
+        const sendRegisterResponse = await axiosClient.post(sendRegisterEndpoint);
+        enqueueSnackbar(sendRegisterResponse?.data.message || "Gửi đơn thành công!", { variant: "success" });
+
+        // Update campaign status to PREPARING
+        setCampaignList((prev) =>
+          prev.map((campaign) =>
+            campaign.campaign_id === campaignId
+              ? { ...campaign, status: "PREPARING" }
+              : campaign
+          )
+        );
+
+        // Call send-mail-register endpoint in the background
+        const sendMailEndpoint = `/vaccination-campaign/${campaignId}/send-mail-register`;
+        console.log("Sending email request to:", sendMailEndpoint);
+        axiosClient
+          .post(sendMailEndpoint)
+          .then((mailResponse) => {
+            enqueueSnackbar(mailResponse?.data.message || "Gửi email thông báo thành công!", {
+              variant: "success",
+            });
+          })
+          .catch((mailError) => {
+            console.error("Error sending emails:", mailError.response?.data);
+            enqueueSnackbar(
+              mailError.response?.data?.message || "Lỗi khi gửi email thông báo!",
+              { variant: "error" }
+            );
+          });
+      } else {
+        // Handle other actions (e.g., cancel, close-register, start, complete)
+        const endpoint = `/vaccination-campaign/${campaignId}/${action}`;
+        console.log("Sending request to:", endpoint);
+        const response = await axiosClient.patch(endpoint, {
+          reason: `User requested ${action}`,
+        });
+        await fetchCampaigns();
+        enqueueSnackbar(response?.data.message || "Thành công!", {
+          variant: "info",
+        });
       }
-      const response = await (action === "send-register"
-        ? axiosClient.post(endpoint)
-        : axiosClient.patch(endpoint, { reason: "User requested cancellation" }));
-      await fetchCampaigns();
-      enqueueSnackbar(response?.data.message || "Thành công!", {
-        variant: "info",
-      });
     } catch (error) {
-      console.error(
-        `Error performing ${action} on campaign ${campaignId}:`,
-        error
-      );
-      enqueueSnackbar(error.response?.data?.message || "Có lỗi xảy ra!", {
-        variant: "error",
-      });
+      console.error(`Error performing ${action} on campaign ${campaignId}:`, error);
+      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra!";
+      enqueueSnackbar(errorMessage, { variant: "error" });
     } finally {
       setLoadingActions((prev) => ({ ...prev, [campaignId]: false }));
       if (action === "cancel") {
         closeCancelModal();
+      } else if (action === "send-register") {
+        closeSendModal();
       }
     }
   };
@@ -476,14 +529,14 @@ const VaccineCampaignManagement = () => {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={closeCancelModal}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+                className="px-4 cursor-pointer py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 Quay lại
               </button>
               <button
                 onClick={() => handleCampaignAction(campaignToCancel, "cancel")}
                 disabled={loadingActions[campaignToCancel]}
-                className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
+                className={`px-4 py-2 cursor-pointer bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
                   loadingActions[campaignToCancel] ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >
@@ -496,6 +549,53 @@ const VaccineCampaignManagement = () => {
                   <>
                     <XCircle className="w-4 h-4" />
                     <span>Xác nhận hủy</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Send Register Confirmation Modal */}
+      <Modal
+        isOpen={sendModalIsOpen}
+        onRequestClose={closeSendModal}
+        style={customStyles}
+        contentLabel="Xác nhận gửi đơn"
+      >
+        <div className="bg-white rounded-lg">
+          <div className="p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Send className="h-6 w-6 text-blue-600" />
+              <h3 className="text-lg font-semibold text-slate-900">Xác nhận gửi đơn</h3>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Bạn có chắc chắn muốn gửi đơn đăng ký cho chiến dịch này không? Hành động này sẽ thông báo cho tất cả phụ huynh qua email.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeSendModal}
+                className="px-4 cursor-pointer py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() => handleCampaignAction(campaignToSend, "send-register")}
+                disabled={loadingActions[campaignToSend]}
+                className={`px-4 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 ${
+                  loadingActions[campaignToSend] ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {loadingActions[campaignToSend] ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Xác nhận gửi</span>
                   </>
                 )}
               </button>
@@ -570,8 +670,7 @@ const VaccineCampaignManagement = () => {
             {
               status: "PREPARING",
               label: "Chuẩn bị",
-              count: campaignList.filter((c) => c.status === "PREPARING")
-                .length,
+              count: campaignList.filter((c) => c.status === "PREPARING").length,
             },
             {
               status: "UPCOMING",
@@ -586,14 +685,12 @@ const VaccineCampaignManagement = () => {
             {
               status: "COMPLETED",
               label: "Hoàn thành",
-              count: campaignList.filter((c) => c.status === "COMPLETED")
-                .length,
+              count: campaignList.filter((c) => c.status === "COMPLETED").length,
             },
             {
               status: "CANCELLED",
               label: "Đã hủy",
-              count: campaignList.filter((c) => c.status === "CANCELLED")
-                .length,
+              count: campaignList.filter((c) => c.status === "CANCELLED").length,
             },
           ].map(({ status, label, count }) => (
             <div
@@ -602,12 +699,8 @@ const VaccineCampaignManagement = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">
-                    {label}
-                  </p>
-                  <p className="text-2xl font-semibold text-slate-900">
-                    {count}
-                  </p>
+                  <p className="text-sm font-medium text-slate-600 mb-1">{label}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{count}</p>
                 </div>
                 <div className={`p-2 rounded-lg ${getStatusColor(status)}`}>
                   {getStatusIcon(status)}
@@ -644,9 +737,7 @@ const VaccineCampaignManagement = () => {
                     </h3>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <span className="text-sm text-slate-500 font-medium">
-                      Chi tiết
-                    </span>
+                    <span className="text-sm text-slate-500 font-medium">Chi tiết</span>
                     {expandedItems[campaign.campaign_id] ? (
                       <ChevronUp className="w-5 h-5 text-slate-400" />
                     ) : (
@@ -705,9 +796,7 @@ const VaccineCampaignManagement = () => {
                         onMouseDown={(e) => {
                           e.preventDefault();
                           navigate(
-                            `/${getUserRole()}/vaccine/${
-                              campaign.vaccine_id
-                            }/students`
+                            `/${getUserRole()}/vaccine/${campaign.vaccine_id}/students`
                           );
                         }}
                         className="group flex cursor-pointer items-start space-x-4"

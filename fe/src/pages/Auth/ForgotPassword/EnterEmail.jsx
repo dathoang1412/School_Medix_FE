@@ -74,7 +74,7 @@ const EnterEmail = ({ onNext }) => {
 
         <button
           onClick={handleSendOTP}
-          className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium flex items-center justify-center space-x-2"
+          className="w-full cursor-pointer bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium flex items-center justify-center space-x-2"
           disabled={loading}
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}

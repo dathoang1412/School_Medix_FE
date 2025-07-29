@@ -494,14 +494,14 @@ const RegularCheckup = () => {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={closeCancelModal}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+                className="px-4 cursor-pointer py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 Quay lại
               </button>
               <button
                 onClick={() => handleCampaignAction(campaignToCancel, "cancel")}
                 disabled={loadingActions[campaignToCancel]}
-                className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
+                className={`px-4 py-2 cursor-pointer bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
                   loadingActions[campaignToCancel] ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >
@@ -541,14 +541,14 @@ const RegularCheckup = () => {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={closeSendModal}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+                className="px-4 py-2 border cursor-pointer border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 Quay lại
               </button>
               <button
                 onClick={() => handleCampaignAction(campaignToSend, "send-register")}
                 disabled={loadingActions[campaignToSend]}
-                className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 ${
+                className={`px-4 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 ${
                   loadingActions[campaignToSend] ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >

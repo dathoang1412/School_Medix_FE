@@ -342,7 +342,7 @@ const DrugTable = () => {
                   currChild?.id &&
                   navigate(`/parent/edit/${currChild.id}/send-drug-form`)
                 }
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors duration-200"
+                className="bg-blue-600 text-white px-4 py-2 cursor-pointer rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors duration-200"
               >
                 <Plus className="w-4 h-4" />
                 Gửi thêm thuốc
