@@ -357,7 +357,7 @@ const CompletedVaccineReport = () => {
                         openModal(student);
                       }}
                       disabled={!student.status === 'COMPLETED' || updatingRecords.has(student.id)}
-                      className={`px-2 py-1 text-sm font-medium rounded ${
+                      className={`px-2 cursor-pointer py-1 text-sm font-medium rounded ${
                         !student.status === 'COMPLETED' || updatingRecords.has(student.id)
                           ? "text-gray-400 cursor-not-allowed bg-gray-100"
                           : "text-blue-600 hover:text-blue-800 hover:underline bg-blue-50"
