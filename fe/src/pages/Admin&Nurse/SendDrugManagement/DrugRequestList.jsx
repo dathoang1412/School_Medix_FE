@@ -61,6 +61,12 @@ const DrugRequestList = ({
     }
   };
 
+  const truncateText = (text, maxLength = 10, ellipsisThreshold = 10) => {
+    if (!text) return "Chưa có chẩn đoán";
+    if (text.length <= ellipsisThreshold) return text;
+    return text.slice(0, maxLength) + "...";
+  };
+
   // Open modal
   const handleView = (drug) => {
     setSelectedDrug(drug);
@@ -140,17 +146,22 @@ const DrugRequestList = ({
             <FileText className="w-5 h-5 text-gray-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Mã đơn #{drug.id}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Mã đơn #{drug.id}
+            </h3>
             <p className="text-sm text-gray-500">Chi tiết đơn thuốc</p>
           </div>
         </div>
         <div className="flex items-center justify-between">
           <div className="text-sm">
-            <span className="text-gray-500">Trạng thái:</span> {getStatusBadge(drug.status)}
+            <span className="text-gray-500">Trạng thái:</span>{" "}
+            {getStatusBadge(drug.status)}
           </div>
           <div className="text-sm">
             <span className="text-gray-500">Ngày gửi:</span>{" "}
-            <span className="font-medium">{formatDate(drug.schedule_send_date)}</span>
+            <span className="font-medium">
+              {formatDate(drug.schedule_send_date)}
+            </span>
           </div>
         </div>
       </div>
@@ -159,20 +170,28 @@ const DrugRequestList = ({
       <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
         <div className="flex items-center gap-2 mb-3">
           <User className="w-5 h-5 text-gray-600" />
-          <h4 className="text-base font-medium text-gray-900">Thông tin học sinh</h4>
+          <h4 className="text-base font-medium text-gray-900">
+            Thông tin học sinh
+          </h4>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-gray-500">Mã học sinh:</span>
-            <p className="font-medium text-gray-900 mt-1">{getStudentDisplay(drug.student_id)}</p>
+            <p className="font-medium text-gray-900 mt-1">
+              {getStudentDisplay(drug.student_id)}
+            </p>
           </div>
           <div>
             <span className="text-gray-500">Họ tên:</span>
-            <p className="font-medium text-gray-900 mt-1">{drug.student_name || "N/A"}</p>
+            <p className="font-medium text-gray-900 mt-1">
+              {drug.student_name || "N/A"}
+            </p>
           </div>
           <div className="col-span-1 sm:col-span-2">
             <span className="text-gray-500">Lớp:</span>
-            <p className="font-medium text-gray-900 mt-1">{drug.class_name || "N/A"}</p>
+            <p className="font-medium text-gray-900 mt-1">
+              {drug.class_name || "N/A"}
+            </p>
           </div>
         </div>
       </div>
@@ -186,15 +205,21 @@ const DrugRequestList = ({
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-500">Ngày hẹn gửi:</span>
-            <span className="font-medium text-gray-900">{formatDate(drug.schedule_send_date)}</span>
+            <span className="font-medium text-gray-900">
+              {formatDate(drug.schedule_send_date)}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Ngày uống thuốc:</span>
-            <span className="font-medium text-gray-900">{formatDate(drug.intake_date)}</span>
+            <span className="font-medium text-gray-900">
+              {formatDate(drug.intake_date)}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Ngày nhận thuốc:</span>
-            <span className="font-medium text-gray-900">{formatDate(drug.receive_date) || "Chưa nhận"}</span>
+            <span className="font-medium text-gray-900">
+              {formatDate(drug.receive_date) || "Chưa nhận"}
+            </span>
           </div>
         </div>
       </div>
@@ -203,13 +228,15 @@ const DrugRequestList = ({
       <div className="border border-gray-200 rounded-lg p-5">
         <div className="flex items-center gap-2 mb-3">
           <Stethoscope className="w-5 h-5 text-gray-600" />
-          <h4 className="text-base font-medium text-gray-900">Thông tin y tế</h4>
+          <h4 className="text-base font-medium text-gray-900">
+            Thông tin y tế
+          </h4>
         </div>
         <div className="space-y-4 text-sm">
           <div>
             <span className="text-gray-500 block mb-1">Chẩn đoán:</span>
             <p className="text-gray-900 bg-gray-50 p-3 rounded border border-gray-200">
-              {drug.diagnosis || "Không có mô tả"}
+              {drug.diagnosis || "Không có chẩn đoán"}
             </p>
           </div>
           <div>
@@ -247,12 +274,17 @@ const DrugRequestList = ({
       <div className="border border-gray-200 rounded-lg p-5">
         <div className="flex items-center gap-2 mb-3">
           <Pill className="w-5 h-5 text-gray-600" />
-          <h4 className="text-base font-medium text-gray-900">Danh sách thuốc</h4>
+          <h4 className="text-base font-medium text-gray-900">
+            Danh sách thuốc
+          </h4>
         </div>
         {drug.request_items?.length > 0 ? (
           <div className="space-y-4">
             {drug.request_items.map((item, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div
+                key={index}
+                className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+              >
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-xs font-medium text-gray-600 border border-gray-300">
                     {index + 1}
@@ -289,7 +321,6 @@ const DrugRequestList = ({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 py-8">
-
         <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
           {/* Loading State */}
           {loading ? (
@@ -305,8 +336,12 @@ const DrugRequestList = ({
           ) : drugs.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy đơn thuốc</h3>
-              <p className="text-gray-600">Hiện tại không có đơn thuốc nào phù hợp với bộ lọc.</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Không tìm thấy đơn thuốc
+              </h3>
+              <p className="text-gray-600">
+                Hiện tại không có đơn thuốc nào phù hợp với bộ lọc.
+              </p>
             </div>
           ) : (
             <>
@@ -363,36 +398,64 @@ const DrugRequestList = ({
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentRecords.map((drug) => (
-                      <tr key={drug.id} className="hover:bg-gray-50 transition-colors duration-200">
+                      <tr
+                        key={drug.id}
+                        className="hover:bg-gray-50 transition-colors duration-200"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-medium text-gray-900">#{drug.id}</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            #{drug.id}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-medium text-gray-900">{getStudentDisplay(drug.student_id)}</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {getStudentDisplay(drug.student_id)}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
-                            onClick={() => navigate(`/${getUserRole()}/student-overview/${drug.student_id}`)}
+                            onClick={() =>
+                              navigate(
+                                `/${getUserRole()}/student-overview/${
+                                  drug.student_id
+                                }`
+                              )
+                            }
                             className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
                           >
                             {drug.student_name || "N/A"}
                           </button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-900">{drug.class_name || "N/A"}</span>
+                          <span className="text-sm text-gray-900">
+                            {drug.class_name || "N/A"}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-900">{drug?.request_items?.[0]?.name || "Không có dữ liệu"}</span>
+                          <span className="text-sm text-gray-900">
+                            {drug?.request_items?.[0]?.name ||
+                              "Không có dữ liệu"}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-900">{drug?.diagnosis || "Không có mô tả"}</span>
+                          <span className="text-sm whitespace-nowrap text-gray-900">
+                            {truncateText(drug?.diagnosis)}
+                          </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(drug.status)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(drug.status)}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           {drug.status === "RECEIVED" && (
                             <button
-                              onClick={() => handleAction(handleDone, drug.id, "Đánh dấu hoàn thành")}
-                              className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
+                              onClick={() =>
+                                handleAction(
+                                  handleDone,
+                                  drug.id,
+                                  "Đánh dấu hoàn thành"
+                                )
+                              }
+                              className="text-blue-600 cursor-pointer hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
                               title="Đánh dấu hoàn thành"
                             >
                               <CheckCircle size={18} />
@@ -400,14 +463,18 @@ const DrugRequestList = ({
                           )}
                           {drug.status === "DONE" && (
                             <div className="flex justify-center">
-                              <CheckCircle size={18} className="text-green-600" title="Đã hoàn thành" />
+                              <CheckCircle
+                                size={18}
+                                className="text-green-600"
+                                title="Đã hoàn thành"
+                              />
                             </div>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
-                              className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
+                              className="text-blue-600 cursor-pointer hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
                               onClick={() => handleView(drug)}
                               title="Xem chi tiết"
                             >
@@ -416,15 +483,27 @@ const DrugRequestList = ({
                             {drug.status === "PROCESSING" && (
                               <>
                                 <button
-                                  className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors duration-200"
-                                  onClick={() => handleAction(handleAccept, drug.id, "Chấp nhận")}
+                                  className="text-green-600 cursor-pointer hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors duration-200"
+                                  onClick={() =>
+                                    handleAction(
+                                      handleAccept,
+                                      drug.id,
+                                      "Chấp nhận"
+                                    )
+                                  }
                                   title="Chấp nhận"
                                 >
                                   <CheckCircle size={18} />
                                 </button>
                                 <button
-                                  className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200"
-                                  onClick={() => handleAction(handleRefuse, drug.id, "Từ chối")}
+                                  className="text-red-600 cursor-pointer hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200"
+                                  onClick={() =>
+                                    handleAction(
+                                      handleRefuse,
+                                      drug.id,
+                                      "Từ chối"
+                                    )
+                                  }
                                   title="Từ chối"
                                 >
                                   <Trash2 size={18} />
@@ -433,17 +512,30 @@ const DrugRequestList = ({
                             )}
                             {drug.status === "ACCEPTED" && (
                               <button
-                                className="text-purple-600 hover:text-purple-800 p-1 rounded hover:bg-purple-50 transition-colors duration-200"
-                                onClick={() => handleAction(handleReceive, drug.id, "Nhận thuốc")}
+                                className="text-purple-600 cursor-pointer hover:text-purple-800 p-1 rounded hover:bg-purple-50 transition-colors duration-200"
+                                onClick={() =>
+                                  handleAction(
+                                    handleReceive,
+                                    drug.id,
+                                    "Nhận thuốc"
+                                  )
+                                }
                                 title="Nhận thuốc"
                               >
                                 <TicketCheck size={18} />
                               </button>
                             )}
-                            {!["RECEIVED", "DONE", "CANCELLED", "REFUSED"].includes(drug.status) && (
+                            {![
+                              "RECEIVED",
+                              "DONE",
+                              "CANCELLED",
+                              "REFUSED",
+                            ].includes(drug.status) && (
                               <button
-                                className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-50 transition-colors duration-200"
-                                onClick={() => handleAction(handleCancel, drug.id, "Hủy đơn")}
+                                className="text-gray-600 cursor-pointer hover:text-gray-800 p-1 rounded hover:bg-gray-50 transition-colors duration-200"
+                                onClick={() =>
+                                  handleAction(handleCancel, drug.id, "Hủy đơn")
+                                }
                                 title="Hủy đơn"
                               >
                                 <XCircle size={18} />
@@ -464,12 +556,16 @@ const DrugRequestList = ({
                     {/* Modal Header */}
                     <div className="bg-white border-b border-gray-200 p-6 flex justify-between items-center">
                       <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Chi tiết đơn thuốc</h2>
-                        <p className="text-gray-500 text-sm mt-1">Thông tin chi tiết về đơn thuốc #{selectedDrug.id}</p>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Chi tiết đơn thuốc
+                        </h2>
+                        <p className="text-gray-500 text-sm mt-1">
+                          Thông tin chi tiết về đơn thuốc #{selectedDrug.id}
+                        </p>
                       </div>
                       <button
                         onClick={handleCloseModal}
-                        className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
+                        className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
                       >
                         <X size={20} />
                       </button>
@@ -484,7 +580,7 @@ const DrugRequestList = ({
                     <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
                       <button
                         onClick={handleCloseModal}
-                        className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-sm"
+                        className="px-4 cursor-pointer py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-sm"
                       >
                         Đóng
                       </button>
@@ -497,47 +593,62 @@ const DrugRequestList = ({
               {totalPages > 1 && (
                 <div className="bg-white px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
                   <div className="text-sm text-gray-700">
-                    Hiển thị <span className="font-medium">{indexOfFirstRecord + 1}</span> đến{" "}
-                    <span className="font-medium">{Math.min(indexOfLastRecord, drugs.length)}</span> trong tổng số{" "}
-                    <span className="font-medium">{drugs.length}</span> đơn thuốc
+                    Hiển thị{" "}
+                    <span className="font-medium">
+                      {indexOfFirstRecord + 1}
+                    </span>{" "}
+                    đến{" "}
+                    <span className="font-medium">
+                      {Math.min(indexOfLastRecord, drugs.length)}
+                    </span>{" "}
+                    trong tổng số{" "}
+                    <span className="font-medium">{drugs.length}</span> đơn
+                    thuốc
                   </div>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
                       disabled={currentPage === 1}
                       className="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
                     >
                       Trước
                     </button>
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
+                      {Array.from(
+                        { length: Math.min(5, totalPages) },
+                        (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={`px-3 py-2 text-sm rounded-lg transition-colors duration-200 ${
+                                currentPage === pageNum
+                                  ? "bg-blue-600 text-white"
+                                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
                         }
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => setCurrentPage(pageNum)}
-                            className={`px-3 py-2 text-sm rounded-lg transition-colors duration-200 ${
-                              currentPage === pageNum
-                                ? "bg-blue-600 text-white"
-                                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
+                      )}
                     </div>
                     <button
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
                       disabled={currentPage === totalPages}
                       className="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
                     >

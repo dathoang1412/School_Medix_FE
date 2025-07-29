@@ -21,6 +21,7 @@ import {
   Newspaper,
   PencilLineIcon,
   SquareActivity,
+  Ambulance,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getUser, getUserRole, removeUser } from "../service/authService";
@@ -75,9 +76,9 @@ const Sidebar = () => {
           return [
             ...prev,
             {
-              title: "Quản lý Y Tế",
+              title: "Quản lý Cung ứng Y tế",
               path: "medical-items-management",
-              icon: <MdOutlineMedicalInformation />,
+              icon: <Ambulance />,
             },
             {
               title: "Quản lý người dùng",
