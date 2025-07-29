@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axiosClient from '../../config/axiosClient';
-import { Calendar, Edit, Trash2, Plus, Search, Filter, AlertCircle } from 'lucide-react';
+import { Calendar, Edit, Trash2, Plus, Search, Filter, AlertCircle, XCircle, Loader2 } from 'lucide-react';
 import { getUserRole } from '../../service/authService';
-import { toast } from 'react-toastify';
+import { enqueueSnackbar } from 'notistack';
+import Modal from 'react-modal';
 import Footer from '../../components/Footer';
+
+// Set app element for react-modal (for accessibility)
+Modal.setAppElement("#root");
 
 const BlogList = () => {
   const navigate = useNavigate();
@@ -15,8 +19,32 @@ const BlogList = () => {
   const [userRole, setUserRole] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const path = useLocation().pathname.split('/')[1]
+  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
+  const [blogToDelete, setBlogToDelete] = useState(null);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+  const path = useLocation().pathname.split('/')[1];
 
+  // Modal styles (same as RegularCheckup)
+  const customStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "500px",
+      width: "90%",
+      borderRadius: "0.5rem",
+      border: "none",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+      padding: "0",
+    },
+    overlay: {
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      zIndex: 1000,
+    },
+  };
 
   // Categories aligned with backend blog_type_id
   const categories = [
@@ -44,13 +72,15 @@ const BlogList = () => {
           setFilteredBlogs([]);
         } else {
           console.log("BLOG LIST: ", response.data.blog);
-          setBlogs(response.data.blog);
-          setFilteredBlogs(response.data.blog);
+          // Filter out deleted blogs (is_deleted = true)
+          const activeBlogs = response.data.blog.filter(blog => !blog.is_deleted);
+          setBlogs(activeBlogs);
+          setFilteredBlogs(activeBlogs);
         }
       } catch (err) {
         setError('Không thể tải dữ liệu blog!');
         console.error(err);
-        toast.error('Không thể tải danh sách blog!');
+        enqueueSnackbar('Không thể tải danh sách blog!', { variant: 'error' });
       } finally {
         setLoading(false);
       }
@@ -79,16 +109,37 @@ const BlogList = () => {
     setFilteredBlogs(filtered);
   }, [searchTerm, selectedCategory, blogs]);
 
+  const openDeleteModal = (id) => {
+    console.log("Opening delete modal for blogId:", id);
+    setBlogToDelete(id);
+    setDeleteModalIsOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    console.log("Closing delete modal");
+    setDeleteModalIsOpen(false);
+    setBlogToDelete(null);
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xóa bài viết này?')) return;
+    if (!id) {
+      enqueueSnackbar('Không tìm thấy ID bài viết!', { variant: 'error' });
+      return;
+    }
+
+    setLoadingDelete(true);
     try {
-      await axiosClient.patch(`/delete-blog/${id}`);
+      const response = await axiosClient.patch(`/delete-blog/${id}`);
       setBlogs(blogs.filter((blog) => blog.id !== id));
       setFilteredBlogs(filteredBlogs.filter((blog) => blog.id !== id));
-      toast.success('Xóa bài viết thành công!');
+      enqueueSnackbar(response.data.message || 'Xóa bài viết thành công!', { variant: 'success' });
+      closeDeleteModal();
     } catch (err) {
-      toast.error('Lỗi khi xóa bài viết!');
-      console.error(err);
+      console.error("Error deleting blog:", err);
+      const errorMessage = err.response?.data?.message || 'Lỗi khi xóa bài viết!';
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    } finally {
+      setLoadingDelete(false);
     }
   };
 
@@ -102,6 +153,53 @@ const BlogList = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModalIsOpen}
+        onRequestClose={closeDeleteModal}
+        style={customStyles}
+        contentLabel="Xác nhận xóa bài viết"
+      >
+        <div className="bg-white rounded-lg">
+          <div className="p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <XCircle className="h-6 w-6 text-red-600" />
+              <h3 className="text-lg font-semibold text-slate-900">Xác nhận xóa bài viết</h3>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Bạn có chắc chắn muốn xóa bài viết này không? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeDeleteModal}
+                className="px-4 cursor-pointer py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() => handleDelete(blogToDelete)}
+                disabled={loadingDelete}
+                className={`px-4 cursor-pointer py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
+                  loadingDelete ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {loadingDelete ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4" />
+                    <span>Xác nhận xóa</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       <div className="max-w-6xl mx-auto py-3">
         {/* Header */}
         <div className="mb-8">
@@ -117,7 +215,7 @@ const BlogList = () => {
             {userRole === 'admin' && (
               <button
                 onClick={handleCreateBlog}
-                className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200 font-semibold"
+                className="flex cursor-pointer items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200 font-semibold"
               >
                 <Plus size={20} />
                 Tạo bài viết mới
@@ -223,14 +321,14 @@ const BlogList = () => {
                     <div className="flex gap-3">
                       <button
                         onClick={() => navigate(isAdminSection ? `/admin/blog/edit/${blog.id}` : `/blog/edit/${blog.id}`)}
-                        className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200 text-sm font-semibold"
+                        className="flex cursor-pointer items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200 text-sm font-semibold"
                       >
                         <Edit size={16} />
                         Sửa
                       </button>
                       <button
-                        onClick={() => handleDelete(blog.id)}
-                        className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-200 text-sm font-semibold"
+                        onClick={() => openDeleteModal(blog.id)}
+                        className="flex cursor-pointer items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-200 text-sm font-semibold"
                       >
                         <Trash2 size={16} />
                         Xóa
@@ -243,7 +341,7 @@ const BlogList = () => {
           </div>
         )}
       </div>
-      {path !== "admin" && <Footer/>}
+      {path !== "admin" && <Footer />}
     </div>
   );
 };

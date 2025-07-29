@@ -459,14 +459,14 @@ const VaccineCampaignDetails = () => {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={closeCancelModal}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-4 cursor-pointer py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 Quay lại
               </button>
               <button
                 onClick={() => handleCampaignAction("cancel")}
                 disabled={loadingAction}
-                className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
+                className={`px-4 py-2 cursor-pointer bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
                   loadingAction ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >
