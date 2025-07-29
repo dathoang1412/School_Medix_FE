@@ -145,12 +145,8 @@ const DeletedTransactionList = () => {
               <div className="flex flex-wrap gap-2 p-4">
                 <NavLink
                   to="/admin/inventory-transaction"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
-                    }`
+                  className={() =>
+                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800`
                   }
                 >
                   Tất cả giao dịch

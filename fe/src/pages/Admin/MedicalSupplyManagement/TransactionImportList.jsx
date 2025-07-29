@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import { Loader2, Calendar, Package, Search, Plus, Users, Edit, X } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
@@ -117,7 +117,52 @@ const TransactionImportList = () => {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200">
           <div className="flex flex-col items-center">
             <div className="w-full flex justify-center border-b border-gray-200">
-              {/* Tab navigation is managed by parent component */}
+              <div className="flex flex-wrap gap-2 p-4">
+                <NavLink
+                  to="/admin/inventory-transaction"
+                  className={() =>
+                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800`
+                  }
+                >
+                  Tất cả giao dịch
+                </NavLink>
+                <NavLink
+                  to="/admin/inventory-transaction/export-list"
+                  className={({ isActive }) =>
+                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                      isActive
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
+                    }`
+                  }
+                >
+                  Giao dịch xuất
+                </NavLink>
+                <NavLink
+                  to="/admin/inventory-transaction/import-list"
+                  className={({ isActive }) =>
+                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                      isActive
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
+                    }`
+                  }
+                >
+                  Giao dịch nhập
+                </NavLink>
+                <NavLink
+                  to="/admin/inventory-transaction/deleted-list"
+                  className={({ isActive }) =>
+                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                      isActive
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
+                    }`
+                  }
+                >
+                  Giao dịch đã xóa
+                </NavLink>
+              </div>
             </div>
           </div>
         </div>
