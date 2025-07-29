@@ -14,10 +14,12 @@ import { getUserRole } from "../../../service/authService";
 const VaccineStudentList = () => {
   const navigate = useNavigate();
   const [studentList, setStudentList] = useState([]);
+  const [filteredStudentList, setFilteredStudentList] = useState([]); // State for filtered list
   const [statusList, setStatusList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("all"); // State for filter
 
   const { id } = useParams();
 
@@ -27,7 +29,9 @@ const VaccineStudentList = () => {
       setIsRefreshing(true);
       const res = await axiosClient.get(`/vaccination-campaign/${id}/student-eligible`);
       console.log("STUDENT LIST: ", res.data.data);
-      setStudentList(res.data.data);
+      const students = res.data.data || [];
+      setStudentList(students);
+      applyFilterAndSort(students, filterStatus); // Apply filter and sort on fetch
       setError(null);
     } catch (err) {
       console.error("Error fetching students:", err);
@@ -36,7 +40,37 @@ const VaccineStudentList = () => {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, [id]);
+  }, [id, filterStatus]);
+
+  // Function to apply filter and sort
+  const applyFilterAndSort = (students, status) => {
+    let filtered = students;
+
+    // Filter based on registration status
+    if (status === "registered") {
+      filtered = students.filter((s) => s.is_registered === true);
+    } else if (status === "not-registered") {
+      filtered = students.filter((s) => s.is_registered === false);
+    } else if (status === "no-form") {
+      filtered = students.filter((s) => s.is_registered === null);
+    }
+
+    // Sort: registered students (is_registered === true) at the top
+    filtered.sort((a, b) => {
+      if (a.is_registered === true && b.is_registered !== true) return -1;
+      if (a.is_registered !== true && b.is_registered === true) return 1;
+      return 0;
+    });
+
+    setFilteredStudentList(filtered);
+  };
+
+  // Handle filter change
+  const handleFilterChange = (e) => {
+    const newStatus = e.target.value;
+    setFilterStatus(newStatus);
+    applyFilterAndSort(studentList, newStatus);
+  };
 
   useEffect(() => {
     fetchStudents();
@@ -123,14 +157,14 @@ const VaccineStudentList = () => {
     );
   }
 
-  const completedStudents = studentList.filter(
+  const completedStudents = filteredStudentList.filter(
     (s) => parseInt(s.completed_doses) >= parseInt(s.dose_quantity)
   ).length;
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      {/* Header with Back and Refresh Buttons */}
-      <div className="mb-6 flex justify-between items-center">
+      {/* Header with Back, Refresh, and Filter */}
+      <div className="mb-6 flex flex-wrap justify-between items-center gap-4">
         <button
           onClick={() => navigate(-1)}
           className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -138,33 +172,45 @@ const VaccineStudentList = () => {
           <ArrowLeft className="w-4 h-4" />
           Quay lại
         </button>
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className={`cursor-pointer flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 ${
-            isRefreshing ? "opacity-75 cursor-not-allowed" : ""
-          }`}
-        >
-          {isRefreshing ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-          )}
-          <span>Làm mới</span>
-        </button>
+        <div className="flex items-center gap-4">
+          <select
+            value={filterStatus}
+            onChange={handleFilterChange}
+            className="px-4 cursor-pointer py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="all">Tất cả</option>
+            <option value="registered">Đã đăng ký</option>
+            <option value="not-registered">Không đăng ký</option>
+            <option value="no-form">Không có đơn</option>
+          </select>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className={`cursor-pointer flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 ${
+              isRefreshing ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            {isRefreshing ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            )}
+            <span>Làm mới</span>
+          </button>
+        </div>
       </div>
 
       {/* Header */}
@@ -177,7 +223,7 @@ const VaccineStudentList = () => {
         <div className="flex flex-wrap gap-4">
           <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
             <Users className="w-4 h-4" />
-            Tổng số: {studentList.length} học sinh
+            Tổng số: {filteredStudentList.length} học sinh
           </div>
           <div className="bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
             <CheckCircle className="w-4 h-4" />
@@ -210,7 +256,7 @@ const VaccineStudentList = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {studentList.map((student) => {
+              {filteredStudentList.map((student) => {
                 const vaccinationInfo = getVaccinationStatus(
                   student.completed_doses,
                   student.dose_quantity
@@ -240,8 +286,7 @@ const VaccineStudentList = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inlineneuro
-                        inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${vaccinationInfo.bgColor} ${vaccinationInfo.textColor}`}
+                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${vaccinationInfo.bgColor} ${vaccinationInfo.textColor}`}
                       >
                         {vaccinationInfo.icon}
                         {vaccinationInfo.status}
@@ -278,11 +323,11 @@ const VaccineStudentList = () => {
       </div>
 
       {/* Empty state */}
-      {studentList.length === 0 && (
+      {filteredStudentList.length === 0 && (
         <div className="text-center py-12">
           <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500">
-            Không có học sinh nào đủ điều kiện tiêm chủng
+            Không có học sinh nào phù hợp với bộ lọc
           </p>
         </div>
       )}
