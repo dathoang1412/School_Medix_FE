@@ -10,7 +10,6 @@ const AddTransactionForm = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { id } = useParams(); // Get ID from URL parameters
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     purpose_id: "",
     transaction_date: "",
@@ -74,7 +73,6 @@ const AddTransactionForm = () => {
           });
         }
       } catch (err) {
-        setError(err.message || "Không thể tải dữ liệu.");
         enqueueSnackbar(err.message || "Không thể tải dữ liệu.", {
           variant: "error",
         });
@@ -95,6 +93,13 @@ const AddTransactionForm = () => {
     setFormData((prev) => {
       const updatedItems = [...prev.medical_items];
       if (name === "id") {
+        // Prevent selecting the same item multiple times
+        if (updatedItems.some((item, i) => i !== index && item.id === value)) {
+          enqueueSnackbar("Vật tư/thuốc này đã được chọn.", {
+            variant: "warning",
+          });
+          return prev;
+        }
         updatedItems[index] = { ...updatedItems[index], id: value };
       } else if (name === "quantity") {
         updatedItems[index] = {
@@ -135,6 +140,7 @@ const AddTransactionForm = () => {
         supplier_id: formData.supplier_id || null,
       };
 
+      // Validate required fields
       if (
         !payload.purpose_id ||
         !payload.transaction_date ||
@@ -142,6 +148,18 @@ const AddTransactionForm = () => {
         payload.medical_items.every((item) => !item.id || !item.quantity)
       ) {
         throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc.");
+      }
+
+      // Skip quantity validation for purpose_id 2 or 3
+      if (payload.purpose_id !== "2" && payload.purpose_id !== "3") {
+        for (const item of payload.medical_items) {
+          const medicalItem = medicalItems.find((mi) => mi.id === item.id);
+          if (medicalItem && item.quantity > medicalItem.quantity) {
+            throw new Error(
+              `Số lượng vật tư/thuốc "${medicalItem.name}" vượt quá số lượng hiện tại (${medicalItem.quantity}).`
+            );
+          }
+        }
       }
 
       let response;
@@ -154,7 +172,18 @@ const AddTransactionForm = () => {
         response = await axiosClient.post("/inventory-transaction", payload);
       }
 
-      if (response.data.error) throw new Error(response.data.message);
+      if (response.data.error) {
+        if (response.status === 400) {
+          if (response.data.message === "Không đủ vật tư/ thuốc để sử dụng!") {
+            throw new Error(
+              "Không được nhập quá số lượng thuốc/vật tư có sẵn."
+            );
+          } else {
+            throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc.");
+          }
+        }
+        throw new Error(response.data.message);
+      }
       enqueueSnackbar(
         response.data.message ||
           (isUpdate
@@ -162,14 +191,15 @@ const AddTransactionForm = () => {
             : "Tạo giao dịch thành công."),
         { variant: "success" }
       );
-      navigate("/admin/medical-items-management?tab=TRANSACTION");
+      navigate("/admin/inventory-transaction");
     } catch (err) {
-      setError(err.message);
-      enqueueSnackbar(
-        err.message ||
-          (isUpdate ? "Lỗi khi cập nhật giao dịch." : "Lỗi khi tạo giao dịch."),
-        { variant: "error" }
-      );
+      let errorMessage = "Có lỗi xảy ra khi xử lý giao dịch.";
+      if (err.message.includes("Request failed with status code 400")) {
+        errorMessage = "Không được nhập quá số lượng thuốc/vật tư có sẵn.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      enqueueSnackbar(errorMessage, { variant: "error" });
     } finally {
       setLoading(false);
     }
@@ -183,31 +213,11 @@ const AddTransactionForm = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-md p-6 max-w-md w-full text-center border border-gray-200">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() =>
-              navigate("/admin/medical-items-management?tab=TRANSACTION")
-            }
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
-          >
-            Quay lại
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center py-12">
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
-          onClick={() =>
-            navigate("/admin/medical-items-management?tab=TRANSACTION")
-          }
+          onClick={() => navigate("/admin/inventory-transaction")}
           className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200 mb-6"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -289,7 +299,7 @@ const AddTransactionForm = () => {
                 Vật tư/Thuốc
               </label>
               {formData.medical_items.map((item, index) => (
-                <div key={index} className="flex gap-4 mb-4">
+                <div key={index} className="flex gap-4 mb-4 items-center">
                   <select
                     name="id"
                     value={item.id}
@@ -297,23 +307,24 @@ const AddTransactionForm = () => {
                     className="w-2/3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
                   >
                     <option value="">Chọn vật tư/thuốc</option>
-                    {medicalItems.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} ({item.unit}) - Số lượng hiện tại:{" "}
-                        {item.quantity}
+                    {medicalItems.map((mi) => (
+                      <option key={mi.id} value={mi.id}>
+                        {mi.name} ({mi.unit}) - Số lượng hiện tại: {mi.quantity}
                       </option>
                     ))}
                   </select>
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={item.quantity}
-                    onChange={(e) => handleMedicalItemChange(e, index)}
-                    placeholder="Số lượng"
-                    className="w-1/6 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
-                    min="0"
-                    required
-                  />
+                  <div className="w-1/6">
+                    <input
+                      type="number"
+                      name="quantity"
+                      value={item.quantity}
+                      onChange={(e) => handleMedicalItemChange(e, index)}
+                      placeholder="Số lượng"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
+                      min="0"
+                      required
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => removeMedicalItem(index)}
@@ -334,9 +345,7 @@ const AddTransactionForm = () => {
             <div className="flex justify-end gap-4">
               <button
                 type="button"
-                onClick={() =>
-                  navigate("/admin/medical-items-management?tab=TRANSACTION")
-                }
+                onClick={() => navigate("/admin/inventory-transaction")}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors duration-200"
               >
                 Hủy

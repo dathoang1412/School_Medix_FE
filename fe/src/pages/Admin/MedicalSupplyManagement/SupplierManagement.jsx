@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Package, Edit, FileText, Search, Calendar, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
+import Modal from "./Modal"; // Adjust the import path based on your project structure
 
 const SupplierManagement = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -12,6 +13,8 @@ const SupplierManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [supplierToDelete, setSupplierToDelete] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -64,6 +67,31 @@ const SupplierManagement = () => {
     setExpanded(newExpanded);
   };
 
+  const openDeleteModal = (id, name) => {
+    setSupplierToDelete({ id, name });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!supplierToDelete) return;
+
+    try {
+      const response = await axiosClient.delete(`/supplier/${supplierToDelete.id}`);
+      if (response.data.error) {
+        throw new Error(response.data.message);
+      }
+      // Update the suppliers state by filtering out the deleted supplier
+      setSuppliers((prev) => prev.filter((supplier) => supplier.id !== supplierToDelete.id));
+      setFilteredSuppliers((prev) => prev.filter((supplier) => supplier.id !== supplierToDelete.id));
+      enqueueSnackbar("Xóa nhà cung cấp thành công.", { variant: "success" });
+    } catch (err) {
+      enqueueSnackbar(err.message || "Lỗi khi xóa nhà cung cấp.", { variant: "error" });
+    } finally {
+      setIsModalOpen(false);
+      setSupplierToDelete(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white-50 flex items-center justify-center">
@@ -105,8 +133,8 @@ const SupplierManagement = () => {
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             </div>
             <button
-              onClick={() => navigate("/admin/medical-items-management/supplier-form")} // Updated navigation
-              className="cursor-pointer inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium ml-auto"
+              onClick={() => navigate("/admin/medical-items-management/supplier-form")}
+              className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium ml-auto"
             >
               <Package className="w-4 h-4" />
               Thêm nhà cung cấp
@@ -188,14 +216,21 @@ const SupplierManagement = () => {
                             {supplier.status === "ACTIVE" ? "Đang hoạt động" : supplier.status === "INACTIVE" ? "Ngừng hoạt động" : "Không xác định"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center w-[40%]">
+                        <td className="px-6 py-4 whitespace-nowrap text-center w-[20%]">
                           <div className="flex justify-center gap-4">
                             <button
-                              onClick={() => navigate(`/admin/medical-items-management/supplier-form/${supplier.id}`)} // Updated navigation
+                              onClick={() => navigate(`/admin/medical-items-management/supplier-form/${supplier.id}`)}
                               className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200"
                             >
                               <Edit size={14} />
                               Cập nhật
+                            </button>
+                            <button
+                              onClick={() => openDeleteModal(supplier.id, supplier.name)}
+                              className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:underline text-sm font-medium transition-colors duration-200"
+                            >
+                              <Trash2 size={14} />
+                              Xóa
                             </button>
                             <button
                               onClick={() => toggleDetails(index)}
@@ -270,6 +305,19 @@ const SupplierManagement = () => {
           </div>
         </div>
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSupplierToDelete(null);
+        }}
+        title="Xác nhận xóa nhà cung cấp"
+        onConfirm={handleDelete}
+        confirmText="Xóa"
+        cancelText="Hủy"
+      >
+        Bạn có chắc muốn xóa nhà cung cấp <strong>{supplierToDelete?.name}</strong>? Hành động này không thể hoàn tác.
+      </Modal>
     </div>
   );
 };

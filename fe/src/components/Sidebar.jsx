@@ -77,8 +77,21 @@ const Sidebar = () => {
             ...prev,
             {
               title: "Quản lý Cung ứng Y tế",
-              path: "medical-items-management",
+              path: "#",
               icon: <Ambulance />,
+              hasDropdown: true,
+              children: [
+                {
+                  title: "Quản lý thuốc/vật tư",
+                  path: "medical-items-management",
+                  icon: <MdMedicationLiquid />,
+                },
+                {
+                  title: "Xuất/nhập kho y tế",
+                  path: "inventory-transaction",
+                  icon: <LuSyringe />,
+                },
+              ],
             },
             {
               title: "Quản lý người dùng",
@@ -90,7 +103,6 @@ const Sidebar = () => {
               path: "blog",
               icon: <LuNewspaper />,
             },
-
           ];
         }
         return prev;
