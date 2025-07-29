@@ -591,7 +591,7 @@ const VaccineCampaignDetails = () => {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Chi tiết Chiến dịch Tiêm chủng #{details.campaign_id}: {details.title}
+                  {details.title}
                 </h1>
                 <div className="flex items-center gap-2 mb-4">
                   {getStatusIcon(details.status)}
