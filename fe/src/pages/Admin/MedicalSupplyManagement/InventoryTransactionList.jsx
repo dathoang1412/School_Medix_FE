@@ -129,10 +129,12 @@ const InventoryTransactionList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex">
       <div className="w-full max-w-6xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200">
+        {/* Unified Header with Tabs */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 mb-8">
           <div className="flex flex-col items-center">
-            <div className="w-full flex justify-center border-b border-gray-200">
-              <div className="flex flex-wrap gap-2 p-4">
+            <div className="w-full flex flex-col items-center border-b border-gray-200 p-6">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">Quản lý giao dịch kho vật tư y tế</h1>
+              <div className="flex gap-2">
                 <NavLink
                   to="/admin/inventory-transaction"
                   className={({ isActive }) =>
@@ -185,10 +187,10 @@ const InventoryTransactionList = () => {
             </div>
           </div>
         </div>
+        {/* Main Content */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col mb-6">
-              <h1 className="text-2xl font-semibold text-gray-900 mb-6">Danh sách giao dịch kho vật tư y tế</h1>
               <div className="flex gap-3 items-center">
                 <div className="relative w-1/2">
                   <input
