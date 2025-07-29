@@ -582,7 +582,7 @@ const RegularCheckupReport = () => {
                         : openSpecialistUpdateModal(item)
                     }
                     disabled={loading.update[item.register_id] || loading[type]}
-                    className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${loading.update[item.register_id] || loading[type]
+                    className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 rounded-full transition-colors ${loading.update[item.register_id] || loading[type]
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700"
                       }`}
@@ -665,7 +665,7 @@ const RegularCheckupReport = () => {
               className={`${activeMainTab === tab
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                } cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
               aria-current={activeMainTab === tab ? "page" : undefined}
             >
               {tab}
@@ -687,7 +687,7 @@ const RegularCheckupReport = () => {
                 className={`${activeSubTab === specialist.name
                   ? "border-blue-500 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm transition-colors`}
+                  } cursor-pointer whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm transition-colors`}
                 aria-current={
                   activeSubTab === specialist.name ? "page" : undefined
                 }
@@ -726,7 +726,7 @@ const RegularCheckupReport = () => {
                   setSelectedRecord(null);
                   setFormErrors({});
                 }}
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-400 cursor-pointer hover:text-gray-500"
                 aria-label="Đóng"
               >
                 <X className="h-5 w-5" />
@@ -914,14 +914,14 @@ const RegularCheckupReport = () => {
                   setSelectedRecord(null);
                   setFormErrors({});
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Hủy bỏ
               </button>
               <button
                 onClick={handleFormSubmit}
                 disabled={loading.update[selectedRecord?.register_id]}
-                className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading.update[selectedRecord?.register_id]
+                className={`px-4 cursor-pointer py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading.update[selectedRecord?.register_id]
                   ? "opacity-70 cursor-not-allowed"
                   : ""
                   }`}
@@ -972,7 +972,7 @@ const RegularCheckupReport = () => {
                   setSelectedRecord(null);
                   setFiles([]);
                 }}
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-400 cursor-pointer hover:text-gray-500"
                 aria-label="Đóng"
               >
                 <X className="h-5 w-5" />

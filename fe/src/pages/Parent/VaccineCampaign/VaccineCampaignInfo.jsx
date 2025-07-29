@@ -305,7 +305,7 @@ const VaccineCampaignInfo = () => {
               setHistoryView(false);
               setRecordsView(false);
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+            className={`flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
               !historyView && !recordsView
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -313,6 +313,20 @@ const VaccineCampaignInfo = () => {
           >
             <Calendar className="w-4 h-4" />
             Kế hoạch tiêm chủng
+          </button>
+          <button
+            onClick={() => {
+              setRecordsView(true);
+              setHistoryView(false);
+            }}
+            className={`flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+              recordsView && !historyView
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            <History className="w-4 h-4" />
+            Lịch sử  tiêm chủng
           </button>
           <button
             onClick={() => {
@@ -326,21 +340,7 @@ const VaccineCampaignInfo = () => {
             }`}
           >
             <ActivityIcon className="w-4 h-4" />
-            Theo dõi tiêm chủng
-          </button>
-          <button
-            onClick={() => {
-              setRecordsView(true);
-              setHistoryView(false);
-            }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-              recordsView && !historyView
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-            }`}
-          >
-            <History className="w-4 h-4" />
-            Lịch sử  tiêm chủng
+            Khuyến nghị tiêm chủng
           </button>
         </div>
       </div>
@@ -435,7 +435,7 @@ const VaccineCampaignInfo = () => {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleViewDetails(campaign.campaign_id)}
-                              className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                              className="flex cursor-pointer items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                             >
                               <FileText className="w-4 h-4" />
                               Chi tiết
@@ -448,7 +448,7 @@ const VaccineCampaignInfo = () => {
                                     : handleSurvey(campaign.campaign_id)
                                 }
                                 disabled={actionLoading}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors ${
+                                className={`flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors ${
                                   campaign.isSurveyed
                                     ? "bg-red-600 hover:bg-red-700"
                                     : "bg-blue-600 hover:bg-blue-700"

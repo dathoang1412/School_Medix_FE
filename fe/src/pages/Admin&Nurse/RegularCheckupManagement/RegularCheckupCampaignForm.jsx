@@ -176,7 +176,7 @@ const RegularCheckupCampaignForm = () => {
         </div>
         <button
           type="button"
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
+          className="px-4 cursor-pointer py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
           onClick={() => navigate('/admin/regular-checkup')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -191,7 +191,7 @@ const RegularCheckupCampaignForm = () => {
       <div className="mb-8">
         <button
           type="button"
-          className="mb-4 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
+          className="mb-4 px-4 py-2 border cursor-pointer border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
           onClick={() => navigate('/admin/regular-checkup')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -397,7 +397,7 @@ const RegularCheckupCampaignForm = () => {
         <div className="flex justify-end space-x-4">
           <button
             type="button"
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-6 py-2 cursor-pointer border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
             onClick={() => {
               if (isEditMode && originalFormData) {
                 setFormData(originalFormData); // Revert to original data in edit mode
@@ -414,13 +414,13 @@ const RegularCheckupCampaignForm = () => {
               setMessage({ type: '', text: '' });
             }}
           >
-            {isEditMode ? 'Hủy' : 'Đặt Lại'}
+            {!isEditMode ? 'Hủy' : 'Đặt Lại'}
           </button>
           <button
             type="button"
             disabled={loading}
             onClick={handleSubmit}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-6 py-2 cursor-pointer bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {loading ? (
               <>
