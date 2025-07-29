@@ -16,10 +16,10 @@ const HealthDeclarationHistory = () => {
             <Shield className="w-8 h-8 text-blue-600 p-2 bg-blue-50 rounded-lg" />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                {viewMode === 'disease' ? 'Lịch sử khai báo bệnh' : 'Lịch sử khai báo vaccine'}
+                {viewMode === 'disease' ? 'Lịch sử khai báo bệnh' : 'Lịch sử khai báo tiêm chủng'}
               </h1>
               <p className="text-gray-600">
-                Xem trạng thái và chi tiết các đơn khai báo {viewMode === 'disease' ? 'bệnh' : 'vaccine'}
+                Xem trạng thái và chi tiết các đơn khai báo {viewMode === 'disease' ? 'bệnh' : 'tiêm chủng  '}
               </p>
             </div>
           </div>
@@ -44,7 +44,7 @@ const HealthDeclarationHistory = () => {
                       : 'bg-white text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  <Syringe className="w-4 h-4" /> Lịch sử khai báo vaccine
+                  <Syringe className="w-4 h-4" /> Lịch sử khai báo tiêm chủng
                 </button>
               </div>
             </div>
