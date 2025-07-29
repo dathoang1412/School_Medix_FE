@@ -13,13 +13,16 @@ const MedicalItemsManagement = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab");
-    if (tab && ["MEDICATION", "MEDICAL_SUPPLY", "SUPPLIER", "TRANSACTION"].includes(tab)) {
+    if (
+      tab &&
+      ["MEDICATION", "MEDICAL_SUPPLY", "SUPPLIER", "TRANSACTION"].includes(tab)
+    ) {
       setActiveTab(tab);
     }
   }, [location.search]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 w-full flex justify-center">
       <div className="max-w-7xl ">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="flex flex-col items-center">
