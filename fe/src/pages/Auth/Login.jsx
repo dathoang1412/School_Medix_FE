@@ -77,7 +77,7 @@ const Login = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Welcome Back
           </h1>
-          <p className="text-gray-600">Sign in to your SchoolMedix account</p>
+          <p className="text-gray-600">Đăng nhập vào tài khoản SchoolMedix của bạn.</p>
         </div>
 
         {/* Login Form */}
@@ -154,7 +154,7 @@ const Login = () => {
               {isLoading ? (
                 <Loader2 className="w-6 h-6 text-white animate-spin" />
               ) : (
-                "Log In"
+                "Đăng nhập"
               )}
             </button>
           </div>
