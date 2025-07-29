@@ -187,7 +187,7 @@ const VaccineCampaignReport = () => {
                     <div className="space-y-4 mt-6">
                       <h5 className="text-sm font-bold text-gray-800">II. Chẩn đoán & Điều trị</h5>
                       {[
-                        { label: "Chẩn đoán", value: selectedRecord.description || 'Chưa có chẩn đoán' },
+                        { label: "Theo dõi sau tiêm", value: selectedRecord.description || 'Chưa có chẩn đoán' },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex items-start">
                           <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
