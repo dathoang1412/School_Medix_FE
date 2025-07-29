@@ -106,7 +106,7 @@ const SupplierManagement = () => {
             </div>
             <button
               onClick={() => navigate("/admin/medical-items-management/supplier-form")} // Updated navigation
-              className="inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium ml-auto"
+              className="cursor-pointer inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium ml-auto"
             >
               <Package className="w-4 h-4" />
               Thêm nhà cung cấp

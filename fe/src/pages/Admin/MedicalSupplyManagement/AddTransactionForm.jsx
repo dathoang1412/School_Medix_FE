@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Loader2, Calendar, Package, Save, X, Plus, ChevronLeft } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 
 const AddTransactionForm = () => {
-  const { id } = useParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
@@ -17,7 +16,6 @@ const AddTransactionForm = () => {
     medical_items: [{ id: "", quantity: 0 }],
     supplier_id: "",
   });
-  const [detailTransaction, setDetailTransaction] = useState({});
   const [medicalItems, setMedicalItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
 
@@ -25,33 +23,14 @@ const AddTransactionForm = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        if (!id) {
-          // Fetch data only when creating new transaction
-          const medicalItemsResponse = await axiosClient.get("/medical-item");
-          if (medicalItemsResponse.data.error) throw new Error(medicalItemsResponse.data.message);
-          setMedicalItems(medicalItemsResponse.data.data || []);
+        const medicalItemsResponse = await axiosClient.get("/medical-item");
+        if (medicalItemsResponse.data.error) throw new Error(medicalItemsResponse.data.message);
+        setMedicalItems(medicalItemsResponse.data.data || []);
 
-          const suppliersResponse = await axiosClient.get("/supplier");
-          if (suppliersResponse.data.error) throw new Error(suppliersResponse.data.message);
-          setSuppliers(suppliersResponse.data.data || []);
-          console.log("Suppliers:", suppliersResponse.data.data);
-        } else {
-          // Fetch existing transaction for editing
-          const transactionResponse = await axiosClient.get(`/inventory-transaction/${id}`);
-          if (transactionResponse.data.error) throw new Error(transactionResponse.data.message);
-          const transaction = transactionResponse.data.data;
-          setDetailTransaction(transaction);
-          setFormData({
-            purpose_id: transaction.purpose_id || "",
-            transaction_date: transaction.transaction_date.split("T")[0] || "",
-            note: transaction.note || "",
-            medical_items: transaction.medical_items.map((item) => ({
-              id: item.id,
-              quantity: item.transaction_quantity,
-            })) || [{ id: "", quantity: 0 }],
-            supplier_id: transaction.supplier_id || "",
-          });
-        }
+        const suppliersResponse = await axiosClient.get("/supplier");
+        if (suppliersResponse.data.error) throw new Error(suppliersResponse.data.message);
+        setSuppliers(suppliersResponse.data.data || []);
+        console.log("Suppliers:", suppliersResponse.data.data);
       } catch (err) {
         setError(err.message || "Không thể tải dữ liệu.");
         enqueueSnackbar(err.message || "Không thể tải dữ liệu.", { variant: "error" });
@@ -60,7 +39,7 @@ const AddTransactionForm = () => {
       }
     };
     fetchData();
-  }, [id, enqueueSnackbar]);
+  }, [enqueueSnackbar]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -103,36 +82,23 @@ const AddTransactionForm = () => {
         transaction_date: formData.transaction_date,
         note: formData.note,
         medical_items: formData.medical_items.map((item) => ({
-          id: item.id,
+          medical_item_id: item.id, // Đổi sang medical_item_id theo backend
           transaction_quantity: item.quantity,
         })),
         supplier_id: formData.supplier_id || null,
       };
 
-      if (!payload.purpose_id || !payload.transaction_date || !payload.medical_items.length || payload.medical_items.every((item) => !item.id || !item.transaction_quantity)) {
+      if (!payload.purpose_id || !payload.transaction_date || !payload.medical_items.length || payload.medical_items.every((item) => !item.medical_item_id || !item.transaction_quantity)) {
         throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc.");
       }
 
-      if (id) {
-        const response = await axiosClient.put(`/inventory-transaction/${id}`, payload);
-        if (!response.data.error) {
-          enqueueSnackbar("Cập nhật giao dịch thành công.", { variant: "success" });
-          navigate("/admin/medical-items-management?tab=TRANSACTION");
-        } else {
-          throw new Error(response.data.message);
-        }
-      } else {
-        const response = await axiosClient.post("/inventory-transaction", payload);
-        if (!response.data.error) {
-          enqueueSnackbar("Thêm giao dịch thành công.", { variant: "success" });
-          navigate("/admin/medical-items-management?tab=TRANSACTION");
-        } else {
-          throw new Error(response.data.message);
-        }
-      }
+      const response = await axiosClient.post("/inventory-transaction", payload);
+      if (response.data.error) throw new Error(response.data.message);
+      enqueueSnackbar(response.data.message || "Tạo giao dịch thành công.", { variant: "success" });
+      navigate("/admin/medical-items-management?tab=TRANSACTION");
     } catch (err) {
       setError(err.message);
-      enqueueSnackbar(err.message || "Lỗi khi lưu giao dịch.", { variant: "error" });
+      enqueueSnackbar(err.message || "Lỗi khi tạo giao dịch.", { variant: "error" });
     } finally {
       setLoading(false);
     }
@@ -175,7 +141,7 @@ const AddTransactionForm = () => {
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-6 bg-gradient-to-r from-blue-100 to-white rounded-lg p-4">
             <h1 className="text-2xl font-semibold text-gray-900">
-              {id ? "Cập nhật giao dịch" : "Thêm giao dịch mới"}
+              Thêm giao dịch mới
             </h1>
           </div>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -213,26 +179,24 @@ const AddTransactionForm = () => {
                 <option value="7">Đơn dặn thuốc từ phụ huynh</option>
               </select>
             </div>
-            {(!id || (id && formData.supplier_id)) && (
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                  Nhà cung cấp
-                </label>
-                <select
-                    name="supplier_id"
-                    value={formData.supplier_id}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
-                    >
-                    <option value={detailTransaction.supplier_id ||""}>{detailTransaction.supplier_name || "Chọn nhà cung cấp"}</option>
-                    {suppliers.map((supplier) => (
-                        <option key={supplier.id} value={supplier.name}>
-                        {supplier.name}
-                        </option>
-                    ))}
-                    </select>
-              </div>
-            )}
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                Nhà cung cấp
+              </label>
+              <select
+                name="supplier_id"
+                value={formData.supplier_id}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
+              >
+                <option value="">Chọn nhà cung cấp</option>
+                {suppliers.map((supplier) => (
+                  <option key={supplier.id} value={supplier.id}>
+                    {supplier.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
                 Ghi chú
@@ -305,7 +269,7 @@ const AddTransactionForm = () => {
                 className="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {id ? "Cập nhật" : "Thêm mới"}
+                Thêm mới
               </button>
             </div>
           </form>
