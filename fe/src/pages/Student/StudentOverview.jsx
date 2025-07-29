@@ -24,6 +24,7 @@ import VaccineRecordInfo from "../Parent/VaccineCampaign/VaccineRecordInfo";
 import DrugTable from "../Parent/SendDrug/DrugTable";
 import { getSession } from "../../config/Supabase";
 import { getStudentInfo } from "../../service/childenService";
+import { MdMedicationLiquid } from "react-icons/md";
 
 const StudentOverview = () => {
   const { student_id } = useParams();
@@ -137,7 +138,7 @@ const StudentOverview = () => {
     {
       id: "drugTable",
       label: "Gửi thuốc",
-      icon: List,
+      icon: MdMedicationLiquid,
       component: <DrugTable student_id={student_id} />,
       color: "bg-purple-50 text-purple-600 border-purple-200",
     },

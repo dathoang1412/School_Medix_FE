@@ -112,7 +112,7 @@ const RegularCheckupRegisterList = () => {
         <div>
           <button
             onClick={() => navigate(`/${getUserRole()}/regular-checkup`)}
-            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+            className="flex cursor-pointer items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Quay lại
