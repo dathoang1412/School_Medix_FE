@@ -47,10 +47,10 @@ const VaccineDeclarationHistory = ({ student_id }) => {
           setRecords(data.data.rows);
           setFilteredRecords(data.data.rows);
         } else {
-          setError(data.message || 'Không thể tải lịch sử khai báo vaccine.');
+          setError(data.message || 'Không thể tải lịch sử khai báo tiêm chủng.');
         }
       } catch {
-        setError('Không thể tải lịch sử khai báo vaccine.');
+        setError('Không thể tải lịch sử khai báo tiêm chủng.');
       } finally {
         setLoading(false);
       }
@@ -124,7 +124,7 @@ const VaccineDeclarationHistory = ({ student_id }) => {
                 <div className="flex items-center gap-2"><Syringe className="w-4 h-4" /> Tên Vaccine</div>
               </th>
               <th className="p-4 text-left text-sm font-semibold text-gray-700">
-                <div className="flex items-center gap-2"><Pill className="w-4 h-4" /> Bệnh Ngừa</div>
+                <div className="flex items-center gap-2"><Pill className="w-4 h-4" /> Mũi tiêm</div>
               </th>
               <th className="p-4 text-left text-sm font-semibold text-gray-700">
                 <div className="flex items-center gap-2"><Shield className="w-4 h-4" /> Trạng Thái Đơn</div>
