@@ -726,7 +726,7 @@ const RegularCheckupReport = () => {
                   setSelectedRecord(null);
                   setFormErrors({});
                 }}
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-400 cursor-pointer hover:text-gray-500"
                 aria-label="Đóng"
               >
                 <X className="h-5 w-5" />
@@ -972,7 +972,7 @@ const RegularCheckupReport = () => {
                   setSelectedRecord(null);
                   setFiles([]);
                 }}
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-400 cursor-pointer hover:text-gray-500"
                 aria-label="Đóng"
               >
                 <X className="h-5 w-5" />

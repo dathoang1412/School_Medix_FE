@@ -459,7 +459,7 @@ const CompletedRegularCheckupReport = () => {
             </h3>
             <button
               onClick={closeDetailsModal}
-              className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+              className="text-gray-500 hover:text-gray-700 p-1 cursor-pointer rounded-full transition-colors"
               aria-label="Đóng"
             >
               <X className="h-5 w-5" />
@@ -615,7 +615,7 @@ const CompletedRegularCheckupReport = () => {
           <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
             <button
               onClick={closeDetailsModal}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+              className="px-4 cursor-pointer py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
             >
               Đóng
             </button>
@@ -799,7 +799,7 @@ const CompletedRegularCheckupReport = () => {
                           downloading.has(`finalReport_${item.register_id}`) ||
                           loading.general
                         }
-                        className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                        className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 rounded-full transition-colors ${
                           downloading.has(`finalReport_${item.register_id}`)
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700"
@@ -850,7 +850,7 @@ const CompletedRegularCheckupReport = () => {
                           loading.general ||
                           downloading.has(`details_${item.register_id}`)
                         }
-                        className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                        className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 rounded-full transition-colors ${
                           loading.general ||
                           downloading.has(`details_${item.register_id}`)
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -934,7 +934,7 @@ const CompletedRegularCheckupReport = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Quay lại
         </button>
-        <div className="flex space-x-4">
+        {/* <div className="flex space-x-4">
           <button
             onClick={handleBulkReportDownload}
             disabled={loading.bulkDownload}
@@ -971,7 +971,7 @@ const CompletedRegularCheckupReport = () => {
             )}
             {loading.bulkDownload ? "Đang tải..." : "Tải xuống báo cáo"}
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div className="border-b border-gray-200 mb-4">
@@ -1049,7 +1049,7 @@ const CompletedRegularCheckupReport = () => {
                   setShowPDFModal(false);
                   setSelectedPDFUrl(null);
                 }}
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-400 cursor-pointer hover:text-gray-500"
                 aria-label="Đóng"
               >
                 <X className="h-5 w-5" />
@@ -1064,7 +1064,7 @@ const CompletedRegularCheckupReport = () => {
                   setShowPDFModal(false);
                   setSelectedPDFUrl(null);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 border cursor-pointer border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Đóng
               </button>

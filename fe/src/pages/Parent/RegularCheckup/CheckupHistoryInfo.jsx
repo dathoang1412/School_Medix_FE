@@ -315,7 +315,7 @@ const CheckupHistoryInfo = () => {
             </h3>
             <button
               onClick={closeFullDetailsModal}
-              className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+              className="text-gray-500 cursor-pointer hover:text-gray-700 p-1 rounded-full transition-colors"
               aria-label="Đóng"
             >
               <X className="h-5 w-5" />
@@ -438,7 +438,7 @@ const CheckupHistoryInfo = () => {
           <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
             <button
               onClick={closeFullDetailsModal}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+              className="px-4 py-2 cursor-pointer bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
             >
               Đóng
             </button>
@@ -632,7 +632,7 @@ const CheckupHistoryInfo = () => {
                 <div className="border-t border-gray-200 p-4 bg-gray-50 flex justify-end">
                   <button
                     onClick={closePDFModal}
-                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+                    className="px-4 py-2 cursor-pointer bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
                   >
                     Đóng
                   </button>
