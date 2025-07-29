@@ -17,7 +17,6 @@ const InventoryTransactionList = () => {
   const [transactionToDelete, setTransactionToDelete] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -157,7 +156,7 @@ const InventoryTransactionList = () => {
                     }`
                   }
                 >
-                  Giao dịch xuất
+                  Giao dịch xuất vật tư y tế 
                 </NavLink>
                 <NavLink
                   to="/admin/inventory-transaction/import-list"
@@ -169,7 +168,7 @@ const InventoryTransactionList = () => {
                     }`
                   }
                 >
-                  Giao dịch nhập
+                  Giao dịch nhập vật tư y tế
                 </NavLink>
                 <NavLink
                   to="/admin/inventory-transaction/deleted-list"
@@ -181,7 +180,7 @@ const InventoryTransactionList = () => {
                     }`
                   }
                 >
-                  Giao dịch đã xóa
+                  Các giao dịch đã xóa
                 </NavLink>
               </div>
             </div>

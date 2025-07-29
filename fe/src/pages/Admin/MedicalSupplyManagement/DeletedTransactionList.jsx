@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { Loader2, Calendar, Package, Search, Users, Trash2, Undo2 } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
@@ -16,7 +16,6 @@ const DeletedTransactionList = () => {
   const [isPermanentDeleteModalOpen, setIsPermanentDeleteModalOpen] = useState(false);
   const [transactionToModify, setTransactionToModify] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -147,12 +146,8 @@ const DeletedTransactionList = () => {
               <div className="flex gap-2">
                 <NavLink
                   to="/admin/inventory-transaction"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
-                    }`
+                  className={() =>
+                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800`
                   }
                 >
                   Tất cả giao dịch
