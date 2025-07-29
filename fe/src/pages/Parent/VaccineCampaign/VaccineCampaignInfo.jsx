@@ -13,7 +13,7 @@ import {
   Clock,
   XCircle,
   TrendingDownIcon,
-  ActivityIcon
+  ActivityIcon,
 } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { getStudentInfo } from "../../../service/childenService";
@@ -68,7 +68,9 @@ const VaccineCampaignInfo = () => {
         }
         setCurrChild(child);
 
-        const campaignRes = await axiosClient.get(`parent/${child.id}/vaccination-campaign`);
+        const campaignRes = await axiosClient.get(
+          `parent/${child.id}/vaccination-campaign`
+        );
 
         let campaigns = campaignRes.data.data || [];
 
@@ -108,7 +110,8 @@ const VaccineCampaignInfo = () => {
           ...c,
           campaign_id: c.campaign_id || c.id,
           status: c.status?.toUpperCase() || "UPCOMING",
-          canSurvey: getCampaignStatus(c, newRegisterMap[c.campaign_id]).canSurvey,
+          canSurvey: getCampaignStatus(c, newRegisterMap[c.campaign_id])
+            .canSurvey,
           isSurveyed: newRegisterMap[c.campaign_id]?.isSurveyed || false,
         }));
 
@@ -136,16 +139,19 @@ const VaccineCampaignInfo = () => {
   }, [isAuthenticated, student_id, enqueueSnackbar]);
 
   const handleSurvey = (campaignId) => {
-    navigate(`/parent/edit/${currChild?.id}/vaccine-campaign-survey/${campaignId}`, {
-      state: { from: location.pathname, childId: currChild?.id },
-    });
+    navigate(
+      `/parent/edit/${currChild?.id}/vaccine-campaign-survey/${campaignId}`,
+      {
+        state: { from: location.pathname, childId: currChild?.id },
+      }
+    );
   };
 
   const handleCancelRegistration = async (campaignId) => {
     if (!currChild?.id) return;
     setActionLoading(true);
     try {
-      await axiosClient.delete(
+      await axiosClient.patch(
         `/student/${currChild.id}/vaccination-campaign/${campaignId}/register`
       );
       setRegisterMap((prev) => ({
@@ -326,7 +332,7 @@ const VaccineCampaignInfo = () => {
             }`}
           >
             <History className="w-4 h-4" />
-            Lịch sử  tiêm chủng
+            Lịch sử tiêm chủng
           </button>
           <button
             onClick={() => {
@@ -351,13 +357,11 @@ const VaccineCampaignInfo = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <VaccineRecordInfo />
           </div>
-        ) :
-        recordsView ? (
+        ) : recordsView ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <VaccinationHistory />
           </div>
-        ) : 
-        (
+        ) : (
           <>
             {campaignList.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
@@ -366,8 +370,8 @@ const VaccineCampaignInfo = () => {
                   Chưa có chiến dịch tiêm chủng
                 </h3>
                 <p className="text-gray-600">
-                  Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay lại
-                  sau để cập nhật thông tin mới nhất.
+                  Hiện tại chưa có chiến dịch nào được tổ chức. Vui lòng quay
+                  lại sau để cập nhật thông tin mới nhất.
                 </p>
               </div>
             ) : (
@@ -434,7 +438,9 @@ const VaccineCampaignInfo = () => {
                           </div>
                           <div className="flex gap-2">
                             <button
-                              onClick={() => handleViewDetails(campaign.campaign_id)}
+                              onClick={() =>
+                                handleViewDetails(campaign.campaign_id)
+                              }
                               className="flex cursor-pointer items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                             >
                               <FileText className="w-4 h-4" />
@@ -443,30 +449,25 @@ const VaccineCampaignInfo = () => {
                             {statusInfo.canSurvey && (
                               <button
                                 onClick={() =>
-                                  campaign.isSurveyed
-                                    ? handleCancelRegistration(campaign.campaign_id)
-                                    : handleSurvey(campaign.campaign_id)
+                                  handleSurvey(campaign.campaign_id)
                                 }
                                 disabled={actionLoading}
-                                className={`flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors ${
+                                className={` flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors ${
                                   campaign.isSurveyed
                                     ? "bg-red-600 hover:bg-red-700"
                                     : "bg-blue-600 hover:bg-blue-700"
-                                } ${actionLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                                } ${
+                                  actionLoading
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }`}
                               >
-                                {campaign.isSurveyed ? (
-                                  <>
-                                    <XCircle className="w-4 h-4" />
-                                    Hủy đăng ký
-                                  </>
-                                ) : (
-                                  <>
-                                    <ClipboardList className="w-4 h-4" />
-                                    {campaign.isSurveyed
-                                      ? "Chỉnh sửa khảo sát"
-                                      : "Tham gia khảo sát"}
-                                  </>
-                                )}
+                                <>
+                                  <ClipboardList className="w-4 h-4" />
+                                  {campaign.isSurveyed
+                                    ? "Chỉnh sửa khảo sát"
+                                    : "Tham gia khảo sát"}
+                                </>
                               </button>
                             )}
                           </div>
