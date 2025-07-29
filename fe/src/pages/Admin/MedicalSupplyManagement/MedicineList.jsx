@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, Package, Edit, FileText, Pill, Search, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Package, Edit, FileText, Pill, Search, Calendar, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
+import Modal from "./Modal";
 
 const MedicineList = () => {
   const [items, setItems] = useState([]);
@@ -13,6 +14,8 @@ const MedicineList = () => {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -93,6 +96,41 @@ const MedicineList = () => {
     setExpanded(newExpanded);
   };
 
+  const handleDelete = async (id, name) => {
+    setItemToDelete({ id, name });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      const response = await axiosClient.delete(`/medical-item/${itemToDelete.id}`);
+      if (response.data.error) {
+        throw new Error(response.data.message);
+      }
+      // Remove the deleted item from state
+      setItems((prev) => prev.filter((item) => item.id !== itemToDelete.id));
+      setFilteredItems((prev) => prev.filter((item) => item.id !== itemToDelete.id));
+      enqueueSnackbar("Xóa thuốc thành công.", { variant: "success" });
+    } catch (err) {
+      let errorMessage = "Có lỗi xảy ra khi xóa thuốc.";
+      if (err.message === "Không tìm thấy id thuốc vật tư để xóa!" ||
+          err.message === "Không tìm thấy để cập nhật") {
+        errorMessage = "Không tìm thấy thuốc để xóa.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      enqueueSnackbar(errorMessage, { variant: "error" });
+    } finally {
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+    }
+  };
+
+  const closeModal = () => {
+    setShowDeleteModal(false);
+    setItemToDelete(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white-50 flex items-center justify-center">
@@ -144,7 +182,7 @@ const MedicineList = () => {
             </select>
             <button
               onClick={() => navigate("/admin/medical-items-management/medicine-item-form")}
-              className="cursor-pointer inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium ml-auto"
+              className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
             >
               <Pill className="w-4 h-4" />
               Thêm thuốc
@@ -205,15 +243,7 @@ const MedicineList = () => {
                     const status = getExpirationStatus(item.exp_date);
                     return (
                       <React.Fragment key={item.id}>
-                        <tr
-                          className={`hover:bg-white-50 transition-colors ${
-                            status === "expired"
-                              ? "bg-red-50"
-                              : status === "expiringSoon"
-                              ? "bg-yellow-50"
-                              : ""
-                          }`}
-                        >
+                        <tr className="hover:bg-white-50 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
                             <div className="flex items-center">
                               <span className="text-sm font-medium text-gray-900">{item.name}</span>
@@ -231,7 +261,17 @@ const MedicineList = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
                             <div className="flex items-center">
-                              <span className="text-sm text-gray-600">{formatDate(item.exp_date)}</span>
+                              <span
+                                className={`text-sm ${
+                                  status === "expired"
+                                    ? "text-red-600"
+                                    : status === "expiringSoon"
+                                    ? "text-yellow-600"
+                                    : "text-gray-600"
+                                }`}
+                              >
+                                {formatDate(item.exp_date)}
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[15%]">
@@ -246,7 +286,14 @@ const MedicineList = () => {
                                 className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200"
                               >
                                 <Edit size={14} />
-                                Cập nhật
+                                Sửa
+                              </button>
+                              <button
+                                onClick={() => handleDelete(item.id, item.name)}
+                                className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:underline text-sm font-medium transition-colors duration-200"
+                              >
+                                <Trash2 size={14} />
+                                Xóa
                               </button>
                               <button
                                 onClick={() => toggleDetails(index)}
@@ -274,13 +321,7 @@ const MedicineList = () => {
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
                               transition={{ duration: 0.3, ease: "easeInOut" }}
-                              className={`bg-white-50 ${
-                                status === "expired"
-                                  ? "bg-red-50"
-                                  : status === "expiringSoon"
-                                  ? "bg-yellow-50"
-                                  : ""
-                              }`}
+                              className="bg-white-50"
                             >
                               <td colSpan="6" className="px-6 py-6">
                                 <motion.div
@@ -327,6 +368,16 @@ const MedicineList = () => {
           </div>
         </div>
       </div>
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={closeModal}
+        title="Xác nhận xóa thuốc"
+        onConfirm={confirmDelete}
+        confirmText="Xóa"
+        cancelText="Hủy"
+      >
+        Bạn có chắc muốn xóa thuốc "{itemToDelete?.name}"?
+      </Modal>
     </div>
   );
 };

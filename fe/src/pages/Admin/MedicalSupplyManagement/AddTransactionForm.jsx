@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -10,7 +11,6 @@ const AddTransactionForm = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { id } = useParams(); // Get ID from URL parameters
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     purpose_id: "",
     transaction_date: "",
@@ -32,16 +32,21 @@ const AddTransactionForm = () => {
           axiosClient.get("/supplier"),
         ]);
 
-        if (medicalItemsResponse.data.error) throw new Error(medicalItemsResponse.data.message);
+        if (medicalItemsResponse.data.error)
+          throw new Error(medicalItemsResponse.data.message);
         setMedicalItems(medicalItemsResponse.data.data || []);
 
-        if (suppliersResponse.data.error) throw new Error(suppliersResponse.data.message);
+        if (suppliersResponse.data.error)
+          throw new Error(suppliersResponse.data.message);
         setSuppliers(suppliersResponse.data.data || []);
 
         // Fetch transaction data if ID is present
         if (isUpdate) {
-          const transactionResponse = await axiosClient.get(`/inventory-transaction/${id}`);
-          if (transactionResponse.data.error) throw new Error(transactionResponse.data.message);
+          const transactionResponse = await axiosClient.get(
+            `/inventory-transaction/${id}`
+          );
+          if (transactionResponse.data.error)
+            throw new Error(transactionResponse.data.message);
           const transaction = transactionResponse.data.data;
 
           // Format transaction_date to YYYY-MM-DD for input[type=date]
@@ -50,22 +55,28 @@ const AddTransactionForm = () => {
             : "";
 
           // Map medical_items to match formData structure
-          const formattedMedicalItems = transaction.medical_items.map((item) => ({
-            id: item.id,
-            quantity: item.transaction_quantity,
-          }));
+          const formattedMedicalItems = transaction.medical_items.map(
+            (item) => ({
+              id: item.id,
+              quantity: item.quantity,
+            })
+          );
 
           setFormData({
             purpose_id: transaction.purpose_id || "",
             transaction_date: formattedDate,
             note: transaction.note || "",
-            medical_items: formattedMedicalItems.length > 0 ? formattedMedicalItems : [{ id: "", quantity: 0 }],
+            medical_items:
+              formattedMedicalItems.length > 0
+                ? formattedMedicalItems
+                : [{ id: "", quantity: 0 }],
             supplier_id: transaction.supplier_id || "",
           });
         }
       } catch (err) {
-        setError(err.message || "Không thể tải dữ liệu.");
-        enqueueSnackbar(err.message || "Không thể tải dữ liệu.", { variant: "error" });
+        enqueueSnackbar(err.message || "Không thể tải dữ liệu.", {
+          variant: "error",
+        });
       } finally {
         setLoading(false);
       }
@@ -83,9 +94,19 @@ const AddTransactionForm = () => {
     setFormData((prev) => {
       const updatedItems = [...prev.medical_items];
       if (name === "id") {
+        // Prevent selecting the same item multiple times
+        if (updatedItems.some((item, i) => i !== index && item.id === value)) {
+          enqueueSnackbar("Vật tư/thuốc này đã được chọn.", {
+            variant: "warning",
+          });
+          return prev;
+        }
         updatedItems[index] = { ...updatedItems[index], id: value };
       } else if (name === "quantity") {
-        updatedItems[index] = { ...updatedItems[index], quantity: parseInt(value) || 0 };
+        updatedItems[index] = {
+          ...updatedItems[index],
+          quantity: parseInt(value) || 0,
+        };
       }
       return { ...prev, medical_items: updatedItems };
     });
@@ -114,29 +135,72 @@ const AddTransactionForm = () => {
         transaction_date: formData.transaction_date,
         note: formData.note,
         medical_items: formData.medical_items.map((item) => ({
-          medical_item_id: item.id,
-          transaction_quantity: item.quantity,
+          id: item.id,
+          quantity: item.quantity,
         })),
         supplier_id: formData.supplier_id || null,
       };
 
-      if (!payload.purpose_id || !payload.transaction_date || !payload.medical_items.length || payload.medical_items.every((item) => !item.medical_item_id || !item.transaction_quantity)) {
+      // Validate required fields
+      if (
+        !payload.purpose_id ||
+        !payload.transaction_date ||
+        !payload.medical_items.length ||
+        payload.medical_items.every((item) => !item.id || !item.quantity)
+      ) {
         throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc.");
+      }
+
+      // Skip quantity validation for purpose_id 2 or 3
+      if (payload.purpose_id !== "2" && payload.purpose_id !== "3") {
+        for (const item of payload.medical_items) {
+          const medicalItem = medicalItems.find((mi) => mi.id === item.id);
+          if (medicalItem && item.quantity > medicalItem.quantity) {
+            throw new Error(
+              `Số lượng vật tư/thuốc "${medicalItem.name}" vượt quá số lượng hiện tại (${medicalItem.quantity}).`
+            );
+          }
+        }
       }
 
       let response;
       if (isUpdate) {
-        response = await axiosClient.put(`/inventory-transaction/${id}`, payload);
+        response = await axiosClient.put(
+          `/inventory-transaction/${id}`,
+          payload
+        );
       } else {
         response = await axiosClient.post("/inventory-transaction", payload);
       }
 
-      if (response.data.error) throw new Error(response.data.message);
-      enqueueSnackbar(response.data.message || (isUpdate ? "Cập nhật giao dịch thành công." : "Tạo giao dịch thành công."), { variant: "success" });
-      navigate("/admin/medical-items-management?tab=TRANSACTION");
+      if (response.data.error) {
+        if (response.status === 400) {
+          if (
+            response.data.message === "Không đủ vật tư/ thuốc để sử dụng!"
+          ) {
+            throw new Error("Không được nhập quá số lượng thuốc/vật tư có sẵn.");
+          } else {
+            throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc.");
+          }
+        }
+        throw new Error(response.data.message);
+      }
+      enqueueSnackbar(
+        response.data.message ||
+          (isUpdate
+            ? "Cập nhật giao dịch thành công."
+            : "Tạo giao dịch thành công."),
+        { variant: "success" }
+      );
+      navigate("/admin/inventory-transaction");
     } catch (err) {
-      setError(err.message);
-      enqueueSnackbar(err.message || (isUpdate ? "Lỗi khi cập nhật giao dịch." : "Lỗi khi tạo giao dịch."), { variant: "error" });
+      let errorMessage = "Có lỗi xảy ra khi xử lý giao dịch.";
+      if (err.message.includes("Request failed with status code 400")) {
+        errorMessage = "Không được nhập quá số lượng thuốc/vật tư có sẵn.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      enqueueSnackbar(errorMessage, { variant: "error" });
     } finally {
       setLoading(false);
     }
@@ -150,27 +214,13 @@ const AddTransactionForm = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-md p-6 max-w-md w-full text-center border border-gray-200">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() => navigate("/admin/medical-items-management?tab=TRANSACTION")}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
-          >
-            Quay lại
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center py-12">
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
-          onClick={() => navigate("/admin/medical-items-management?tab=TRANSACTION")}
+          onClick={() =>
+            navigate("/admin/inventory-transaction")
+          }
           className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200 mb-6"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -252,7 +302,7 @@ const AddTransactionForm = () => {
                 Vật tư/Thuốc
               </label>
               {formData.medical_items.map((item, index) => (
-                <div key={index} className="flex gap-4 mb-4">
+                <div key={index} className="flex gap-4 mb-4 items-center">
                   <select
                     name="id"
                     value={item.id}
@@ -260,22 +310,24 @@ const AddTransactionForm = () => {
                     className="w-2/3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
                   >
                     <option value="">Chọn vật tư/thuốc</option>
-                    {medicalItems.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} ({item.unit}) - Số lượng hiện tại: {item.quantity}
+                    {medicalItems.map((mi) => (
+                      <option key={mi.id} value={mi.id}>
+                        {mi.name} ({mi.unit}) - Số lượng hiện tại: {mi.quantity}
                       </option>
                     ))}
                   </select>
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={item.quantity}
-                    onChange={(e) => handleMedicalItemChange(e, index)}
-                    placeholder="Số lượng"
-                    className="w-1/6 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
-                    min="0"
-                    required
-                  />
+                  <div className="w-1/6">
+                    <input
+                      type="number"
+                      name="quantity"
+                      value={item.quantity}
+                      onChange={(e) => handleMedicalItemChange(e, index)}
+                      placeholder="Số lượng"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
+                      min="0"
+                      required
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => removeMedicalItem(index)}
@@ -296,7 +348,9 @@ const AddTransactionForm = () => {
             <div className="flex justify-end gap-4">
               <button
                 type="button"
-                onClick={() => navigate("/admin/medical-items-management?tab=TRANSACTION")}
+                onClick={() =>
+                  navigate("/admin/inventory-transaction")
+                }
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors duration-200"
               >
                 Hủy

@@ -3,8 +3,7 @@ import { useLocation } from "react-router-dom";
 import MedicineList from "./MedicineList";
 import MedicalSupplyList from "./MedicalSupplyList";
 import SupplierManagement from "./SupplierManagement";
-import InventoryTransactionList from "./InventoryTransactionList";
-import { Pill, Syringe, Users, FileText } from "lucide-react";
+import { Pill, Syringe, Users } from "lucide-react";
 
 const MedicalItemsManagement = () => {
   const [activeTab, setActiveTab] = useState("MEDICATION");
@@ -13,7 +12,7 @@ const MedicalItemsManagement = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab");
-    if (tab && ["MEDICATION", "MEDICAL_SUPPLY", "SUPPLIER", "TRANSACTION"].includes(tab)) {
+    if (tab && ["MEDICATION", "MEDICAL_SUPPLY", "SUPPLIER"].includes(tab)) {
       setActiveTab(tab);
     }
   }, [location.search]);
@@ -28,7 +27,7 @@ const MedicalItemsManagement = () => {
                 onClick={() => setActiveTab("MEDICATION")}
                 className={`flex cursor-pointer items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
                   activeTab === "MEDICATION"
-                    ? "text-green-600 border-b-2 border-green-600"
+                    ? "text-blue-600 border-b-2 border-blue-600"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
                 aria-label="Xem danh sách thuốc"
@@ -50,27 +49,15 @@ const MedicalItemsManagement = () => {
               </button>
               <button
                 onClick={() => setActiveTab("SUPPLIER")}
-                className={`flex cursor-pointer items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
+                className={`flex cursor-pointer items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out ${
                   activeTab === "SUPPLIER"
-                    ? "text-purple-600 border-b-2 border-purple-600"
+                    ? "text-blue-600 border-b-2 border-blue-600"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
                 aria-label="Xem danh sách nhà cung cấp"
               >
                 <Users className="w-5 h-5" />
                 Nhà cung cấp
-              </button>
-              <button
-                onClick={() => setActiveTab("TRANSACTION")}
-                className={`flex cursor-pointer items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out ${
-                  activeTab === "TRANSACTION"
-                    ? "text-indigo-600 border-b-2 border-indigo-600"
-                    : "text-gray-600 hover:text-gray-800"
-                }`}
-                aria-label="Xem danh sách giao dịch"
-              >
-                <FileText className="w-5 h-5" />
-                Giao dịch
               </button>
             </div>
           </div>
@@ -80,10 +67,8 @@ const MedicalItemsManagement = () => {
             <MedicineList />
           ) : activeTab === "MEDICAL_SUPPLY" ? (
             <MedicalSupplyList />
-          ) : activeTab === "SUPPLIER" ? (
-            <SupplierManagement />
           ) : (
-            <InventoryTransactionList />
+            <SupplierManagement />
           )}
         </div>
       </div>

@@ -67,6 +67,10 @@ import MedicalItemsManagement from "../pages/Admin/MedicalSupplyManagement/Medic
 import AddSupplierForm from "../pages/Admin/MedicalSupplyManagement/AddSupplierForm";
 import AddMedicationForm from "../pages/Admin/MedicalSupplyManagement/AddMedicationForm";
 import AddTransactionForm from "../pages/Admin/MedicalSupplyManagement/AddTransactionForm";
+import InventoryTransactionList from "../pages/Admin/MedicalSupplyManagement/InventoryTransactionList";
+import TransactionExportList from "../pages/Admin/MedicalSupplyManagement/TransactionExportList";
+import TransactionImportList from "../pages/Admin/MedicalSupplyManagement/TransactionImportList";
+import DeletedTransactionList from "../pages/Admin/MedicalSupplyManagement/DeletedTransactionList";
 
 const routes = createBrowserRouter([
   {
@@ -172,11 +176,27 @@ const routes = createBrowserRouter([
             element: <AddSupplierForm />,
           },
           {
-            path: "medical-items-management/transaction-form",
+            path: "inventory-transaction",
+            element: <InventoryTransactionList />,
+          },
+          {
+            path: "inventory-transaction/export-list",
+            element: <TransactionExportList />,
+          },
+          {
+            path: "inventory-transaction/import-list",
+            element: <TransactionImportList />,
+          },
+          {
+            path: "inventory-transaction/deleted-list",
+            element: <DeletedTransactionList />,
+          },
+          {
+            path: "inventory-transaction/transaction-form",
             element: <AddTransactionForm />,
           },
           {
-            path: "medical-items-management/transaction-form/:id",
+            path: "inventory-transaction/transaction-form/:id",
             element: <AddTransactionForm />,
           },
 
