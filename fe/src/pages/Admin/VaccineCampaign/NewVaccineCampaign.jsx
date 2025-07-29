@@ -394,7 +394,7 @@ const NewVaccineCampaign = () => {
           <div className="flex justify-end gap-2 pt-4">
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="px-4 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
               disabled={isLoading || !campaignForm.vaccine_id}
             >
               {isLoading ? (

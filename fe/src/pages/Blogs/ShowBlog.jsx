@@ -45,7 +45,7 @@ const ShowBlog = () => {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <button
             onClick={() => navigate(basePath)}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-all duration-200 group"
+            className="flex cursor-pointer items-center gap-2 text-blue-600 hover:text-blue-700 transition-all duration-200 group"
           >
             <ArrowLeft
               size={20}
@@ -87,7 +87,7 @@ const ShowBlog = () => {
               </p>
               <button
                 onClick={() => navigate(basePath)}
-                className="inline-flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md"
+                className="inline-flex cursor-pointer items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md"
               >
                 <ArrowLeft size={18} />
                 Quay lại danh sách bài viết
@@ -160,7 +160,7 @@ const ShowBlog = () => {
             <div className="flex justify-center pt-4">
               <button
                 onClick={() => navigate(basePath)}
-                className="flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md"
+                className="flex cursor-pointer items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md"
               >
                 <ArrowLeft size={18} />
                 <span className="font-medium">Quay lại danh sách bài viết</span>
