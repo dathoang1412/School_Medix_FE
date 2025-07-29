@@ -173,7 +173,7 @@ const VaccinationHistoryDetail = () => {
                         value: record?.location || "Không có",
                       },
                       {
-                        label: "Mô tả",
+                        label: "Theo dõi sau tiêm",
                         value: record?.description || "Không có",
                       },
                       {

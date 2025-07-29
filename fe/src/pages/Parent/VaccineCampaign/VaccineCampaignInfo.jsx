@@ -316,20 +316,6 @@ const VaccineCampaignInfo = () => {
           </button>
           <button
             onClick={() => {
-              setHistoryView(true);
-              setRecordsView(false);
-            }}
-            className={`flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-              historyView && !recordsView
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-            }`}
-          >
-            <ActivityIcon className="w-4 h-4" />
-            Theo dõi tiêm chủng
-          </button>
-          <button
-            onClick={() => {
               setRecordsView(true);
               setHistoryView(false);
             }}
@@ -341,6 +327,20 @@ const VaccineCampaignInfo = () => {
           >
             <History className="w-4 h-4" />
             Lịch sử  tiêm chủng
+          </button>
+          <button
+            onClick={() => {
+              setHistoryView(true);
+              setRecordsView(false);
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+              historyView && !recordsView
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            <ActivityIcon className="w-4 h-4" />
+            Khuyến nghị tiêm chủng
           </button>
         </div>
       </div>
