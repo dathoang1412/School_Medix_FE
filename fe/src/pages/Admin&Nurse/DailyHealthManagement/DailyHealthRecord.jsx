@@ -227,6 +227,13 @@ const DailyHealthRecord = () => {
     }
   };
 
+  const truncateText = (text, maxLength = 30, ellipsisThreshold = 25) => {
+    if (!text) return "Chưa có chẩn đoán";
+    if (text.length <= ellipsisThreshold) return text;
+    return text.slice(0, maxLength) + "...";
+  };
+
+
   const closeDetailsModal = () => {
     setShowDetailsModal(false);
     setSelectedRecord(null);
@@ -244,7 +251,7 @@ const DailyHealthRecord = () => {
             </h3>
             <button
               onClick={closeDetailsModal}
-              className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+              className="text-gray-500 cursor-pointer hover:text-gray-700 p-1 rounded-full transition-colors"
               aria-label="Đóng"
             >
               <X className="h-5 w-5" />
@@ -340,13 +347,13 @@ const DailyHealthRecord = () => {
           <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
             <button 
               onClick={() => navigate(`${selectedRecord.id}`)} 
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
+              className="px-4 py-2 cursor-pointer bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
             >
               Xem chi tiết & Chỉnh sửa
             </button>
             <button
               onClick={closeDetailsModal}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+              className="px-4 py-2 bg-white cursor-pointer border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
             >
               Đóng
             </button>
@@ -563,9 +570,9 @@ const DailyHealthRecord = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 py-3  border-gray-100" style={{ width: '20%' }}>
-                        <span className="text-sm text-gray-900 truncate block" title={record.diagnosis || 'Chưa có chẩn đoán'}>
-                          {record.diagnosis || 'Chưa có chẩn đoán'}
+                      <td className="px-4 py-3" style={{ width: '20%' }}>
+                        <span className="text-sm text-gray-900">
+                          {truncateText(record.diagnosis)}
                         </span>
                       </td>
                       <td className="px-3 py-3  border-gray-100" style={{ width: '11%' }}>
@@ -582,7 +589,7 @@ const DailyHealthRecord = () => {
                         <button
                           onClick={() => handleViewDetails(record)}
                           disabled={loading || downloading.has(`details_${record.id}`)}
-                          className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                          className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 rounded-full transition-colors ${
                             loading || downloading.has(`details_${record.id}`)
                               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                               : 'bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700'

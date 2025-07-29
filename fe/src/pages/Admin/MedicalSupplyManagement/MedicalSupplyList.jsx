@@ -109,7 +109,7 @@ const MedicalSupplyList = () => {
             </div>
             <button
               onClick={() => navigate("/admin/medical-items-management/medical-supply-item-form")}
-              className="inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
+              className=" cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
             >
               <Syringe className="w-4 h-4" />
               Thêm vật tư

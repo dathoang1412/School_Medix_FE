@@ -23,6 +23,7 @@ import axiosClient from "../config/axiosClient";
 import { MdOutlineSchool } from "react-icons/md";
 import Footer from "../components/Footer";
 import AIChat from "../components/AIChat";
+import { getUserRole } from "../service/authService";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -127,7 +128,12 @@ const LandingPage = () => {
                 Quản lý toàn bộ hồ sơ sức khỏe học sinh một cách chuyên nghiệp
                 và hiệu quả
               </p>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg flex items-center gap-2 transition-colors duration-200">
+              <button
+                onClick={() => {
+                  navigate("/" + getUserRole());
+                }}
+                className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg flex items-center gap-2 transition-colors duration-200"
+              >
                 Bắt đầu ngay
                 <ArrowRight size={20} />
               </button>
@@ -293,8 +299,6 @@ const LandingPage = () => {
 
       {/* Footer */}
       <Footer />
-
-      <AIChat />
     </div>
   );
 };

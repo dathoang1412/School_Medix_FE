@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, CheckCircle, X } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import { getUserRole } from '../../../service/authService';
+import { enqueueSnackbar } from 'notistack';
 
 const DetailHealthRecordForUpdate = () => {
   const { record_id } = useParams();
@@ -149,6 +150,7 @@ const DetailHealthRecordForUpdate = () => {
     try {
       await axiosClient.put(`/daily-health-record/${record_id}`, formData);
       setMessage('Cập nhật hồ sơ thành công.');
+      enqueueSnackbar('Cập nhật hồ sơ thành công.', {variant: "success"})
       setIsChanged(false); // Reset isChanged sau khi cập nhật thành công
       // Fetch updated record to sync state
       const response = await axiosClient.get(`/daily-health-record/${record_id}`);
@@ -186,7 +188,7 @@ const DetailHealthRecordForUpdate = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={handleBack}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               title="Quay lại danh sách"
             >
               <ArrowLeft size={18} />
@@ -333,7 +335,7 @@ const DetailHealthRecordForUpdate = () => {
                   <button
                     type="button"
                     onClick={handleAddItem}
-                    className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+                    className="px-3 cursor-pointer py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
                   >
                     Thêm
                   </button>
@@ -346,7 +348,7 @@ const DetailHealthRecordForUpdate = () => {
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(index)}
-                      className="text-red-500 hover:text-red-700 transition-colors"
+                      className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
                     >
                       <X size={16} />
                     </button>
@@ -374,14 +376,14 @@ const DetailHealthRecordForUpdate = () => {
             <button
               type="button"
               onClick={handleBack}
-              className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-md hover:bg-gray-100 hover:text-gray-800 transition-colors text-sm font-medium"
+              className="px-6 py-2.5 cursor-pointer bg-white border border-gray-200 text-gray-600 rounded-md hover:bg-gray-100 hover:text-gray-800 transition-colors text-sm font-medium"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={!isChanged || updating}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 cursor-pointer bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               {updating ? 'Đang cập nhật...' : 'Lưu Hồ Sơ'}
             </button>
