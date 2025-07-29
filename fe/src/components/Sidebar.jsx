@@ -41,9 +41,10 @@ const Sidebar = () => {
         const user = await getUser();
         setUserData(user);
       } catch (error) {
-        error && enqueueSnackbar("Không thể tải thông tin người dùng!", {
-          variant: "error",
-        });
+        error &&
+          enqueueSnackbar("Không thể tải thông tin người dùng!", {
+            variant: "error",
+          });
       }
     };
     fetchUserData();
@@ -74,6 +75,11 @@ const Sidebar = () => {
           return [
             ...prev,
             {
+              title: "Quản lý Y Tế",
+              path: "medical-items-management",
+              icon: <MdOutlineMedicalInformation />,
+            },
+            {
               title: "Quản lý người dùng",
               path: "user-manage",
               icon: <User2Icon />,
@@ -83,6 +89,7 @@ const Sidebar = () => {
               path: "blog",
               icon: <LuNewspaper />,
             },
+
           ];
         }
         return prev;
@@ -167,13 +174,7 @@ const Sidebar = () => {
           path: "vaccine-campaign",
           icon: <LuSyringe />,
         },
-        
       ],
-    },
-    {
-      title: "Quản lý Y Tế",
-      path: "medical-items-management",
-      icon: <MdOutlineMedicalInformation />,
     },
   ]);
 

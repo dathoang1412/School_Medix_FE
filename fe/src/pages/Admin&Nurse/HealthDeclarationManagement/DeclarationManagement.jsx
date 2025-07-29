@@ -111,7 +111,7 @@ const DeclarationManagement = () => {
               <div className="flex rounded-lg border border-gray-300 overflow-hidden">
                 <button
                   onClick={() => setViewMode('disease')}
-                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                  className={`px-4 py-2 text-sm  cursor-pointer font-medium flex items-center gap-2 transition-colors ${
                     viewMode === 'disease'
                       ? 'bg-blue-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -121,7 +121,7 @@ const DeclarationManagement = () => {
                 </button>
                 <button
                   onClick={() => setViewMode('vaccine')}
-                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                  className={`px-4 py-2 text-sm cursor-pointer font-medium flex items-center gap-2 transition-colors ${
                     viewMode === 'vaccine'
                       ? 'bg-blue-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-100'
