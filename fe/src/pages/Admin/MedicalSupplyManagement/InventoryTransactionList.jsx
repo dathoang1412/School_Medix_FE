@@ -130,15 +130,15 @@ const InventoryTransactionList = () => {
                     <option value="Sử dụng cho y tế hằng ngày">Sử dụng cho y tế hằng ngày</option>
                     <option value="Nhập hàng từ nhà cung cấp">Nhập hàng từ nhà cung cấp</option>
                     <option value="Mua hàng từ bên ngoài">Mua hàng từ bên ngoài</option>
-                    <option value="Thuốc vật tư kém chất lượng">Thuốc vật tư kém chất lượng</option>
-                    <option value="Thuốc vật tư đã hết hạn">Thuốc vật tư đã hết hạn</option>
+                    <option value="Thuốc vật tư kém chất lượng">Hủy thuốc vật tư kém chất lượng</option>
+                    <option value="Thuốc vật tư đã hết hạn">Hủy thuốc vật tư đã hết hạn</option>
                     <option value="Hoàn trả hàng">Hoàn trả hàng</option>
                     <option value="Đơn dặn thuốc từ phụ huynh">Đơn dặn thuốc từ phụ huynh</option>
                   </select>
                 </div>
                 <button
                   onClick={() => navigate("/admin/medical-items-management/transaction-form")}
-                  className="inline-flex items-center gap-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium ml-auto"
+                  className="cursor-pointer inline-flex items-center gap-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium ml-auto"
                 >
                   <Plus className="w-4 h-4" />
                   Giao dịch mới

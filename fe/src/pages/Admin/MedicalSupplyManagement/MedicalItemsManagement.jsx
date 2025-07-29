@@ -20,13 +20,13 @@ const MedicalItemsManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl py-8">
+      <div className="max-w-7xl ">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="flex flex-col items-center">
             <div className="w-full flex justify-center border-b border-gray-200 p-2">
               <button
                 onClick={() => setActiveTab("MEDICATION")}
-                className={`flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
+                className={`cursor-pointer flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
                   activeTab === "MEDICATION"
                     ? "text-green-600 border-b-2 border-green-600"
                     : "text-gray-600 hover:text-gray-800"
@@ -38,7 +38,7 @@ const MedicalItemsManagement = () => {
               </button>
               <button
                 onClick={() => setActiveTab("MEDICAL_SUPPLY")}
-                className={`flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
+                className={`cursor-pointer flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
                   activeTab === "MEDICAL_SUPPLY"
                     ? "text-blue-600 border-b-2 border-blue-600"
                     : "text-gray-600 hover:text-gray-800"
@@ -50,7 +50,7 @@ const MedicalItemsManagement = () => {
               </button>
               <button
                 onClick={() => setActiveTab("SUPPLIER")}
-                className={`flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
+                className={`cursor-pointer flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out mr-2 ${
                   activeTab === "SUPPLIER"
                     ? "text-purple-600 border-b-2 border-purple-600"
                     : "text-gray-600 hover:text-gray-800"
@@ -62,7 +62,7 @@ const MedicalItemsManagement = () => {
               </button>
               <button
                 onClick={() => setActiveTab("TRANSACTION")}
-                className={`flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out ${
+                className={`cursor-pointer flex items-center gap-2 px-6 py-2 text-sm font-medium transition-colors duration-200 ease-in-out ${
                   activeTab === "TRANSACTION"
                     ? "text-indigo-600 border-b-2 border-indigo-600"
                     : "text-gray-600 hover:text-gray-800"
