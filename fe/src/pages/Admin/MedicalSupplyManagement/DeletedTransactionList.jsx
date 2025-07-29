@@ -1,41 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation, NavLink } from "react-router-dom";
-import { Loader2, Calendar, Package, Search, Plus, Users, Edit, Trash2 } from "lucide-react";
+import { useNavigate, NavLink } from "react-router-dom";
+import { Loader2, Calendar, Package, Search, Users, Trash2, Undo2 } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import Modal from "./Modal"; // Adjust the import path based on your project structure
 
-const InventoryTransactionList = () => {
+const DeletedTransactionList = () => {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPurpose, setSelectedPurpose] = useState("Tất cả");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+  const [isPermanentDeleteModalOpen, setIsPermanentDeleteModalOpen] = useState(false);
+  const [transactionToModify, setTransactionToModify] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const fetchTransactions = async () => {
       setLoading(true);
       try {
-        const endpoint = selectedPurpose === "Tất cả" ? "/inventory-transaction" : `/inventory-transaction/purpose/${getPurposeId(selectedPurpose)}`;
-        const response = await axiosClient.get(endpoint);
+        const response = await axiosClient.get("/deleted-inventory-transaction");
         if (response.data.error) throw new Error(response.data.message);
         setTransactions(response.data.data);
+        setFilteredTransactions(response.data.data);
       } catch (err) {
-        err && setError("Không thể tải danh sách giao dịch.");
-        enqueueSnackbar("Không thể tải danh sách giao dịch.", { variant: "error" });
+        err && setError("Không thể tải danh sách giao dịch đã xóa.");
+        enqueueSnackbar("Không thể tải danh sách giao dịch đã xóa.", { variant: "error" });
       } finally {
         setLoading(false);
       }
     };
     fetchTransactions();
-  }, [enqueueSnackbar, selectedPurpose]);
+  }, [enqueueSnackbar]);
 
   useEffect(() => {
     let result = [...transactions];
@@ -51,19 +50,6 @@ const InventoryTransactionList = () => {
     setFilteredTransactions(result);
   }, [searchTerm, transactions]);
 
-  const getPurposeId = (purposeText) => {
-    const purposeMap = {
-      "Sử dụng cho y tế hằng ngày": "1",
-      "Nhập hàng từ nhà cung cấp": "2",
-      "Mua hàng từ bên ngoài": "3",
-      "Thuốc vật tư kém chất lượng": "4",
-      "Thuốc vật tư đã hết hạn": "5",
-      "Hoàn trả hàng": "6",
-      "Đơn dặn thuốc từ phụ huynh": "7",
-    };
-    return purposeMap[purposeText] || null;
-  };
-
   const openModal = (transaction) => {
     setSelectedTransaction(transaction);
   };
@@ -72,27 +58,51 @@ const InventoryTransactionList = () => {
     setSelectedTransaction(null);
   };
 
-  const openDeleteModal = (id, purpose_title) => {
-    setTransactionToDelete({ id, purpose_title });
-    setIsDeleteModalOpen(true);
+  const openRestoreModal = (id, purpose_title) => {
+    setTransactionToModify({ id, purpose_title });
+    setIsRestoreModalOpen(true);
   };
 
-  const handleDelete = async () => {
-    if (!transactionToDelete) return;
+  const openPermanentDeleteModal = (id, purpose_title) => {
+    setTransactionToModify({ id, purpose_title });
+    setIsPermanentDeleteModalOpen(true);
+  };
+
+  const handleRestore = async () => {
+    if (!transactionToModify) return;
 
     try {
-      const response = await axiosClient.delete(`/inventory-transaction/${transactionToDelete.id}`);
+      const response = await axiosClient.get(`/inventory-transaction/${transactionToModify.id}/restore`);
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      setTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToDelete.id));
-      setFilteredTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToDelete.id));
-      enqueueSnackbar("Xóa giao dịch thành công.", { variant: "success" });
+      setTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToModify.id));
+      setFilteredTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToModify.id));
+      enqueueSnackbar("Khôi phục giao dịch thành công.", { variant: "success" });
     } catch (err) {
-      enqueueSnackbar(err.message || "Lỗi khi xóa giao dịch.", { variant: "error" });
+      enqueueSnackbar(err.message || "Lỗi khi khôi phục giao dịch.", { variant: "error" });
     } finally {
-      setIsDeleteModalOpen(false);
-      setTransactionToDelete(null);
+      setIsRestoreModalOpen(false);
+      setTransactionToModify(null);
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    if (!transactionToModify) return;
+
+    try {
+      const response = await axiosClient.delete(`/inventory-transaction/${transactionToModify.id}/permanent-delete`);
+      if (response.data.error) {
+        throw new Error(response.data.message);
+      }
+      setTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToModify.id));
+      setFilteredTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToModify.id));
+      enqueueSnackbar("Xóa vĩnh viễn giao dịch thành công.", { variant: "success" });
+    } catch (err) {
+      enqueueSnackbar(err.message || "Lỗi khi xóa vĩnh viễn giao dịch.", { variant: "error" });
+    } finally {
+      setIsPermanentDeleteModalOpen(false);
+      setTransactionToModify(null);
     }
   };
 
@@ -195,36 +205,13 @@ const InventoryTransactionList = () => {
                 <div className="relative w-1/2">
                   <input
                     type="text"
-                    placeholder="Tìm kiếm giao dịch"
+                    placeholder="Tìm kiếm giao dịch đã xóa"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm w-full text-gray-700"
                   />
                   <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 </div>
-                <div className="relative w-1/4">
-                  <select
-                    value={selectedPurpose}
-                    onChange={(e) => setSelectedPurpose(e.target.value)}
-                    className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-700"
-                  >
-                    <option value="Tất cả">Tất cả</option>
-                    <option value="Sử dụng cho y tế hằng ngày">Sử dụng cho y tế hằng ngày</option>
-                    <option value="Nhập hàng từ nhà cung cấp">Nhập hàng từ nhà cung cấp</option>
-                    <option value="Mua hàng từ bên ngoài">Mua hàng từ bên ngoài</option>
-                    <option value="Thuốc vật tư kém chất lượng">Hủy thuốc vật tư kém chất lượng</option>
-                    <option value="Thuốc vật tư đã hết hạn">Hủy thuốc vật tư đã hết hạn</option>
-                    <option value="Hoàn trả hàng">Hoàn trả hàng</option>
-                    <option value="Đơn dặn thuốc từ phụ huynh">Đơn dặn thuốc từ phụ huynh</option>
-                  </select>
-                </div>
-                <button
-                  onClick={() => navigate("/admin/inventory-transaction/transaction-form")}
-                  className="cursor-pointer inline-flex items-center gap-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium ml-auto"
-                >
-                  <Plus className="w-4 h-4" />
-                  Xuất/nhập vật tư
-                </button>
               </div>
             </div>
             <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
@@ -232,13 +219,13 @@ const InventoryTransactionList = () => {
                 <table className="w-full border-collapse table-fixed">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[20%]">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[15%]">
                         <div className="flex items-center gap-2">
                           <Calendar size={14} />
                           Ngày giao dịch
                         </div>
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[30%]">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[20%]">
                         <div className="flex items-center gap-2">
                           <Package size={14} />
                           Mục đích
@@ -256,7 +243,7 @@ const InventoryTransactionList = () => {
                           Nhà cung cấp
                         </div>
                       </th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-[20%]">
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-[25%]">
                         Thao tác
                       </th>
                     </tr>
@@ -266,8 +253,8 @@ const InventoryTransactionList = () => {
                       <tr>
                         <td colSpan="5" className="px-6 py-12 text-center">
                           <Package size={40} className="mx-auto text-gray-400 mb-4" />
-                          <p className="text-gray-500 text-lg">Không có giao dịch</p>
-                          <p className="text-gray-400 text-sm mt-2">Hãy kiểm tra lại hoặc thêm giao dịch mới</p>
+                          <p className="text-gray-500 text-lg">Không có giao dịch đã xóa</p>
+                          <p className="text-gray-400 text-sm mt-2">Hãy kiểm tra lại</p>
                         </td>
                       </tr>
                     ) : (
@@ -285,23 +272,23 @@ const InventoryTransactionList = () => {
                             <span className="text-sm text-gray-600">{transaction.medical_items.length}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
-                            <span className="text-sm text-gray-600">{transaction.supplier_name ? transaction.supplier_name : "Đơn xuất"}</span>
+                            <span className="text-sm text-gray-600">{transaction.supplier_name ? transaction.supplier_name : "Không có"}</span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center w-[20%]">
+                          <td className="px-6 py-4 whitespace-nowrap text-center w-[25%]">
                             <div className="flex justify-center gap-2">
                               <button
-                                onClick={() => navigate(`/admin/inventory-transaction/transaction-form/${transaction.id}`)}
-                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
+                                onClick={() => openRestoreModal(transaction.id, transaction.purpose_title)}
+                                className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
-                                <Edit size={14} />
-                                Sửa
+                                <Undo2 size={14} />
+                                Khôi phục
                               </button>
                               <button
-                                onClick={() => openDeleteModal(transaction.id, transaction.purpose_title)}
+                                onClick={() => openPermanentDeleteModal(transaction.id, transaction.purpose_title)}
                                 className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Trash2 size={14} />
-                                Xóa
+                                Xóa 
                               </button>
                               <button
                                 onClick={() => openModal(transaction)}
@@ -331,7 +318,7 @@ const InventoryTransactionList = () => {
         >
           <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-semibold text-gray-800">Chi tiết giao dịch</h4>
+              <h4 className="text-lg font-semibold text-gray-800">Chi tiết giao dịch đã xóa</h4>
               <button
                 onClick={closeModal}
                 className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors duration-200"
@@ -345,7 +332,7 @@ const InventoryTransactionList = () => {
                 <div className="mt-2 space-y-2 text-sm text-gray-600">
                   <div><span className="font-medium">Ngày giao dịch:</span> {new Date(selectedTransaction.transaction_date).toLocaleDateString("vi-VN")}</div>
                   <div><span className="font-medium">Mục đích:</span> {selectedTransaction.purpose_title || "Không xác định"}</div>
-                  <div><span className="font-medium">Nhà cung cấp:</span> {selectedTransaction.supplier_name || "Đơn xuất"}</div>
+                  <div><span className="font-medium">Nhà cung cấp:</span> {selectedTransaction.supplier_name || "Không có"}</div>
                 </div>
               </div>
               <div>
@@ -375,22 +362,37 @@ const InventoryTransactionList = () => {
         </div>
       )}
 
-      {/* Modal for Delete Confirmation */}
+      {/* Modal for Restore Confirmation */}
       <Modal
-        isOpen={isDeleteModalOpen}
+        isOpen={isRestoreModalOpen}
         onClose={() => {
-          setIsDeleteModalOpen(false);
-          setTransactionToDelete(null);
+          setIsRestoreModalOpen(false);
+          setTransactionToModify(null);
         }}
-        title="Xác nhận xóa giao dịch"
-        onConfirm={handleDelete}
-        confirmText="Xóa"
+        title="Xác nhận khôi phục giao dịch"
+        onConfirm={handleRestore}
+        confirmText="Khôi phục"
         cancelText="Hủy"
       >
-        Bạn có chắc muốn xóa giao dịch <strong>{transactionToDelete?.purpose_title || "này"}</strong>? Hành động này không thể hoàn tác.
+        Bạn có chắc muốn khôi phục giao dịch <strong>{transactionToModify?.purpose_title || "này"}</strong>? Giao dịch sẽ được đưa trở lại danh sách giao dịch.
+      </Modal>
+
+      {/* Modal for Permanent Delete Confirmation */}
+      <Modal
+        isOpen={isPermanentDeleteModalOpen}
+        onClose={() => {
+          setIsPermanentDeleteModalOpen(false);
+          setTransactionToModify(null);
+        }}
+        title="Xác nhận xóa vĩnh viễn giao dịch"
+        onConfirm={handlePermanentDelete}
+        confirmText="Xóa vĩnh viễn"
+        cancelText="Hủy"
+      >
+        Bạn có chắc muốn xóa vĩnh viễn giao dịch <strong>{transactionToModify?.purpose_title || "này"}</strong>? Hành động này không thể hoàn tác.
       </Modal>
     </div>
   );
 };
 
-export default React.memo(InventoryTransactionList);
+export default React.memo(DeletedTransactionList);
