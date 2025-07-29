@@ -615,7 +615,12 @@ const VaccineCampaignDetails = () => {
                 <FileText className="w-5 h-5 text-gray-700 mr-2" />
                 <h2 className="text-lg font-semibold text-gray-900">Mô tả chi tiết</h2>
               </div>
-              <p className="text-sm text-gray-700">{details.description || "Chưa có mô tả"}</p>
+              <p className="text-sm text-gray-700">
+                <div dangerouslySetInnerHTML={{ 
+                  __html: details.description.replace(/\n/g, '<br/>') || null                      
+                }} 
+                />
+              </p>
             </div>
           </div>
 
