@@ -69,7 +69,7 @@ const SendRecoveryLink = ({ email, otp, onNext }) => {
       <div>
         <button
           onClick={handleSendRecoveryLink}
-          className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium mb-4 flex items-center justify-center space-x-2"
+          className="w-full cursor-pointer bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium mb-4 flex items-center justify-center space-x-2"
           disabled={loading}
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -89,7 +89,7 @@ const SendRecoveryLink = ({ email, otp, onNext }) => {
           <button
             onClick={handleResendRecoveryLink}
             disabled={resendLoading}
-            className="text-blue-500 hover:text-blue-600 font-medium text-sm disabled:text-gray-400 inline-flex items-center space-x-1"
+            className="text-blue-500 cursor-pointer hover:underline hover:text-blue-600 font-medium text-sm disabled:text-gray-400 inline-flex items-center space-x-1"
           >
             {resendLoading && <Loader2 className="w-3 h-3 animate-spin" />}
             <span>{resendLoading ? "Đang gửi lại..." : "Gửi lại"}</span>
