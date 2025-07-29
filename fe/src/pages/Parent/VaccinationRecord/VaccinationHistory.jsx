@@ -225,7 +225,7 @@ const VaccinationHistory = () => {
                     </div>
                     <div className="flex items-start">
                       <label className="w-1/3 text-sm font-medium text-gray-600">
-                        Chẩn đoán
+                        Theo dõi sau tiêm
                       </label>
                       <p className="flex-1 text-sm text-gray-800">
                         {selectedRecord.description || "Không có chẩn đoán"}
@@ -354,7 +354,7 @@ const VaccinationHistory = () => {
                           </div>
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-gray-800 font-medium text-sm">
-                              Mô tả: {item.description || "Không có"}
+                              Theo dõi sau tiêm: {item.description || "Không có"}
                             </span>
                           </div>
                         </div>
