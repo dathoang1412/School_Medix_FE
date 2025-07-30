@@ -1,15 +1,19 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom"; // Added Link import
+import { useNavigate, useParams, Link } from "react-router-dom";
 import axiosClient from "../../../config/axiosClient";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
 import { getUserRole } from "../../../service/authService";
+import { fetchClass } from './../../../utils/classUtils';
 
 const RegularCheckupRegisterList = () => {
   const [list, setList] = useState([]);
+  const [filteredList, setFilteredList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState("");
   const { campaign_id } = useParams();
   const navigate = useNavigate();
 
@@ -19,7 +23,14 @@ const RegularCheckupRegisterList = () => {
       setIsRefreshing(true);
       const res = await axiosClient.get(`/checkup-register/${campaign_id}`);
       console.log("LIST: ", res.data.data);
-      setList(res.data.data || []);
+      // Sort the list to prioritize "SUBMITTED" status
+      const sortedList = (res.data.data || []).sort((a, b) => {
+        if (a.register_status === "SUBMITTED" && b.register_status !== "SUBMITTED") return -1;
+        if (a.register_status !== "SUBMITTED" && b.register_status === "SUBMITTED") return 1;
+        return 0;
+      });
+      setList(sortedList);
+      setFilteredList(sortedList); // Initialize filtered list
       setError(null);
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -35,8 +46,31 @@ const RegularCheckupRegisterList = () => {
     fetchList();
   }, [fetchList]);
 
+  useEffect(() => {
+    const f = async () => {
+      const res = await fetchClass();
+      setClasses(res);
+    };
+    f();
+  }, []);
+
+  // Filter list based on selected class
+  useEffect(() => {
+    if (selectedClass) {
+      const filtered = list.filter((item) => item.class_name === selectedClass);
+      setFilteredList(filtered);
+    } else {
+      setFilteredList(list); // Show all if no class is selected
+    }
+  }, [selectedClass, list]);
+
   const handleRefresh = () => {
     fetchList();
+    setSelectedClass(""); // Reset filter on refresh
+  };
+
+  const handleClassFilterChange = (e) => {
+    setSelectedClass(e.target.value);
   };
 
   const getStatusColor = (status) => {
@@ -118,39 +152,53 @@ const RegularCheckupRegisterList = () => {
             Quay lại
           </button>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className={`flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 ${
-            isRefreshing ? "opacity-75 cursor-not-allowed" : ""
-          }`}
-        >
-          {isRefreshing ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-          )}
-          <span>Làm mới</span>
-        </button>
+        <div className="flex items-center space-x-4">
+          <select
+            value={selectedClass}
+            onChange={handleClassFilterChange}
+            className="px-4 cursor-pointer py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option className="cursor-pointer" value="">Tất cả lớp</option>
+            {classes.map((cls) => (
+              <option className="cursor-pointer" key={cls.class_name} value={cls.class_name}>
+                {cls.class_name}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className={`flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 ${
+              isRefreshing ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            {isRefreshing ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            )}
+            <span>Làm mới</span>
+          </button>
+        </div>
       </div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           Danh sách đăng ký khám sức khỏe
         </h1>
-        <p className="text-gray-600">Tổng số đăng ký: {list.length}</p>
+        <p className="text-gray-600">Tổng số đăng ký: {filteredList.length}</p>
       </div>
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
@@ -179,7 +227,7 @@ const RegularCheckupRegisterList = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {list.length === 0 ? (
+              {filteredList.length === 0 ? (
                 <tr>
                   <td
                     colSpan="6"
@@ -189,7 +237,7 @@ const RegularCheckupRegisterList = () => {
                   </td>
                 </tr>
               ) : (
-                list.map((item) => (
+                filteredList.map((item) => (
                   <tr key={item.register_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       #{item.register_id}
@@ -241,9 +289,9 @@ const RegularCheckupRegisterList = () => {
         </div>
       </div>
 
-      {list.length > 0 && (
+      {filteredList.length > 0 && (
         <div className="mt-4 text-sm text-gray-600">
-          Hiển thị {list.length} kết quả
+          Hiển thị {filteredList.length} kết quả
         </div>
       )}
     </div>

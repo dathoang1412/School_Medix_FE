@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, ChevronDown, ChevronUp, Search, FileText, CheckCircle, Calendar, Clock, MapPin, Pill, User, Activity, X } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Search, FileText, CheckCircle, Calendar, Clock, User, Activity, X } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import { getUserRole } from '../../../service/authService';
+import { fetchClass } from '../../../utils/classUtils';
 
 const DailyHealthRecord = () => {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ const DailyHealthRecord = () => {
   const [success, setSuccess] = useState(location.state?.success || '');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [classFilter, setClassFilter] = useState('');
+  const [classes, setClasses] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'record_date', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
@@ -54,7 +57,7 @@ const DailyHealthRecord = () => {
     setLoading(true);
     try {
       const res = await axiosClient.get('/daily-health-record');
-      console.log("Daily health record: " ,res.data.data);
+      console.log("Daily health record: ", res.data.data);
       setRecords(res.data.data);
       setFilteredRecords(res.data.data);
     } catch (error) {
@@ -65,6 +68,20 @@ const DailyHealthRecord = () => {
     }
   };
 
+  // Fetch classes
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const res = await fetchClass();
+        setClasses(res);
+      } catch (error) {
+        console.error("Error fetching classes:", error);
+        setError('Không thể tải danh sách lớp');
+      }
+    };
+    fetchClasses();
+  }, []);
+
   useEffect(() => {
     fetchRecords();
   }, []);
@@ -72,23 +89,24 @@ const DailyHealthRecord = () => {
   // Handle search and filtering
   useEffect(() => {
     let filtered = records.filter((record) => {
-      const matchesSearch = 
-        String(record.student_id).toString().includes(searchTerm.toLowerCase()) ||
-        (record.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch =
+        String(record.student_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (record.student_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (record.diagnosis || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (record.on_site_treatment || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (record.transferred_to || '').toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesDate = !dateFilter || 
-        formatDateForInput(record.detect_time) === dateFilter ||
+      const matchesDate = !dateFilter ||
         formatDateForInput(record.record_date) === dateFilter;
 
-      return matchesSearch && matchesDate;
+      const matchesClass = !classFilter || record.class_name === classFilter;
+
+      return matchesSearch && matchesDate && matchesClass;
     });
 
     setFilteredRecords(filtered);
     setCurrentPage(1);
-  }, [searchTerm, dateFilter, records]);
+  }, [searchTerm, dateFilter, classFilter, records]);
 
   // Handle sorting
   const handleSort = (key) => {
@@ -101,14 +119,18 @@ const DailyHealthRecord = () => {
     const sorted = [...filteredRecords].sort((a, b) => {
       if (key === 'student_id') {
         return direction === 'asc' ? a.student_id - b.student_id : b.student_id - a.student_id;
-      } else if (key === 'name') {
-        const nameA = (a.name || '').toLowerCase();
-        const nameB = (b.name || '').toLowerCase();
+      } else if (key === 'student_name') {
+        const nameA = (a.student_name || '').toLowerCase();
+        const nameB = (b.student_name || '').toLowerCase();
         return direction === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-      } else if (key === 'detect_time' || key === 'record_date') {
+      } else if (key === 'record_date') {
         const dateA = new Date(a[key]);
         const dateB = new Date(b[key]);
         return direction === 'asc' ? dateA - dateB : dateB - dateA;
+      } else if (key === 'class_name') {
+        const classA = (a.class_name || '').toLowerCase();
+        const classB = (b.class_name || '').toLowerCase();
+        return direction === 'asc' ? classA.localeCompare(classB) : classB.localeCompare(classA);
       }
       return 0;
     });
@@ -130,12 +152,14 @@ const DailyHealthRecord = () => {
   const filterTodayRecords = () => {
     setDateFilter(getTodayDate());
     setSearchTerm('');
+    setClassFilter('');
   };
 
   // Clear all filters
   const clearFilters = () => {
     setDateFilter('');
     setSearchTerm('');
+    setClassFilter('');
   };
 
   // Pagination
@@ -154,7 +178,7 @@ const DailyHealthRecord = () => {
     if (forTransfer) {
       if (record.transferred_to && record.transferred_to.trim() !== '') {
         return (
-          <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border ed-200">
+          <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border border-red-200">
             Chuyển viện
           </span>
         );
@@ -167,7 +191,7 @@ const DailyHealthRecord = () => {
     } else {
       if (record.status === 'SERIOUS') {
         return (
-          <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border ed-200">
+          <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border border-red-200">
             Nghiêm trọng
           </span>
         );
@@ -195,8 +219,8 @@ const DailyHealthRecord = () => {
   }, [success]);
 
   // Get today's records count
-  const todayRecordsCount = records.filter(record => 
-    isToday(record.detect_time) || isToday(record.record_date)
+  const todayRecordsCount = records.filter(record =>
+    isToday(record.record_date)
   ).length;
 
   const handleViewDetails = async (record) => {
@@ -232,7 +256,6 @@ const DailyHealthRecord = () => {
     if (text.length <= ellipsisThreshold) return text;
     return text.slice(0, maxLength) + "...";
   };
-
 
   const closeDetailsModal = () => {
     setShowDetailsModal(false);
@@ -291,62 +314,62 @@ const DailyHealthRecord = () => {
                     Thông tin học sinh
                   </h4>
                   <p className="text-sm text-gray-600 mt-1">
-                    Mã học sinh: {selectedRecord.student_id} | Họ tên: {selectedRecord.student_name || 'N/A'}
+                    Mã học sinh: {selectedRecord.student_id} | Họ tên: {selectedRecord.student_name || 'N/A'} | Lớp: {selectedRecord.class_name || 'N/A'}
                   </p>
                 </div>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-800 uppercase border-b border-gray-200 pb-2 mb-4">
+                      Chi tiết y tế
+                    </h4>
                     <div className="space-y-4">
-                        <div>
-                            <h4 className="text-lg font-medium text-gray-800 uppercase border-b border-gray-200 pb-2 mb-4">
-                            Chi tiết y tế
-                            </h4>
-                            <div className="space-y-4">
-                                <h5 className="text-sm font-bold text-gray-800">I. Thời gian</h5>
-                                {[
-                                { label: "Ngày phát hiện", value: formatDate(selectedRecord.detect_time) },
-                                { label: "Ngày ghi nhận", value: formatDate(selectedRecord?.record_date) },
-                                ].map(({ label, value }) => (
-                                <div key={label} className="flex items-start">
-                                    <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
-                                    <p className="flex-1 text-sm text-gray-800">{value}</p>
-                                </div>
-                                ))}
-                            </div>
-                            <div className="space-y-4 mt-6">
-                                <h5 className="text-sm font-bold text-gray-800">II. Chẩn đoán & Điều trị</h5>
-                                {[
-                                { label: "Chẩn đoán", value: selectedRecord?.diagnosis || 'Chưa có chẩn đoán' },
-                                { label: "Xử lý tại chỗ", value: selectedRecord?.on_site_treatment || 'Không có' },
-                                ].map(({ label, value }) => (
-                                <div key={label} className="flex items-start">
-                                    <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
-                                    <p className="flex-1 text-sm text-gray-800">{value}</p>
-                                </div>
-                                ))}
-                            </div>
-                            <div className="mt-6 space-y-4">
-                                <h5 className="text-sm font-bold text-gray-800">III. Chuyển viện & Vật tư</h5>
-                                {[
-                                    { label: "Chuyển đến", value: selectedRecord?.transferred_to || 'Không chuyển viện' },
-                                    { label: "Vật tư sử dụng", value: selectedRecord?.items_usage || 'Không sử dụng' },
-                                ].map(({ label, value }) => (
-                                    <div key={label} className="flex items-start">
-                                    <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
-                                    <p className="flex-1 text-sm text-gray-800">
-                                      <div dangerouslySetInnerHTML={{ 
-                                        __html: value.replace(/\n/g, '<br/>') 
-                                      }} 
-                                    /></p>
-                                    </div>
-                                ))}
-                            </div>
+                      <h5 className="text-sm font-bold text-gray-800">I. Thời gian</h5>
+                      {[
+                        { label: "Ngày phát hiện", value: formatDate(selectedRecord.detect_time) },
+                        { label: "Ngày ghi nhận", value: formatDate(selectedRecord?.record_date) },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex items-start">
+                          <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                          <p className="flex-1 text-sm text-gray-800">{value}</p>
                         </div>
+                      ))}
                     </div>
+                    <div className="space-y-4 mt-6">
+                      <h5 className="text-sm font-bold text-gray-800">II. Chẩn đoán & Điều trị</h5>
+                      {[
+                        { label: "Chẩn đoán", value: selectedRecord?.diagnosis || 'Chưa có chẩn đoán' },
+                        { label: "Xử lý tại chỗ", value: selectedRecord?.on_site_treatment || 'Không có' },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex items-start">
+                          <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                          <p className="flex-1 text-sm text-gray-800">{value}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-6 space-y-4">
+                      <h5 className="text-sm font-bold text-gray-800">III. Chuyển viện & Vật tư</h5>
+                      {[
+                        { label: "Chuyển đến", value: selectedRecord?.transferred_to || 'Không chuyển viện' },
+                        { label: "Vật tư sử dụng", value: selectedRecord?.items_usage || 'Không sử dụng' },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex items-start">
+                          <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                          <p className="flex-1 text-sm text-gray-800">
+                            <div dangerouslySetInnerHTML={{
+                              __html: value.replace(/\n/g, '<br/>')
+                            }} />
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </>
             )}
           </div>
           <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
-            <button 
-              onClick={() => navigate(`${selectedRecord.id}`)} 
+            <button
+              onClick={() => navigate(`${selectedRecord.id}`)}
               className="px-4 py-2 cursor-pointer bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
             >
               Xem chi tiết & Chỉnh sửa
@@ -398,7 +421,7 @@ const DailyHealthRecord = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border-l-4 ed-400 text-red-800">
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-800">
             <div className="flex items-center">
               <div className="w-2 h-2 bg-red-600 rounded-full mr-3"></div>
               {error}
@@ -419,6 +442,23 @@ const DailyHealthRecord = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               />
               <Search size={18} className="absolute left-3 top-2.5 text-gray-400" />
+            </div>
+
+            {/* Class Filter */}
+            <div className="relative">
+              <select
+                value={classFilter}
+                onChange={(e) => setClassFilter(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              >
+                <option value="">Tất cả lớp</option>
+                {classes.map((cls) => (
+                  <option key={cls.class_name} value={cls.class_name}>
+                    {cls.class_name}
+                  </option>
+                ))}
+              </select>
+              <User size={18} className="absolute left-3 top-2.5 text-gray-400" />
             </div>
 
             {/* Date Filter */}
@@ -473,43 +513,43 @@ const DailyHealthRecord = () => {
                       )}
                     </div>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors  border-gray-200" style={{ width: '15%' }} onClick={() => handleSort('name')}>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors border-gray-200" style={{ width: '15%' }} onClick={() => handleSort('student_name')}>
                     <div className="flex items-center gap-1 whitespace-nowrap">
                       <User size={14} />
                       <span>Họ Tên</span>
-                      {sortConfig.key === 'name' && (
+                      {sortConfig.key === 'student_name' && (
                         <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                       )}
                     </div>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors  border-gray-200" style={{ width: '12%' }} onClick={() => handleSort('detect_time')}>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors border-gray-200" style={{ width: '12%' }} onClick={() => handleSort('class_name')}>
                     <div className="flex items-center gap-1 whitespace-nowrap">
-                      <Calendar size={14} />
-                      <span>Ngày phát hiện</span>
-                      {sortConfig.key === 'detect_time' && (
+                      <User size={14} />
+                      <span>Lớp</span>
+                      {sortConfig.key === 'class_name' && (
                         <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                       )}
                     </div>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors  border-gray-200" style={{ width: '12%' }} onClick={() => handleSort('record_date')}>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors border-gray-200" style={{ width: '12%' }} onClick={() => handleSort('record_date')}>
                     <div className="flex items-center gap-1 whitespace-nowrap">
                       <FileText size={14} />
                       <span>Ngày ghi nhận</span>
                       {sortConfig.key === 'record_date' && (
-                        <span className="ml-1">{sortConfig.direction === 'asc' ? '' : ''}</span>
+                        <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                       )}
                     </div>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '20%' }}>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200" style={{ width: '20%' }}>
                     <div className="flex items-center gap-1 whitespace-nowrap">
                       <Activity size={14} />
                       <span>Chẩn Đoán</span>
                     </div>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '11%' }}>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200" style={{ width: '11%' }}>
                     <div className="whitespace-nowrap">Tình Trạng</div>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '12%' }}>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200" style={{ width: '12%' }}>
                     <div className="whitespace-nowrap">Chuyển Đến</div>
                   </th>
                   <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: '8%' }}>
@@ -536,12 +576,12 @@ const DailyHealthRecord = () => {
                 ) : (
                   currentRecords.map((record, index) => (
                     <tr key={index} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-3 py-3  border-gray-100" style={{ width: '10%' }}>
+                      <td className="px-3 py-3 border-gray-100" style={{ width: '10%' }}>
                         <div className="text-sm font-medium text-gray-900 truncate" title={getStudentDisplay(record.student_id)}>
                           {getStudentDisplay(record.student_id)}
                         </div>
                       </td>
-                      <td className="px-3 py-3  border-gray-100" style={{ width: '15%' }}>
+                      <td className="px-3 py-3 border-gray-100" style={{ width: '15%' }}>
                         <button
                           onClick={() => navigate(`/${getUserRole()}/student-overview/${record.student_id}`)}
                           className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200 truncate w-full text-left"
@@ -550,17 +590,14 @@ const DailyHealthRecord = () => {
                           {record.student_name || 'N/A'}
                         </button>
                       </td>
-                      <td className="px-3 py-3  border-gray-100" style={{ width: '12%' }}>
+                      <td className="px-3 py-3 border-gray-100" style={{ width: '12%' }}>
                         <div className="flex items-center">
-                          {isToday(record.detect_time) && (
-                            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 flex-shrink-0"></span>
-                          )}
-                          <span className="text-sm text-gray-900 truncate" title={formatDate(record.detect_time)}>
-                            {formatDate(record.detect_time)}
+                          <span className="text-sm text-gray-900 truncate" title={record.class_name || 'N/A'}>
+                            {record.class_name || 'N/A'}
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 py-3  border-gray-100" style={{ width: '12%' }}>
+                      <td className="px-3 py-3 border-gray-100" style={{ width: '12%' }}>
                         <div className="flex items-center">
                           {isToday(record.record_date) && (
                             <span className="w-2 h-2 bg-green-500 rounded-full mr-2 flex-shrink-0"></span>
@@ -575,12 +612,12 @@ const DailyHealthRecord = () => {
                           {truncateText(record.diagnosis)}
                         </span>
                       </td>
-                      <td className="px-3 py-3  border-gray-100" style={{ width: '11%' }}>
+                      <td className="px-3 py-3 border-gray-100" style={{ width: '11%' }}>
                         <div className="flex justify-start">
                           {getStatusBadge(record)}
                         </div>
                       </td>
-                      <td className="px-3 py-3  border-gray-100" style={{ width: '12%' }}>
+                      <td className="px-3 py-3 border-gray-100" style={{ width: '12%' }}>
                         <div className="flex justify-start">
                           {getStatusBadge(record, true)}
                         </div>

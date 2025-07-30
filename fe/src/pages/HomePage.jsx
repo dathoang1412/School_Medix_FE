@@ -277,7 +277,7 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
+      {/* <section className="py-20 bg-blue-600">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-6">
             Sẵn sàng bắt đầu với SchoolMedix?
@@ -295,7 +295,7 @@ const LandingPage = () => {
             </button>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Footer */}
       <Footer />
