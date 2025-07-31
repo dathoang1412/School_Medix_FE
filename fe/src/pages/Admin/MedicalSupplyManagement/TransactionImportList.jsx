@@ -64,8 +64,8 @@ const TransactionImportList = () => {
     setSelectedTransaction(null);
   };
 
-  const openDeleteModal = (id, purpose_title) => {
-    setTransactionToDelete({ id, purpose_title });
+  const openDeleteModal = (id, purpose_title, supplier_name) => {
+    setTransactionToDelete({ id, purpose_title, supplier_name });
     setIsDeleteModalOpen(true);
   };
 
@@ -306,7 +306,8 @@ const TransactionImportList = () => {
                                 onClick={() =>
                                   openDeleteModal(
                                     transaction.id,
-                                    transaction.purpose_title
+                                    transaction.purpose_title,
+                                    transaction.supplier_name
                                   )
                                 }
                                 className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
@@ -420,8 +421,8 @@ const TransactionImportList = () => {
         confirmText="Xóa"
         cancelText="Hủy"
       >
-        Bạn có chắc muốn xóa giao dịch nhập{" "}
-        <strong>{transactionToDelete?.purpose_title || "này"}</strong>? Hành
+        Bạn có chắc muốn xóa giao dịch nhập từ{" "}
+        <strong>{transactionToDelete?.supplier_name|| "này"}</strong>? Hành
         động này không thể hoàn tác.
       </Modal>
     </div>
