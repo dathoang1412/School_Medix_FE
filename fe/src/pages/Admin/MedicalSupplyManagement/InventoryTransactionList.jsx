@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation, NavLink } from "react-router-dom";
-import { Loader2, Calendar, Package, Search, Plus, Users, Edit, Trash2 } from "lucide-react";
+import { useNavigate,NavLink } from "react-router-dom";
+import { Loader2, Calendar, Package, Search, Plus, Users, Edit, Trash2, X } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import Modal from "./Modal"; // Adjust the import path based on your project structure
