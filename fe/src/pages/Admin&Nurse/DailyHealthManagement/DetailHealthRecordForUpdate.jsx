@@ -125,6 +125,12 @@ const DetailHealthRecordForUpdate = () => {
       quantity: quantity,
       unit: item.unit
     };
+    // Update availableItems by reducing the quantity
+    const updatedAvailableItems = availableItems.map(i =>
+      i.id === parseInt(selectedItem) ? { ...i, quantity: i.quantity - quantity } : i
+    );
+    setAvailableItems(updatedAvailableItems);
+
     setItems([...items, newItem]);
     setFormData(prev => ({ ...prev, medical_items: [...items, newItem] }));
     setSelectedItem('');
@@ -134,10 +140,17 @@ const DetailHealthRecordForUpdate = () => {
   };
 
   const handleRemoveItem = (index) => {
+    const removedItem = items[index];
     const newItems = items.filter((_, i) => i !== index);
     setItems(newItems);
     setFormData(prev => ({ ...prev, medical_items: newItems }));
     setIsChanged(true);
+
+    // Restore quantity in availableItems
+    const updatedAvailableItems = availableItems.map(i =>
+      i.id === removedItem.id ? { ...i, quantity: parseInt(parseInt(i.quantity) + parseInt(removedItem.quantity)) } : i
+    );
+    setAvailableItems(updatedAvailableItems);
   };
 
   const handleUpdate = async (e) => {
@@ -294,6 +307,20 @@ const DetailHealthRecordForUpdate = () => {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tình Trạng</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+            >
+              <option value="">Chọn tình trạng</option>
+              <option value="MILD">Nhẹ</option>
+              <option value="SERIOUS">Nghiêm trọng</option>
+            </select>
+          </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Chuyển Đến</label>
             <input
