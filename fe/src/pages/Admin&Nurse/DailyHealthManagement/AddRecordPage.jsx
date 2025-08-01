@@ -20,6 +20,44 @@ const AddRecordPage = () => {
   const [availableItems, setAvailableItems] = useState([]); // Fetch from DB
   const [selectedItem, setSelectedItem] = useState('');
   const [quantity, setQuantity] = useState(0);
+  const [classes, setClasses] = useState([]); // List of classes
+  const [selectedClass, setSelectedClass] = useState(''); // Selected class
+  const [students, setStudents] = useState([]); // List of students in selected class
+  const [selectedStudent, setSelectedStudent] = useState(''); // Selected student
+
+  // Fetch available classes from database
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const response = await axiosClient.get('/class');
+        setClasses(response.data.data || []);
+      } catch (error) {
+        console.error('Error fetching classes:', error);
+      }
+    };
+    fetchClasses();
+  }, []);
+
+  // Fetch students when class is selected
+  useEffect(() => {
+    if (selectedClass) {
+      const fetchStudents = async () => {
+        try {
+          const response = await axiosClient.get(`/students/${selectedClass}`);
+          setStudents(response.data.data || []);
+          setSelectedStudent(''); // Reset selected student when class changes
+          setFormData(prev => ({ ...prev, student_id: '' })); // Reset student_id
+        } catch (error) {
+          console.error('Error fetching students:', error);
+        }
+      };
+      fetchStudents();
+    } else {
+      setStudents([]);
+      setSelectedStudent('');
+      setFormData(prev => ({ ...prev, student_id: '' }));
+    }
+  }, [selectedClass]);
 
   // Fetch available items from database
   useEffect(() => {
@@ -38,6 +76,13 @@ const AddRecordPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  // Update student_id when student is selected
+  const handleStudentChange = (e) => {
+    const studentId = e.target.value;
+    setSelectedStudent(studentId);
+    setFormData(prev => ({ ...prev, student_id: studentId }));
   };
 
   // Format date to YYYY-MM-DD for API
@@ -63,7 +108,8 @@ const AddRecordPage = () => {
     const value = Math.min(Math.max(0, parseInt(e.target.value) || 0), maxQuantity);
     setQuantity(value);
   };
-  // Handle adding item to items array
+
+  // Handle adding item to items array and update availableItems
   const handleAddItem = () => {
     if (!selectedItem || quantity <= 0) {
       setError('Vui lòng chọn vật tư và nhập số lượng hợp lệ.');
@@ -78,22 +124,37 @@ const AddRecordPage = () => {
       quantity: quantity,
       unit: item.unit
     };
+
+    // Update availableItems by reducing the quantity
+    const updatedAvailableItems = availableItems.map(i =>
+      i.id === parseInt(selectedItem) ? { ...i, quantity: i.quantity - quantity } : i
+    );
+    setAvailableItems(updatedAvailableItems);
+
+    // Add item to items array
     setItems([...items, newItem]);
     setSelectedItem('');
     setQuantity(0);
     setError('');
   };
 
-  // Handle removing item from items array
+  // Handle removing item from items array and restore quantity in availableItems
   const handleRemoveItem = (index) => {
+    const removedItem = items[index];
     setItems(items.filter((_, i) => i !== index));
+
+    // Restore quantity in availableItems
+    const updatedAvailableItems = availableItems.map(i =>
+      i.id === removedItem.id ? { ...i, quantity: i.quantity + removedItem.quantity } : i
+    );
+    setAvailableItems(updatedAvailableItems);
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.student_id || !formData.detect_time) {
-      setError('Vui lòng điền đầy đủ các trường bắt buộc: Mã Học Sinh và Ngày Phát Hiện.');
+      setError('Vui lòng điền đầy đủ các trường bắt buộc: Học Sinh và Ngày Phát Hiện.');
       return;
     }
     try {
@@ -147,7 +208,50 @@ const AddRecordPage = () => {
           </div>
         )}
 
-        {/* Form */}
+        {/* New Form for Class and Student Selection */}
+        <form className="bg-white rounded-lg shadow-md p-8 space-y-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Chọn Lớp <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+                required
+              >
+                <option value="">Chọn lớp</option>
+                {classes.map((cls) => (
+                  <option key={cls.class_id} value={cls.class_id}>
+                    {cls.class_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Chọn Học Sinh <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedStudent}
+                onChange={handleStudentChange}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+                required
+                disabled={!selectedClass}
+              >
+                <option value="">Chọn học sinh</option>
+                {students.map((student) => (
+                  <option key={student.id} value={student.id}>
+                    {student.name} - {student.id}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </form>
+
+        {/* Existing Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -155,12 +259,13 @@ const AddRecordPage = () => {
                 Mã Học Sinh <span className="text-red-500">*</span>
               </label>
               <input
-                type="number"
+                type="text"
                 name="student_id"
                 value={formData.student_id}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
-                placeholder="Nhập mã học sinh (VD: 100000)"
+                placeholder="Mã học sinh sẽ tự động điền"
+                readOnly
                 required
               />
             </div>
@@ -189,6 +294,22 @@ const AddRecordPage = () => {
               className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm resize-none"
               placeholder="Mô tả chi tiết chẩn đoán (nếu có)"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tình Trạng <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+            >
+              <option value="">Chọn tình trạng</option>
+              <option value="MILD">Nhẹ</option>
+              <option value="SERIOUS">Nghiêm trọng</option>
+            </select>
           </div>
 
           <div>
@@ -265,22 +386,6 @@ const AddRecordPage = () => {
                 ))}
               </div>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tình Trạng <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
-            >
-              <option value="">Chọn tình trạng</option>
-              <option value="MILD">Nhẹ</option>
-              <option value="SERIOUS">Nghiêm trọng</option>
-            </select>
           </div>
 
           <div className="flex justify-end gap-4 pt-6">
