@@ -8,7 +8,7 @@ import axiosClient from "../../../config/axiosClient";
 const AddTransactionForm = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const { id } = useParams(); // Get ID from URL parameters
+  const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     purpose_id: "",
@@ -19,13 +19,12 @@ const AddTransactionForm = () => {
   });
   const [medicalItems, setMedicalItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
-  const isUpdate = !!id; // Determine if this is an update operation
+  const isUpdate = !!id;
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch medical items and suppliers
         const [medicalItemsResponse, suppliersResponse] = await Promise.all([
           axiosClient.get("/medical-item"),
           axiosClient.get("/supplier"),
@@ -39,7 +38,6 @@ const AddTransactionForm = () => {
           throw new Error(suppliersResponse.data.message);
         setSuppliers(suppliersResponse.data.data || []);
 
-        // Fetch transaction data if ID is present
         if (isUpdate) {
           const transactionResponse = await axiosClient.get(
             `/inventory-transaction/${id}`
@@ -48,12 +46,10 @@ const AddTransactionForm = () => {
             throw new Error(transactionResponse.data.message);
           const transaction = transactionResponse.data.data;
 
-          // Format transaction_date to YYYY-MM-DD for input[type=date]
           const formattedDate = transaction.transaction_date
             ? new Date(transaction.transaction_date).toISOString().split("T")[0]
             : "";
 
-          // Map medical_items to match formData structure
           const formattedMedicalItems = transaction.medical_items.map(
             (item) => ({
               id: item.id,
@@ -93,7 +89,6 @@ const AddTransactionForm = () => {
     setFormData((prev) => {
       const updatedItems = [...prev.medical_items];
       if (name === "id") {
-        // Prevent selecting the same item multiple times
         if (updatedItems.some((item, i) => i !== index && item.id === value)) {
           enqueueSnackbar("Vật tư/thuốc này đã được chọn.", {
             variant: "warning",
@@ -140,7 +135,6 @@ const AddTransactionForm = () => {
         supplier_id: formData.supplier_id || null,
       };
 
-      // Validate required fields
       if (
         !payload.purpose_id ||
         !payload.transaction_date ||
@@ -150,7 +144,6 @@ const AddTransactionForm = () => {
         throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc.");
       }
 
-      // Skip quantity validation for purpose_id 2 or 3
       if (payload.purpose_id !== "2" && payload.purpose_id !== "3") {
         for (const item of payload.medical_items) {
           const medicalItem = medicalItems.find((mi) => mi.id === item.id);
@@ -298,42 +291,48 @@ const AddTransactionForm = () => {
               <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
                 Vật tư/Thuốc
               </label>
-              {formData.medical_items.map((item, index) => (
-                <div key={index} className="flex gap-4 mb-4 items-center">
-                  <select
-                    name="id"
-                    value={item.id}
-                    onChange={(e) => handleMedicalItemChange(e, index)}
-                    className="w-2/3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
-                  >
-                    <option value="">Chọn vật tư/thuốc</option>
-                    {medicalItems.map((mi) => (
-                      <option key={mi.id} value={mi.id}>
-                        {mi.name} ({mi.unit}) - Số lượng hiện tại: {mi.quantity}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="w-1/6">
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={item.quantity}
+              {formData.medical_items.map((item, index) => {
+                const selectedMedicalItem = medicalItems.find(
+                  (mi) => mi.id === item.id
+                );
+                return (
+                  <div key={index} className="flex gap-4 mb-4 items-center">
+                    <select
+                      name="id"
+                      value={item.id}
                       onChange={(e) => handleMedicalItemChange(e, index)}
-                      placeholder="Số lượng"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
-                      min="0"
-                      required
-                    />
+                      className="w-2/3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
+                    >
+                      <option value="">Chọn vật tư/thuốc</option>
+                      {medicalItems.map((mi) => (
+                        <option key={mi.id} value={mi.id}>
+                          {mi.name} ({mi.unit}) - Số lượng hiện tại: {mi.quantity}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="w-1/6">
+                      <input
+                        type="number"
+                        name="quantity"
+                        value={item.quantity}
+                        onChange={(e) => handleMedicalItemChange(e, index)}
+                        placeholder="Số lượng"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
+                        min="0"
+                        max={selectedMedicalItem ? selectedMedicalItem.quantity : undefined}
+                        required
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeMedicalItem(index)}
+                      className="text-red-600 hover:text-red-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeMedicalItem(index)}
-                    className="text-red-600 hover:text-red-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
               <button
                 type="button"
                 onClick={addMedicalItem}

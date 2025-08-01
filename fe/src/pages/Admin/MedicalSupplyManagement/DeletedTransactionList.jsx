@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Loader2, Calendar, Package, Search, Users, Trash2, Undo2 } from "lucide-react";
+import { Loader2, Calendar, Package, Search, Users, Trash2, Undo2, X } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import Modal from "./Modal"; // Adjust the import path based on your project structure
@@ -57,13 +57,13 @@ const DeletedTransactionList = () => {
     setSelectedTransaction(null);
   };
 
-  const openRestoreModal = (id, purpose_title) => {
-    setTransactionToModify({ id, purpose_title });
+  const openRestoreModal = (id, purpose_title, supplier_name) => {
+    setTransactionToModify({ id, purpose_title, supplier_name });
     setIsRestoreModalOpen(true);
   };
 
-  const openPermanentDeleteModal = (id, purpose_title) => {
-    setTransactionToModify({ id, purpose_title });
+  const openPermanentDeleteModal = (id, purpose_title, supplier_name) => {
+    setTransactionToModify({ id, purpose_title, supplier_name });
     setIsPermanentDeleteModalOpen(true);
   };
 
@@ -272,14 +272,14 @@ const DeletedTransactionList = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[25%]">
                             <div className="flex justify-center gap-2">
                               <button
-                                onClick={() => openRestoreModal(transaction.id, transaction.purpose_title)}
+                                onClick={() => openRestoreModal(transaction.id, transaction.purpose_title, transaction.supplier_name)}
                                 className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Undo2 size={14} />
                                 Khôi phục
                               </button>
                               <button
-                                onClick={() => openPermanentDeleteModal(transaction.id, transaction.purpose_title)}
+                                onClick={() => openPermanentDeleteModal(transaction.id, transaction.purpose_title, transaction.supplier_name)}
                                 className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Trash2 size={14} />
@@ -369,7 +369,7 @@ const DeletedTransactionList = () => {
         confirmText="Khôi phục"
         cancelText="Hủy"
       >
-        Bạn có chắc muốn khôi phục giao dịch <strong>{transactionToModify?.purpose_title || "này"}</strong>? Giao dịch sẽ được đưa trở lại danh sách giao dịch.
+        Bạn có chắc muốn khôi phục giao dịch từ <strong>{transactionToModify?.supplier_name || "này"}</strong>? Giao dịch sẽ được đưa trở lại danh sách giao dịch.
       </Modal>
 
       {/* Modal for Permanent Delete Confirmation */}
@@ -384,7 +384,7 @@ const DeletedTransactionList = () => {
         confirmText="Xóa vĩnh viễn"
         cancelText="Hủy"
       >
-        Bạn có chắc muốn xóa vĩnh viễn giao dịch <strong>{transactionToModify?.purpose_title || "này"}</strong>? Hành động này không thể hoàn tác.
+        Bạn có chắc muốn xóa vĩnh viễn giao dịch từ <strong>{transactionToModify?.supplier_name || "này"}</strong>? Hành động này không thể hoàn tác.
       </Modal>
     </div>
   );
