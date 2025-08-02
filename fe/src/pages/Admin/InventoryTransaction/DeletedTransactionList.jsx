@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
-import { Loader2, Calendar, Package, Search, Users, Trash2, Undo2, X } from "lucide-react";
+import React, { use, useEffect, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { Loader2, Calendar, Package, Search, Users, Trash2, Undo2, X, Plus } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
-import Modal from "./Modal"; // Adjust the import path based on your project structure
+import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path based on your project structure
 
 const DeletedTransactionList = () => {
   const [transactions, setTransactions] = useState([]);
@@ -16,6 +16,7 @@ const DeletedTransactionList = () => {
   const [isPermanentDeleteModalOpen, setIsPermanentDeleteModalOpen] = useState(false);
   const [transactionToModify, setTransactionToModify] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -138,60 +139,6 @@ const DeletedTransactionList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex">
       <div className="w-full max-w-6xl mx-auto">
-        {/* Unified Header with Tabs */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 mb-8">
-          <div className="flex flex-col items-center">
-            <div className="w-full flex flex-col items-center border-b border-gray-200 p-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">Thùng rác lưu trữ các giao dịch kho vật tư y tế</h1>
-              <div className="flex gap-2">
-                <NavLink
-                  to="/admin/inventory-transaction"
-                  className={() =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800`
-                  }
-                >
-                  Tất cả giao dịch
-                </NavLink>
-                <NavLink
-                  to="/admin/inventory-transaction/export-list"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800"
-                    }`
-                  }
-                >
-                  Xuất/ Sử dụng/ Tiêu hủy 
-                </NavLink>
-                <NavLink
-                  to="/admin/inventory-transaction/import-list"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800"
-                    }`
-                  }
-                >
-                  Nhập/Mua hàng
-                </NavLink>
-                <NavLink
-                  to="/admin/inventory-transaction/deleted-list"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800"
-                    }`
-                  }
-                >
-                  Giao dịch đã xóa
-                </NavLink>
-              </div>
-            </div>
-          </div>
-        </div>
         {/* Main Content */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 py-8">
@@ -207,6 +154,13 @@ const DeletedTransactionList = () => {
                   />
                   <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 </div>
+                <button
+                  onClick={() => navigate("/admin/inventory-transaction/transaction-form")}
+                  className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
+                >
+                  <Plus className="w-4 h-4" />
+                  Xuất/nhập vật tư
+                </button>
               </div>
             </div>
             <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
