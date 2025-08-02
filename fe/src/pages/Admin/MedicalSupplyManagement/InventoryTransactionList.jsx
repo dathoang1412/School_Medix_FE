@@ -103,20 +103,20 @@ const InventoryTransactionList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-md p-6 max-w-md w-full text-center border border-gray-200">
           <p className="text-red-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
             Thử lại
           </button>
@@ -126,7 +126,7 @@ const InventoryTransactionList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex">
       <div className="w-full max-w-6xl mx-auto">
         {/* Unified Header with Tabs */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 mb-8">
@@ -139,8 +139,8 @@ const InventoryTransactionList = () => {
                   className={({ isActive }) =>
                     `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                       isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800"
                     }`
                   }
                 >
@@ -151,36 +151,36 @@ const InventoryTransactionList = () => {
                   className={({ isActive }) =>
                     `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                       isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800"
                     }`
                   }
                 >
-                  Giao dịch xuất vật tư y tế 
+                  Xuất/ Sử dụng/ Tiêu hủy 
                 </NavLink>
                 <NavLink
                   to="/admin/inventory-transaction/import-list"
                   className={({ isActive }) =>
                     `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                       isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800"
                     }`
                   }
                 >
-                  Giao dịch nhập vật tư y tế
+                  Nhập/ Mua hàng
                 </NavLink>
                 <NavLink
                   to="/admin/inventory-transaction/deleted-list"
                   className={({ isActive }) =>
                     `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                       isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800"
                     }`
                   }
                 >
-                  Các giao dịch đã xóa
+                  Giao dịch đã xóa
                 </NavLink>
               </div>
             </div>
@@ -197,7 +197,7 @@ const InventoryTransactionList = () => {
                     placeholder="Tìm kiếm giao dịch"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm w-full text-gray-700"
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm w-full text-gray-700"
                   />
                   <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 </div>
@@ -205,7 +205,7 @@ const InventoryTransactionList = () => {
                   <select
                     value={selectedPurpose}
                     onChange={(e) => setSelectedPurpose(e.target.value)}
-                    className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-700"
+                    className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-700"
                   >
                     <option value="Tất cả">Tất cả</option>
                     <option value="Sử dụng cho y tế hằng ngày">Sử dụng cho y tế hằng ngày</option>
@@ -219,7 +219,7 @@ const InventoryTransactionList = () => {
                 </div>
                 <button
                   onClick={() => navigate("/admin/inventory-transaction/transaction-form")}
-                  className="cursor-pointer inline-flex items-center gap-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium ml-auto"
+                  className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
                 >
                   <Plus className="w-4 h-4" />
                   Xuất/nhập vật tư
@@ -304,7 +304,7 @@ const InventoryTransactionList = () => {
                               </button>
                               <button
                                 onClick={() => openModal(transaction)}
-                                className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
+                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Search size={14} />
                                 Xem
