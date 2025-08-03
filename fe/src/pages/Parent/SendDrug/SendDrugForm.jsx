@@ -87,7 +87,9 @@ const SendDrugForm = () => {
                 ? requestData.request_items.map((item) => ({
                     name: item.name || "",
                     intake_templates: Array.isArray(item.intake_templates)
-                      ? item.intake_templates
+                      ? item.intake_templates.filter((time) =>
+                          ["MORNING", "MIDDAY", "AFTERNOON"].includes(time)
+                        )
                       : [],
                     dosage_usage: item.dosage_usage || "",
                   }))
@@ -150,26 +152,14 @@ const SendDrugForm = () => {
     setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
   };
 
-  const handleAddIntakeTime = (index) => {
+  const handleIntakeTimeChange = (index, time) => {
     const newRequestItems = [...formData.request_items];
-    newRequestItems[index].intake_templates = [
-      ...newRequestItems[index].intake_templates,
-      "MORNING",
-    ];
-    setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
-  };
-
-  const handleRemoveIntakeTime = (itemIndex, timeIndex) => {
-    const newRequestItems = [...formData.request_items];
-    newRequestItems[itemIndex].intake_templates = newRequestItems[
-      itemIndex
-    ].intake_templates.filter((_, i) => i !== timeIndex);
-    setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
-  };
-
-  const handleIntakeTimeChange = (itemIndex, timeIndex, value) => {
-    const newRequestItems = [...formData.request_items];
-    newRequestItems[itemIndex].intake_templates[timeIndex] = value;
+    const currentTimes = newRequestItems[index].intake_templates;
+    if (currentTimes.includes(time)) {
+      newRequestItems[index].intake_templates = currentTimes.filter((t) => t !== time);
+    } else {
+      newRequestItems[index].intake_templates = [...currentTimes, time];
+    }
     setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
   };
 
@@ -520,7 +510,7 @@ const SendDrugForm = () => {
                       {formData.request_items.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => handleRemoveRequestItem(index)}
+                          onClick={() => handleRequestItemChange(index)}
                           className="text-red-600 hover:text-red-800 cursor-pointer"
                         >
                           <X className="w-4 h-4" />
@@ -563,41 +553,21 @@ const SendDrugForm = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Thời gian uống <span className="text-red-500">*</span>
                         </label>
-                        <div className="space-y-2">
-                          {item.intake_templates.map((time, timeIndex) => (
-                            <div key={timeIndex} className="flex items-center gap-2">
-                              <select
-                                value={time}
-                                onChange={(e) =>
-                                  handleIntakeTimeChange(index, timeIndex, e.target.value)
-                                }
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required
-                              >
-                                <option value="" disabled>
-                                  Chọn thời gian uống
-                                </option>
-                                <option value="MORNING">Sáng</option>
-                                <option value="MIDDAY">Trưa</option>
-                                <option value="AFTERNOON">Chiều</option>
-                              </select>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveIntakeTime(index, timeIndex)}
-                                className="text-red-600 hover:text-red-800 cursor-pointer"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                          {["MORNING", "MIDDAY", "AFTERNOON"].map((time) => (
+                            <label key={time} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={item.intake_templates.includes(time)}
+                                onChange={() => handleIntakeTimeChange(index, time)}
+                                className="h-4 cursor-pointer w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                required={item.intake_templates.length === 0}
+                              />
+                              <span className="text-sm cursor-pointer text-gray-700">
+                                {time === "MORNING" ? "Sáng" : time === "MIDDAY" ? "Trưa" : "Chiều"}
+                              </span>
+                            </label>
                           ))}
-                          <button
-                            type="button"
-                            onClick={() => handleAddIntakeTime(index)}
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Thêm thời gian uống
-                          </button>
                         </div>
                       </div>
                     </div>
