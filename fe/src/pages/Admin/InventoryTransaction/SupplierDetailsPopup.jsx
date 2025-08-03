@@ -6,10 +6,10 @@ const SupplierDetailsPopup = ({ isOpen, onClose, supplier }) => {
 
   // Determine status text and color
   const getStatusDisplay = () => {
-    if (supplier.status === true) {
-      return { text: "Hoạt động", color: "text-green-600" };
-    } else if (supplier.status === false) {
-      return { text: "Không hoạt động", color: "text-red-600" };
+    if (supplier.status === "ACTIVE") {
+      return { text: "Đang hoạt động", color: "text-green-600" };
+    } else if (supplier.status === "INACTIVE") {
+      return { text: "Đã ngừng hoạt động", color: "text-red-600" };
     } else {
       return { text: "Không xác định", color: "text-yellow-600" };
     }
