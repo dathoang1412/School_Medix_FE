@@ -1,9 +1,10 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Loader2, Calendar, Package, Search, Users, Trash2, Undo2, X, Plus } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
-import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path based on your project structure
+import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path
+import SupplierDetailsPopup from "./SupplierDetailsPopup"; // Import the new popup component
 
 const DeletedTransactionList = () => {
   const [transactions, setTransactions] = useState([]);
@@ -15,6 +16,8 @@ const DeletedTransactionList = () => {
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [isPermanentDeleteModalOpen, setIsPermanentDeleteModalOpen] = useState(false);
   const [transactionToModify, setTransactionToModify] = useState(null);
+  const [isSupplierPopupOpen, setIsSupplierPopupOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -104,6 +107,29 @@ const DeletedTransactionList = () => {
       setIsPermanentDeleteModalOpen(false);
       setTransactionToModify(null);
     }
+  };
+
+  const handleSupplierClick = async (supplierName) => {
+    if (!supplierName) {
+      enqueueSnackbar("Không có thông tin nhà cung cấp để hiển thị.", { variant: "warning" });
+      return;
+    }
+
+    try {
+      const response = await axiosClient.get(`/supplierDetail/${encodeURIComponent(supplierName)}`);
+      if (response.data.error) {
+        throw new Error(response.data.message);
+      }
+      setSelectedSupplier(response.data.data);
+      setIsSupplierPopupOpen(true);
+    } catch (err) {
+      enqueueSnackbar(err.message || "Lỗi khi lấy thông tin nhà cung cấp.", { variant: "error" });
+    }
+  };
+
+  const closeSupplierPopup = () => {
+    setIsSupplierPopupOpen(false);
+    setSelectedSupplier(null);
   };
 
   const handleOverlayClick = (e) => {
@@ -221,7 +247,12 @@ const DeletedTransactionList = () => {
                             <span className="text-sm text-gray-600">{transaction.medical_items.length}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
-                            <span className="text-sm text-gray-600">{transaction.supplier_name ? transaction.supplier_name : "Không có"}</span>
+                            <span
+                              className={`text-sm text-gray-600 ${transaction.supplier_name ? "cursor-pointer hover:text-blue-600" : ""}`}
+                              onClick={() => transaction.supplier_name && handleSupplierClick(transaction.supplier_name)}
+                            >
+                              {transaction.supplier_name ? transaction.supplier_name : "Không có"}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[25%]">
                             <div className="flex justify-center gap-2">
@@ -237,7 +268,7 @@ const DeletedTransactionList = () => {
                                 className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Trash2 size={14} />
-                                Xóa 
+                                Xóa
                               </button>
                               <button
                                 onClick={() => openModal(transaction)}
@@ -340,6 +371,13 @@ const DeletedTransactionList = () => {
       >
         Bạn có chắc muốn xóa vĩnh viễn giao dịch từ <strong>{transactionToModify?.supplier_name || "này"}</strong>? Hành động này không thể hoàn tác.
       </Modal>
+
+      {/* Supplier Details Popup */}
+      <SupplierDetailsPopup
+        isOpen={isSupplierPopupOpen}
+        onClose={closeSupplierPopup}
+        supplier={selectedSupplier}
+      />
     </div>
   );
 };
