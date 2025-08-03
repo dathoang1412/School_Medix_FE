@@ -387,10 +387,10 @@ const DailyHealthRecord = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-2">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-8 mb-6">
+        <div className="bg-white border-b border-gray-200 px-3 py-8 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-3xl font-semibold text-gray-900 mb-2">Quản lý y tế hằng ngày</h1>
@@ -533,7 +533,6 @@ const DailyHealthRecord = () => {
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors border-gray-200" style={{ width: '12%' }} onClick={() => handleSort('record_date')}>
                     <div className="flex items-center gap-1 whitespace-nowrap">
-                      <FileText size={14} />
                       <span>Ngày ghi nhận</span>
                       {sortConfig.key === 'record_date' && (
                         <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
