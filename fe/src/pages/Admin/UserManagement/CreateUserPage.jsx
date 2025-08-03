@@ -75,7 +75,7 @@ const CreateUserPage = () => {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate("/admin/user-manage")}
+            onClick={() => navigate(-1)}
             className={`cursor-pointer inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 mb-4 ${
               loading.formSubmit || loading.imageUpload
                 ? "opacity-50 cursor-not-allowed"
