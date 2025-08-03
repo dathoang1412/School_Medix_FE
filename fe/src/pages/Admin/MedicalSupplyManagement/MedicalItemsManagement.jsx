@@ -32,7 +32,7 @@ const MedicalItemsManagement = () => {
               </p>
             </div>
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex w-full">
             <div className="flex rounded-lg border border-gray-300 overflow-hidden">
               <button
                 onClick={() => setActiveTab("MEDICATION")}
@@ -74,7 +74,7 @@ const MedicalItemsManagement = () => {
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto py-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {activeTab === "MEDICATION" ? (
             <MedicineList />
