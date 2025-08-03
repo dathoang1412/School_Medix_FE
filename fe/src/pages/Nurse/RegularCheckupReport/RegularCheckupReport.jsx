@@ -145,7 +145,9 @@ const RegularCheckupReport = () => {
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
     // Validate file types
-    const validFiles = selectedFiles.filter(file => file.type === 'application/pdf');
+    const validFiles = selectedFiles.filter(
+      (file) => file.type === "application/pdf"
+    );
     if (validFiles.length !== selectedFiles.length) {
       enqueueSnackbar("Chỉ chấp nhận tệp PDF!", { variant: "warning" });
     }
@@ -170,16 +172,14 @@ const RegularCheckupReport = () => {
       lungs: record.lungs || "",
       spine: record.spine || "",
       posture: record.posture || "",
-      final_diagnosis: record.final_diagnosis || ""
+      final_diagnosis: record.final_diagnosis || "",
     });
     setFormErrors({});
     setShowUpdateModal(true);
   };
 
   const openSpecialistUpdateModal = (record) => {
-    setSelectedRecord(record
-
-    );
+    setSelectedRecord(record);
     setSpecialistFormData({
       result: record.result || "",
       diagnosis: record.diagnosis || "",
@@ -255,9 +255,12 @@ const RegularCheckupReport = () => {
 
   const handleFormSubmit = async () => {
     if (!validateForm()) {
-      enqueueSnackbar("Vui lòng điền đầy đủ và đúng định dạng các chỉ số bắt buộc!", {
-        variant: "warning",
-      });
+      enqueueSnackbar(
+        "Vui lòng điền đầy đủ và đúng định dạng các chỉ số bắt buộc!",
+        {
+          variant: "warning",
+        }
+      );
       return;
     }
 
@@ -270,20 +273,23 @@ const RegularCheckupReport = () => {
     }));
 
     try {
-      const updateResponse = await axiosClient.patch(`/checkup/${register_id}/record`, payload);
+      const updateResponse = await axiosClient.patch(
+        `/checkup/${register_id}/record`,
+        payload
+      );
       console.log(payload);
       setGeneralHealthList((prev) =>
         prev.map((item) =>
-          item.register_id === register_id
-            ? { ...item, ...payload }
-            : item
+          item.register_id === register_id ? { ...item, ...payload } : item
         )
       );
       enqueueSnackbar("Cập nhật chỉ số sức khỏe thành công!", {
         variant: "success",
       });
 
-      const completeResponse = await axiosClient.patch(`/health-record/${register_id}/done`);
+      const completeResponse = await axiosClient.patch(
+        `/health-record/${register_id}/done`
+      );
       setGeneralHealthList((prev) =>
         prev.map((item) =>
           item.register_id === register_id
@@ -325,7 +331,7 @@ const RegularCheckupReport = () => {
         const formData = new FormData();
         files.forEach((file) => formData.append("files", file));
         const uploadResponse = await axiosClient.post(
-          `register/${register_id}/spe-exam/${spe_exam_id}/pdf-diagnosis-urls`,
+          `upload-diagnosis_url/${register_id}/${spe_exam_id}`,
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -396,18 +402,18 @@ const RegularCheckupReport = () => {
         prev.map((specialist) =>
           specialist.name === activeSubTab
             ? {
-              ...specialist,
-              records: specialist.records.map((record) =>
-                record.register_id === register_id &&
+                ...specialist,
+                records: specialist.records.map((record) =>
+                  record.register_id === register_id &&
                   record.spe_exam_id === spe_exam_id
-                  ? {
-                    ...record,
-                    ...updateResponse.data.data,
-                    status: completeResponse.data.data.status,
-                  }
-                  : record
-              ),
-            }
+                    ? {
+                        ...record,
+                        ...updateResponse.data.data,
+                        status: completeResponse.data.data.status,
+                      }
+                    : record
+                ),
+              }
             : specialist
         )
       );
@@ -582,10 +588,11 @@ const RegularCheckupReport = () => {
                         : openSpecialistUpdateModal(item)
                     }
                     disabled={loading.update[item.register_id] || loading[type]}
-                    className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 rounded-full transition-colors ${loading.update[item.register_id] || loading[type]
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : "bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700"
-                      }`}
+                    className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                      loading.update[item.register_id] || loading[type]
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700"
+                    }`}
                     title={
                       type === "general"
                         ? "Cập nhật hồ sơ sức khỏe"
@@ -662,10 +669,11 @@ const RegularCheckupReport = () => {
             <button
               key={tab}
               onClick={() => setActiveMainTab(tab)}
-              className={`${activeMainTab === tab
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                } cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+              className={`${
+                activeMainTab === tab
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              } cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
               aria-current={activeMainTab === tab ? "page" : undefined}
             >
               {tab}
@@ -684,10 +692,11 @@ const RegularCheckupReport = () => {
               <button
                 key={specialist.name}
                 onClick={() => setActiveSubTab(specialist.name)}
-                className={`${activeSubTab === specialist.name
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } cursor-pointer whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm transition-colors`}
+                className={`${
+                  activeSubTab === specialist.name
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } cursor-pointer whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm transition-colors`}
                 aria-current={
                   activeSubTab === specialist.name ? "page" : undefined
                 }
@@ -776,8 +785,11 @@ const RegularCheckupReport = () => {
                         type={type}
                         value={formData[field]}
                         onChange={(e) => handleInputChange(e, field)}
-                        className={`w-full px-3 py-2 border ${formErrors[field] ? "border-red-500" : "border-gray-300"
-                          } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm`}
+                        className={`w-full px-3 py-2 border ${
+                          formErrors[field]
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm`}
                         placeholder={placeholder}
                         required
                       />
@@ -809,8 +821,11 @@ const RegularCheckupReport = () => {
                           max="10"
                           value={formData[field]}
                           onChange={(e) => handleInputChange(e, field)}
-                          className={`w-full px-3 py-2 border ${formErrors[field] ? "border-red-500" : "border-gray-300"
-                            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm`}
+                          className={`w-full px-3 py-2 border ${
+                            formErrors[field]
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm`}
                           required
                         />
                         {formErrors[field] && (
@@ -842,7 +857,8 @@ const RegularCheckupReport = () => {
                     { field: "posture", label: "Tư thế" },
                   ].map(({ field, label }) => {
                     const isCustomValue = !dropdownOptions.some(
-                      (opt) => opt.value === formData[field] && opt.value !== "other"
+                      (opt) =>
+                        opt.value === formData[field] && opt.value !== "other"
                     );
 
                     return (
@@ -852,7 +868,9 @@ const RegularCheckupReport = () => {
                         </label>
                         <div className="relative">
                           <select
-                            value={isCustomValue ? "other" : formData[field] || ""}
+                            value={
+                              isCustomValue ? "other" : formData[field] || ""
+                            }
                             onChange={(e) => {
                               if (e.target.value === "other") {
                                 handleExamFieldChange(field, "");
@@ -860,8 +878,11 @@ const RegularCheckupReport = () => {
                                 handleExamFieldChange(field, e.target.value);
                               }
                             }}
-                            className={`w-full px-3 py-2 border ${formErrors[field] ? "border-red-500" : "border-gray-300"
-                              } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm appearance-none`}
+                            className={`w-full px-3 py-2 border ${
+                              formErrors[field]
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm appearance-none`}
                           >
                             <option value="">Chọn trạng thái</option>
                             {dropdownOptions.map((option) => (
@@ -876,9 +897,14 @@ const RegularCheckupReport = () => {
                           <input
                             type="text"
                             value={formData[field] || ""}
-                            onChange={(e) => handleExamFieldChange(field, e.target.value)}
-                            className={`mt-2 w-full px-3 py-2 border ${formErrors[field] ? "border-red-500" : "border-gray-300"
-                              } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm`}
+                            onChange={(e) =>
+                              handleExamFieldChange(field, e.target.value)
+                            }
+                            className={`mt-2 w-full px-3 py-2 border ${
+                              formErrors[field]
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm`}
                             placeholder={`Nhập tình trạng ${label.toLowerCase()}`}
                           />
                         )}
@@ -921,10 +947,11 @@ const RegularCheckupReport = () => {
               <button
                 onClick={handleFormSubmit}
                 disabled={loading.update[selectedRecord?.register_id]}
-                className={`px-4 cursor-pointer py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading.update[selectedRecord?.register_id]
-                  ? "opacity-70 cursor-not-allowed"
-                  : ""
-                  }`}
+                className={`px-4 cursor-pointer py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                  loading.update[selectedRecord?.register_id]
+                    ? "opacity-70 cursor-not-allowed"
+                    : ""
+                }`}
               >
                 {loading.update[selectedRecord?.register_id] ? (
                   <span className="flex items-center">
@@ -1010,7 +1037,9 @@ const RegularCheckupReport = () => {
                   </label>
                   <textarea
                     value={specialistFormData.diagnosis}
-                    onChange={(e) => handleSpecialistInputChange(e, "diagnosis")}
+                    onChange={(e) =>
+                      handleSpecialistInputChange(e, "diagnosis")
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                     rows="3"
                     placeholder="Nhập chẩn đoán"
@@ -1050,32 +1079,35 @@ const RegularCheckupReport = () => {
                       Tài liệu PDF đã tải lên
                     </label>
                     <div className="flex space-x-2 flex-wrap">
-                      {specialistFormData.diagnosis_paper_urls.map((url, index) => (
-                        <div key={index} className="relative">
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            PDF {index + 1}
-                          </a>
-                          <button
-                            onClick={() =>
-                              setSpecialistFormData((prev) => ({
-                                ...prev,
-                                diagnosis_paper_urls: prev.diagnosis_paper_urls.filter(
-                                  (_, i) => i !== index
-                                ),
-                              }))
-                            }
-                            className="ml-2 text-red-500 hover:text-red-700"
-                            aria-label="Xóa tài liệu PDF"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ))}
+                      {specialistFormData.diagnosis_paper_urls.map(
+                        (url, index) => (
+                          <div key={index} className="relative">
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              PDF {index + 1}
+                            </a>
+                            <button
+                              onClick={() =>
+                                setSpecialistFormData((prev) => ({
+                                  ...prev,
+                                  diagnosis_paper_urls:
+                                    prev.diagnosis_paper_urls.filter(
+                                      (_, i) => i !== index
+                                    ),
+                                }))
+                              }
+                              className="ml-2 text-red-500 hover:text-red-700"
+                              aria-label="Xóa tài liệu PDF"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 )}
@@ -1099,14 +1131,15 @@ const RegularCheckupReport = () => {
                   loading.update[selectedRecord?.register_id] ||
                   loading.upload[selectedRecord?.register_id]
                 }
-                className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading.update[selectedRecord?.register_id] ||
+                className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                  loading.update[selectedRecord?.register_id] ||
                   loading.upload[selectedRecord?.register_id]
-                  ? "opacity-70 cursor-not-allowed"
-                  : ""
-                  }`}
+                    ? "opacity-70 cursor-not-allowed"
+                    : ""
+                }`}
               >
                 {loading.update[selectedRecord?.register_id] ||
-                  loading.upload[selectedRecord?.register_id] ? (
+                loading.upload[selectedRecord?.register_id] ? (
                   <span className="flex items-center">
                     <svg
                       className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
