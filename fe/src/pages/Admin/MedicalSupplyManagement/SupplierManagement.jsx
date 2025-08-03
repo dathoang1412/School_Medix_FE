@@ -223,7 +223,7 @@ const SupplierManagement = () => {
                               className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200"
                             >
                               <Edit size={14} />
-                              Cập nhật
+                              Sửa
                             </button>
                             <button
                               onClick={() => openDeleteModal(supplier.id, supplier.name)}
