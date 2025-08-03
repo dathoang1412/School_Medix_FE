@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Loader2, Calendar, Package, Search, Plus, Users, Edit, X } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
-import Modal from "./Modal"; // Adjust the import path based on your project structure
+import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path
+import SupplierDetailsPopup from "./SupplierDetailsPopup"; // Adjust the import path
 
-const TransactionImportList = () => {
+const TransactionExportList = () => {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,6 +15,8 @@ const TransactionImportList = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [isSupplierPopupOpen, setIsSupplierPopupOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -21,13 +24,13 @@ const TransactionImportList = () => {
     const fetchTransactions = async () => {
       setLoading(true);
       try {
-        const response = await axiosClient.get("/import-inventory-transaction");
+        const response = await axiosClient.get("/export-inventory-transaction");
         if (response.data.error) throw new Error(response.data.message);
         setTransactions(response.data.data);
         setFilteredTransactions(response.data.data);
       } catch (err) {
-        err && setError("Không thể tải danh sách giao dịch nhập.");
-        enqueueSnackbar("Không thể tải danh sách giao dịch nhập.", {
+        err && setError("Không thể tải danh sách giao dịch xuất.");
+        enqueueSnackbar("Không thể tải danh sách giao dịch xuất.", {
           variant: "error",
         });
       } finally {
@@ -85,15 +88,38 @@ const TransactionImportList = () => {
       setFilteredTransactions((prev) =>
         prev.filter((transaction) => transaction.id !== transactionToDelete.id)
       );
-      enqueueSnackbar("Xóa giao dịch nhập thành công.", { variant: "success" });
+      enqueueSnackbar("Xóa giao dịch xuất thành công.", { variant: "success" });
     } catch (err) {
-      enqueueSnackbar(err.message || "Lỗi khi xóa giao dịch nhập.", {
+      enqueueSnackbar(err.message || "Lỗi khi xóa giao dịch xuất.", {
         variant: "error",
       });
     } finally {
       setIsDeleteModalOpen(false);
       setTransactionToDelete(null);
     }
+  };
+
+  const handleSupplierClick = async (supplierName) => {
+    if (!supplierName) {
+      enqueueSnackbar("Không có thông tin nhà cung cấp để hiển thị.", { variant: "warning" });
+      return;
+    }
+
+    try {
+      const response = await axiosClient.get(`/supplierDetail/${encodeURIComponent(supplierName)}`);
+      if (response.data.error) {
+        throw new Error(response.data.message);
+      }
+      setSelectedSupplier(response.data.data);
+      setIsSupplierPopupOpen(true);
+    } catch (err) {
+      enqueueSnackbar(err.message || "Lỗi khi lấy thông tin nhà cung cấp.", { variant: "error" });
+    }
+  };
+
+  const closeSupplierPopup = () => {
+    setIsSupplierPopupOpen(false);
+    setSelectedSupplier(null);
   };
 
   const handleOverlayClick = (e) => {
@@ -104,20 +130,20 @@ const TransactionImportList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-md p-6 max-w-md w-full text-center border border-gray-200">
           <p className="text-red-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
             Thử lại
           </button>
@@ -127,74 +153,20 @@ const TransactionImportList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex">
       <div className="w-full max-w-6xl mx-auto">
-        {/* Unified Header with Tabs */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 mb-8">
-          <div className="flex flex-col items-center">
-            <div className="w-full flex justify-center border-b border-gray-200">
-              <div className="flex flex-wrap gap-2 p-4">
-                <NavLink
-                  to="/admin/inventory-transaction"
-                  className={() =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800`
-                  }
-                >
-                  Tất cả giao dịch
-                </NavLink>
-                <NavLink
-                  to="/admin/inventory-transaction/export-list"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
-                    }`
-                  }
-                >
-                  Giao dịch xuất
-                </NavLink>
-                <NavLink
-                  to="/admin/inventory-transaction/import-list"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
-                    }`
-                  }
-                >
-                  Giao dịch nhập
-                </NavLink>
-                <NavLink
-                  to="/admin/inventory-transaction/deleted-list"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
-                    }`
-                  }
-                >
-                  Giao dịch đã xóa
-                </NavLink>
-              </div>
-            </div>
-          </div>
-        </div>
         {/* Main Content */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col mb-6">
-              {/* Remove duplicate title here */}
               <div className="flex gap-3 items-center">
                 <div className="relative w-1/2">
                   <input
                     type="text"
-                    placeholder="Tìm kiếm giao dịch nhập"
+                    placeholder="Tìm kiếm giao dịch xuất"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm w-full text-gray-700"
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm w-full text-gray-700"
                   />
                   <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 </div>
@@ -202,7 +174,7 @@ const TransactionImportList = () => {
                   onClick={() =>
                     navigate("/admin/inventory-transaction/transaction-form")
                   }
-                  className="cursor-pointer inline-flex items-center gap-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium ml-auto"
+                  className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
                 >
                   <Plus className="w-4 h-4" />
                   Xuất/nhập vật tư
@@ -252,7 +224,7 @@ const TransactionImportList = () => {
                             className="mx-auto text-gray-400 mb-4"
                           />
                           <p className="text-gray-500 text-lg">
-                            Không có giao dịch nhập
+                            Không có giao dịch xuất
                           </p>
                           <p className="text-gray-400 text-sm mt-2">
                             Hãy kiểm tra lại hoặc thêm giao dịch mới
@@ -283,10 +255,13 @@ const TransactionImportList = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
-                            <span className="text-sm text-gray-600">
+                            <span
+                              className={`text-sm text-gray-600 ${transaction.supplier_name ? "cursor-pointer hover:text-blue-600" : ""}`}
+                              onClick={() => transaction.supplier_name && handleSupplierClick(transaction.supplier_name)}
+                            >
                               {transaction.supplier_name
                                 ? transaction.supplier_name
-                                : "Đơn nhập"}
+                                : "Đơn xuất"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[20%]">
@@ -317,7 +292,7 @@ const TransactionImportList = () => {
                               </button>
                               <button
                                 onClick={() => openModal(transaction)}
-                                className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
+                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Search size={14} />
                                 Xem
@@ -344,7 +319,7 @@ const TransactionImportList = () => {
           <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-lg font-semibold text-gray-800">
-                Chi tiết giao dịch nhập
+                Chi tiết giao dịch xuất
               </h4>
               <button
                 onClick={closeModal}
@@ -371,7 +346,7 @@ const TransactionImportList = () => {
                   </div>
                   <div>
                     <span className="font-medium">Nhà cung cấp:</span>{" "}
-                    {selectedTransaction.supplier_name || "Đơn nhập"}
+                    {selectedTransaction.supplier_name || "Đơn xuất"}
                   </div>
                 </div>
               </div>
@@ -416,17 +391,24 @@ const TransactionImportList = () => {
           setIsDeleteModalOpen(false);
           setTransactionToDelete(null);
         }}
-        title="Xác nhận xóa giao dịch nhập"
+        title="Xác nhận xóa giao dịch xuất"
         onConfirm={handleDelete}
         confirmText="Xóa"
         cancelText="Hủy"
       >
-        Bạn có chắc muốn xóa giao dịch nhập từ{" "}
-        <strong>{transactionToDelete?.supplier_name|| "này"}</strong>? Hành
+        Bạn có chắc muốn xóa giao dịch xuất{" "}
+        <strong>{transactionToDelete?.purpose_title || "này"}</strong>? Hành
         động này không thể hoàn tác.
       </Modal>
+
+      {/* Supplier Details Popup */}
+      <SupplierDetailsPopup
+        isOpen={isSupplierPopupOpen}
+        onClose={closeSupplierPopup}
+        supplier={selectedSupplier}
+      />
     </div>
   );
 };
 
-export default React.memo(TransactionImportList);
+export default React.memo(TransactionExportList);

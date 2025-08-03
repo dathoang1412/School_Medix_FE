@@ -66,11 +66,16 @@ import AddMedicalSupplyForm from "../pages/Admin/MedicalSupplyManagement/AddMedi
 import MedicalItemsManagement from "../pages/Admin/MedicalSupplyManagement/MedicalItemsManagement";
 import AddSupplierForm from "../pages/Admin/MedicalSupplyManagement/AddSupplierForm";
 import AddMedicationForm from "../pages/Admin/MedicalSupplyManagement/AddMedicationForm";
-import AddTransactionForm from "../pages/Admin/MedicalSupplyManagement/AddTransactionForm";
-import InventoryTransactionList from "../pages/Admin/MedicalSupplyManagement/InventoryTransactionList";
-import TransactionExportList from "../pages/Admin/MedicalSupplyManagement/TransactionExportList";
-import TransactionImportList from "../pages/Admin/MedicalSupplyManagement/TransactionImportList";
-import DeletedTransactionList from "../pages/Admin/MedicalSupplyManagement/DeletedTransactionList";
+import AddTransactionForm from "../pages/Admin/InventoryTransaction/AddTransactionForm";
+import InventoryTransactionList from "../pages/Admin/InventoryTransaction/InventoryTransactionList";
+import TransactionExportList from "../pages/Admin/InventoryTransaction/TransactionExportList";
+import TransactionImportList from "../pages/Admin/InventoryTransaction/TransactionImportList";
+import DeletedTransactionList from "../pages/Admin/InventoryTransaction/DeletedTransactionList";
+import InventoryTransactionManager from "../pages/Admin/InventoryTransaction/InventoryTransactionManager";
+import HomeManagement from "../pages/Admin/UserManagement/HomeManagement";
+import CreateNewHome from "../pages/Admin/UserManagement/CreateNewHome";
+import EditHome from "../pages/Admin/UserManagement/EditHome";
+import DrugRequestDetail from "../pages/Admin&Nurse/SendDrugManagement/DrugRequestDetail";
 
 const routes = createBrowserRouter([
   {
@@ -148,6 +153,18 @@ const routes = createBrowserRouter([
             element: <UserManagement />,
           },
           {
+            path: "home-manage",
+            element: <HomeManagement />,
+          },
+          {
+            path: "create-home",
+            element: <CreateNewHome />,
+          },
+          {
+            path: "edit-home/:id",
+            element: <EditHome />,
+          },
+          {
             path: "medical-items-management",
             element: <MedicalItemsManagement />,
           },
@@ -177,19 +194,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "inventory-transaction",
-            element: <InventoryTransactionList />,
-          },
-          {
-            path: "inventory-transaction/export-list",
-            element: <TransactionExportList />,
-          },
-          {
-            path: "inventory-transaction/import-list",
-            element: <TransactionImportList />,
-          },
-          {
-            path: "inventory-transaction/deleted-list",
-            element: <DeletedTransactionList />,
+            element: <InventoryTransactionManager />,
           },
           {
             path: "inventory-transaction/transaction-form",
@@ -319,6 +324,10 @@ const routes = createBrowserRouter([
           {
             path: ":student_id/vaccine-info/:record_id",
             element: <VaccinationHistoryDetail />,
+          },
+          {
+            path: "drug-request/:id",
+            element: <DrugRequestDetail/>
           }
         ],
       },
@@ -416,6 +425,10 @@ const routes = createBrowserRouter([
             path: "send-drug-form/:request_id",
             element: <SendDrugForm />,
           },
+          {
+            path: "drug-request/:id",
+            element: <DrugRequestDetail/>
+          }
         ],
       },
     ],
@@ -524,6 +537,10 @@ const routes = createBrowserRouter([
             path: "vaccine/:id/students",
             element: <VaccineForStudentEligible />,
           },
+          {
+            path: "drug-request/:id",
+            element: <DrugRequestDetail/>
+          }
         ],
       },
     ],

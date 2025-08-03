@@ -3,6 +3,9 @@ import {
   MdOutlineSchool,
   MdOutlineMedicalInformation,
   MdMedicationLiquid,
+  MdHome,
+  MdHomeFilled,
+  MdHomeMax,
 } from "react-icons/md";
 import { RiHome9Line } from "react-icons/ri";
 import { BsTextIndentLeft } from "react-icons/bs";
@@ -95,8 +98,20 @@ const Sidebar = () => {
             },
             {
               title: "Quản lý người dùng",
-              path: "user-manage",
               icon: <User2Icon />,
+              hasDropdown: true,
+              children: [
+                {
+                  title: "Người dùng",
+                  path: "user-manage",
+                  icon: <User2Icon />,
+                },
+                {
+                  title: "Hộ gia đình",
+                  path: "home-manage",
+                  icon: <MdHome />,
+                },
+              ],
             },
             {
               title: "Quản lý Blog",

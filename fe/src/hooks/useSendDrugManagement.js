@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../config/axiosClient";
-import { getUser } from "../service/authService";
-import { getChildClass } from "../service/childenService";
 import {
   handleAccept,
   handleRefuse,
@@ -9,57 +7,66 @@ import {
   handleReceive,
   handleDone,
 } from "../utils/statusUpdateHandler";
-import { useSnackbar } from "notistack";
+import { enqueueSnackbar } from "notistack";
 
 const useSendDrugManagement = () => {
   const [drugs, setDrugs] = useState([]);
   const [filteredDrugs, setFilteredDrugs] = useState([]);
+  const [medicationSchedules, setMedicationSchedules] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("Tất cả trạng thái");
+  const [statusFilter, setStatusFilter] = useState("");
   const [error, setError] = useState(null);
-  const [classMap, setClassMap] = useState({}); // Lưu thông tin lớp theo class_id
-  const { enqueueSnackbar } = useSnackbar();
 
+
+  const fetchDrugHistory = async () => {
+    try {
+      setError(null);
+      const res = await axiosClient.get("/send-drug-request");
+      console.log("Drug Requests:", res.data.data); // Debug
+      const drugData = res.data.data || [];
+      setDrugs(drugData);
+      setFilteredDrugs(drugData);
+    } catch (error) {
+      console.error("Error fetching drug history:", error);
+      setError(
+        error.response?.data?.message ||
+          "Không thể tải danh sách đơn thuốc. Vui lòng thử lại sau."
+      );
+    }
+  };
   useEffect(() => {
-    const fetchDrugHistory = async () => {
-      try {
-        setError(null);
-
-        // Gọi endpoint lấy tất cả drug requests
-        const res = await axiosClient.get("/send-drug-request");
-        console.log("Drug request list: ", res.data.data);
-        const drugData = res.data.data || [];
-
-        // Lấy danh sách class_id duy nhất từ drug requests
-        const classIds = [...new Set(drugData.map((drug) => drug.student?.class_id).filter(Boolean))];
-
-        // Lấy thông tin lớp học cho các class_id
-        const classPromises = classIds.map((class_id) => getChildClass(class_id));
-        const classResults = await Promise.all(classPromises);
-        const classMap = classResults.reduce((acc, classInfo, index) => {
-          if (classInfo) acc[classIds[index]] = classInfo;
-          return acc;
-        }, {});
-
-        setClassMap(classMap);
-        setDrugs(drugData);
-        setFilteredDrugs(drugData);
-      } catch (error) {
-        console.error("Error fetching drug history or classes:", error);
-        setError("Không thể tải danh sách đơn thuốc. Vui lòng thử lại sau.");
-      }
-    };
     fetchDrugHistory();
+  }, []);
+  const fetchMedicationSchedules = async () => {
+    try {
+      const res = await axiosClient.get("/medication-schedule-days");
+      console.log("Medication Schedules:", res.data.data); // Debug
+      setMedicationSchedules(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching medication schedules:", error);
+      setError(
+        error.response?.data?.message ||
+          "Không thể tải lịch uống thuốc. Vui lòng thử lại sau."
+      );
+    }
+  };
+  useEffect(() => {
+    fetchMedicationSchedules();
   }, []);
 
   useEffect(() => {
     let result = [...drugs];
-    if (statusFilter !== "Tất cả trạng thái") {
+    if (statusFilter) {
       result = result.filter((drug) => drug.status === statusFilter);
     }
     if (searchTerm) {
-      result = result.filter((drug) =>
-        drug.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase())
+      result = result.filter(
+        (drug) =>
+          drug.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          String(drug.student_id).includes(searchTerm) ||
+          drug.request_items.some((item) =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase())
+          )
       );
     }
     setFilteredDrugs(result);
@@ -73,13 +80,21 @@ const useSendDrugManagement = () => {
     setStatusFilter(e.target.value);
   };
 
+  const refresh = async () => {
+    setError(null);
+    await fetchDrugHistory();
+    await fetchMedicationSchedules()
+  };
+
+
   return {
+    refresh,
     drugs,
     filteredDrugs,
+    medicationSchedules,
     searchTerm,
     statusFilter,
     error,
-    classMap, // Trả về classMap thay vì childClass
     handleSearch,
     handleFilterChange,
     handleAccept: (id) =>
@@ -91,8 +106,49 @@ const useSendDrugManagement = () => {
     handleReceive: (id) =>
       handleReceive(id, setError, setDrugs, setFilteredDrugs, () => {}, enqueueSnackbar),
     handleDone: (id) =>
-      handleDone(id, setError, setDrugs, setFilteredDrugs, () => {}, enqueueSnackbar),
+      handleDone(id, setError, setDrugs, setFilteredDrugs, () => {}, enqueueSnackbar)
   };
 };
 
 export default useSendDrugManagement;
+
+export const handleTick = async (scheduleId, intakeTime, note) => {
+  try {
+    const res = await axiosClient.patch(`/medication-schedule/${scheduleId}/tick`, {
+      intake_time: intakeTime || new Date().toISOString(),
+      note: note || "",
+    });
+    enqueueSnackbar("Đã đánh dấu uống thuốc.", { variant: "success" });
+    setMedicationSchedules((prev) =>
+      prev.map((schedule) =>
+        schedule.id === scheduleId
+          ? { ...schedule, is_taken: true, intake_time: intakeTime, note }
+          : schedule
+      )
+    );
+  } catch (error) {
+    console.error("Error ticking medication schedule:", error);
+    const errorMessage =
+      error.response?.data?.message || "Không thể đánh dấu uống thuốc.";
+    enqueueSnackbar(errorMessage, { variant: "error" });
+  }
+};
+
+export const handleUntick = async (scheduleId) => {
+  try {
+    const res = await axiosClient.patch(`/medication-schedule/${scheduleId}/untick`);
+    enqueueSnackbar("Đã bỏ đánh dấu uống thuốc.", { variant: "success" });
+    setMedicationSchedules((prev) =>
+      prev.map((schedule) =>
+        schedule.id === scheduleId
+          ? { ...schedule, is_taken: false, intake_time: null, note: null }
+          : schedule
+      )
+    );
+  } catch (error) {
+    console.error("Error unticking medication schedule:", error);
+    const errorMessage =
+      error.response?.data?.message || "Không thể bỏ đánh dấu uống thuốc.";
+    enqueueSnackbar(errorMessage, { variant: "error" });
+  }
+};

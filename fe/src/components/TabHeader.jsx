@@ -3,7 +3,8 @@ import { useContext, useMemo, useState } from "react";
 import { ChildContext } from "../layouts/ParentLayout";
 
 const TabHeader = () => {
-  const { children, selectedChild, handleSelectChild } = useContext(ChildContext);
+  const { children, selectedChild, handleSelectChild } =
+    useContext(ChildContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -12,15 +13,21 @@ const TabHeader = () => {
     () => [
       {
         label: "Hồ sơ",
-        to: selectedChild ? `/parent/edit/${selectedChild.id}/health-profile` : "#",
+        to: selectedChild
+          ? `/parent/edit/${selectedChild.id}/health-profile`
+          : "#",
       },
       {
         label: "Tiêm chủng",
-        to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-info` : "#",
+        to: selectedChild
+          ? `/parent/edit/${selectedChild.id}/vaccine-info`
+          : "#",
       },
       {
         label: "Sức khỏe định kỳ",
-        to: selectedChild ? `/parent/edit/${selectedChild.id}/regular-checkup` : "#",
+        to: selectedChild
+          ? `/parent/edit/${selectedChild.id}/regular-checkup`
+          : "#",
       },
       {
         label: "Gửi thuốc",
@@ -28,27 +35,39 @@ const TabHeader = () => {
       },
       {
         label: "Sức khỏe hằng ngày",
-        to: selectedChild ? `/parent/edit/${selectedChild.id}/health-record` : "#",
+        to: selectedChild
+          ? `/parent/edit/${selectedChild.id}/health-record`
+          : "#",
       },
       {
         label: "Hồ sơ bệnh",
-        to: selectedChild ? `/parent/edit/${selectedChild.id}/health-record-list` : "#",
+        to: selectedChild
+          ? `/parent/edit/${selectedChild.id}/health-record-list`
+          : "#",
       },
       {
         label: "Khai báo",
-        to: selectedChild ? `/parent/edit/${selectedChild.id}/history-declare-record` : "#",
+        to: selectedChild
+          ? `/parent/edit/${selectedChild.id}/history-declare-record`
+          : "#",
         subMenu: [
           {
             label: "Lịch sử khai báo ",
-            to: selectedChild ? `/parent/edit/${selectedChild.id}/history-declare-record` : "#",
+            to: selectedChild
+              ? `/parent/edit/${selectedChild.id}/history-declare-record`
+              : "#",
           },
           {
             label: "Khai báo tiêm chủng",
-            to: selectedChild ? `/parent/edit/${selectedChild.id}/vaccine-declare` : "#",
+            to: selectedChild
+              ? `/parent/edit/${selectedChild.id}/vaccine-declare`
+              : "#",
           },
           {
             label: "Khai báo bệnh",
-            to: selectedChild ? `/parent/edit/${selectedChild.id}/disease-declare` : "#",
+            to: selectedChild
+              ? `/parent/edit/${selectedChild.id}/disease-declare`
+              : "#",
           },
         ],
       },
