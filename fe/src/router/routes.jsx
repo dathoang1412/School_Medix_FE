@@ -72,6 +72,7 @@ import TransactionExportList from "../pages/Admin/InventoryTransaction/Transacti
 import TransactionImportList from "../pages/Admin/InventoryTransaction/TransactionImportList";
 import DeletedTransactionList from "../pages/Admin/InventoryTransaction/DeletedTransactionList";
 import InventoryTransactionManager from "../pages/Admin/InventoryTransaction/InventoryTransactionManager";
+import DrugRequestDetail from "../pages/Admin&Nurse/SendDrugManagement/DrugRequestDetail";
 
 const routes = createBrowserRouter([
   {
@@ -308,6 +309,10 @@ const routes = createBrowserRouter([
           {
             path: ":student_id/vaccine-info/:record_id",
             element: <VaccinationHistoryDetail />,
+          },
+          {
+            path: "drug-request/:id",
+            element: <DrugRequestDetail/>
           }
         ],
       },
@@ -405,6 +410,10 @@ const routes = createBrowserRouter([
             path: "send-drug-form/:request_id",
             element: <SendDrugForm />,
           },
+          {
+            path: "drug-request/:id",
+            element: <DrugRequestDetail/>
+          }
         ],
       },
     ],
@@ -513,6 +522,10 @@ const routes = createBrowserRouter([
             path: "vaccine/:id/students",
             element: <VaccineForStudentEligible />,
           },
+          {
+            path: "drug-request/:id",
+            element: <DrugRequestDetail/>
+          }
         ],
       },
     ],
