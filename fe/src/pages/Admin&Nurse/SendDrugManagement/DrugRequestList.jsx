@@ -14,6 +14,32 @@ import {
 import { useNavigate } from "react-router-dom";
 import { getUserRole } from "../../../service/authService";
 import { useSnackbar } from "notistack";
+import Modal from "react-modal";
+
+// Set app element for react-modal (for accessibility)
+Modal.setAppElement("#root");
+
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    maxWidth: "500px",
+    width: "90%",
+    borderRadius: "0.5rem",
+    border: "none",
+    boxShadow:
+      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    padding: "0",
+  },
+  overlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 1000,
+  },
+};
 
 const DrugRequestList = ({
   drugs = [],
@@ -27,6 +53,11 @@ const DrugRequestList = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sortedDrugs, setSortedDrugs] = useState([]);
+  const [doneModalIsOpen, setDoneModalIsOpen] = useState(false);
+  const [cancelModalIsOpen, setCancelModalIsOpen] = useState(false);
+  const [drugToDone, setDrugToDone] = useState(null);
+  const [drugToCancel, setDrugToCancel] = useState(null);
+  const [loadingActions, setLoadingActions] = useState({});
   const recordsPerPage = 10;
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -103,6 +134,30 @@ const DrugRequestList = ({
     }
   };
 
+  const openDoneModal = (drugId) => {
+    console.log("Opening done modal for drugId:", drugId);
+    setDrugToDone(drugId);
+    setDoneModalIsOpen(true);
+  };
+
+  const closeDoneModal = () => {
+    console.log("Closing done modal");
+    setDoneModalIsOpen(false);
+    setDrugToDone(null);
+  };
+
+  const openCancelModal = (drugId) => {
+    console.log("Opening cancel modal for drugId:", drugId);
+    setDrugToCancel(drugId);
+    setCancelModalIsOpen(true);
+  };
+
+  const closeCancelModal = () => {
+    console.log("Closing cancel modal");
+    setCancelModalIsOpen(false);
+    setDrugToCancel(null);
+  };
+
   const handleAction = async (action, id, actionName) => {
     if (userRole !== "admin" && userRole !== "nurse") {
       enqueueSnackbar(
@@ -113,7 +168,12 @@ const DrugRequestList = ({
       );
       return;
     }
-    setLoading(true);
+    if (!id) {
+      enqueueSnackbar("Không tìm thấy ID đơn thuốc", { variant: "error" });
+      return;
+    }
+
+    setLoadingActions((prev) => ({ ...prev, [id]: true }));
     setError(null);
     try {
       await action(id);
@@ -125,13 +185,21 @@ const DrugRequestList = ({
       });
       setError(`Lỗi khi ${actionName.toLowerCase()}. Vui lòng thử lại.`);
     } finally {
-      setLoading(false);
+      setLoadingActions((prev) => ({ ...prev, [id]: false }));
+      if (actionName === "Đánh dấu hoàn thành") {
+        closeDoneModal();
+      } else if (actionName === "Hủy đơn") {
+        closeCancelModal();
+      }
     }
   };
 
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = sortedDrugs.slice(indexOfFirstRecord, indexOfLastRecord);
+  const currentRecords = sortedDrugs.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
   const totalPages = Math.ceil(sortedDrugs.length / recordsPerPage);
 
   useEffect(() => {
@@ -144,6 +212,114 @@ const DrugRequestList = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Done Confirmation Modal */}
+      <Modal
+        isOpen={doneModalIsOpen}
+        onRequestClose={closeDoneModal}
+        style={customStyles}
+        contentLabel="Xác nhận hoàn thành đơn thuốc"
+      >
+        <div className="bg-white rounded-lg">
+          <div className="p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+              <h3 className="text-lg font-semibold text-slate-900">
+                Xác nhận hoàn thành đơn thuốc
+              </h3>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Bạn có chắc chắn muốn đánh dấu đơn thuốc này là hoàn thành không?
+              Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() =>
+                  handleAction(handleDone, drugToDone, "Đánh dấu hoàn thành")
+                }
+                disabled={loadingActions[drugToDone]}
+                className={`px-4 py-2 cursor-pointer bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 ${
+                  loadingActions[drugToDone]
+                    ? "opacity-75 cursor-not-allowed"
+                    : ""
+                }`}
+              >
+                {loadingActions[drugToDone] ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Xác nhận hoàn thành</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={closeDoneModal}
+                className="px-4 py-2 border cursor-pointer border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Hủy bỏ
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Cancel Confirmation Modal */}
+      <Modal
+        isOpen={cancelModalIsOpen}
+        onRequestClose={closeCancelModal}
+        style={customStyles}
+        contentLabel="Xác nhận hủy đơn thuốc"
+      >
+        <div className="bg-white rounded-lg">
+          <div className="p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <XCircle className="h-6 w-6 text-red-600" />
+              <h3 className="text-lg font-semibold text-slate-900">
+                Xác nhận hủy đơn thuốc
+              </h3>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Bạn có chắc chắn muốn hủy đơn thuốc này không? Hành động này không
+              thể hoàn tác.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeCancelModal}
+                className="px-4 py-2 border cursor-pointer border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() =>
+                  handleAction(handleCancel, drugToCancel, "Hủy đơn")
+                }
+                disabled={loadingActions[drugToCancel]}
+                className={`px-4 py-2 cursor-pointer bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 ${
+                  loadingActions[drugToCancel]
+                    ? "opacity-75 cursor-not-allowed"
+                    : ""
+                }`}
+              >
+                {loadingActions[drugToCancel] ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4" />
+                    <span>Xác nhận hủy</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
           {loading ? (
@@ -259,17 +435,16 @@ const DrugRequestList = ({
                         {drug.status === "RECEIVED" &&
                           (userRole === "admin" || userRole === "nurse") && (
                             <button
-                              onClick={() =>
-                                handleAction(
-                                  handleDone,
-                                  drug.id,
-                                  "Đánh dấu hoàn thành"
-                                )
-                              }
+                              onClick={() => openDoneModal(drug.id)}
                               className="text-blue-600 cursor-pointer hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
                               title="Đánh dấu hoàn thành"
+                              disabled={loadingActions[drug.id]}
                             >
-                              <CheckCircle size={18} />
+                              {loadingActions[drug.id] ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <CheckCircle size={18} />
+                              )}
                             </button>
                           )}
                         {drug.status === "DONE" && (
@@ -287,7 +462,11 @@ const DrugRequestList = ({
                           <button
                             className="cursor-pointer hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors duration-200"
                             onClick={() => handleView(drug)}
-                            title={drug.status === "RECEIVED" ? "Chỉnh sửa" : "Xem chi tiết"}
+                            title={
+                              drug.status === "RECEIVED"
+                                ? "Chỉnh sửa"
+                                : "Xem chi tiết"
+                            }
                           >
                             {drug.status === "RECEIVED" ? (
                               <PenBox className="text-green-600" size={18} />
@@ -308,8 +487,13 @@ const DrugRequestList = ({
                                     )
                                   }
                                   title="Chấp nhận"
+                                  disabled={loadingActions[drug.id]}
                                 >
-                                  <CheckCircle size={18} />
+                                  {loadingActions[drug.id] ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <CheckCircle size={18} />
+                                  )}
                                 </button>
                                 <button
                                   className="text-red-600 cursor-pointer hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200"
@@ -321,8 +505,13 @@ const DrugRequestList = ({
                                     )
                                   }
                                   title="Từ chối"
+                                  disabled={loadingActions[drug.id]}
                                 >
-                                  <Trash2 size={18} />
+                                  {loadingActions[drug.id] ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 size={18} />
+                                  )}
                                 </button>
                               </>
                             )}
@@ -338,8 +527,13 @@ const DrugRequestList = ({
                                   )
                                 }
                                 title="Nhận thuốc"
+                                disabled={loadingActions[drug.id]}
                               >
-                                <TicketCheck size={18} />
+                                {loadingActions[drug.id] ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <TicketCheck size={18} />
+                                )}
                               </button>
                             )}
                           {![
@@ -351,12 +545,15 @@ const DrugRequestList = ({
                             (userRole === "admin" || userRole === "nurse") && (
                               <button
                                 className="text-gray-600 cursor-pointer hover:text-gray-800 p-1 rounded hover:bg-gray-50 transition-colors duration-200"
-                                onClick={() =>
-                                  handleAction(handleCancel, drug.id, "Hủy đơn")
-                                }
+                                onClick={() => openCancelModal(drug.id)}
                                 title="Hủy đơn"
+                                disabled={loadingActions[drug.id]}
                               >
-                                <XCircle size={18} />
+                                {loadingActions[drug.id] ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <XCircle size={18} />
+                                )}
                               </button>
                             )}
                         </div>
@@ -377,8 +574,9 @@ const DrugRequestList = ({
               <span className="font-medium">
                 {Math.min(indexOfLastRecord, sortedDrugs.length)}
               </span>{" "}
-              trong tổng số <span className="font-medium">{sortedDrugs.length}</span>{" "}
-              đơn thuốc
+              trong tổng số{" "}
+              <span className="font-medium">{sortedDrugs.length}</span> đơn
+              thuốc
             </div>
             <div className="flex items-center gap-2">
               <button
