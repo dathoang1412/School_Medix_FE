@@ -72,6 +72,9 @@ import TransactionExportList from "../pages/Admin/InventoryTransaction/Transacti
 import TransactionImportList from "../pages/Admin/InventoryTransaction/TransactionImportList";
 import DeletedTransactionList from "../pages/Admin/InventoryTransaction/DeletedTransactionList";
 import InventoryTransactionManager from "../pages/Admin/InventoryTransaction/InventoryTransactionManager";
+import HomeManagement from "../pages/Admin/UserManagement/HomeManagement";
+import CreateNewHome from "../pages/Admin/UserManagement/CreateNewHome";
+import EditHome from "../pages/Admin/UserManagement/EditHome";
 
 const routes = createBrowserRouter([
   {
@@ -147,6 +150,18 @@ const routes = createBrowserRouter([
           {
             path: "user-manage",
             element: <UserManagement />,
+          },
+          {
+            path: "home-manage",
+            element: <HomeManagement />,
+          },
+          {
+            path: "create-home",
+            element: <CreateNewHome />,
+          },
+          {
+            path: "edit-home/:id",
+            element: <EditHome />,
           },
           {
             path: "medical-items-management",
@@ -308,7 +323,7 @@ const routes = createBrowserRouter([
           {
             path: ":student_id/vaccine-info/:record_id",
             element: <VaccinationHistoryDetail />,
-          }
+          },
         ],
       },
     ],
