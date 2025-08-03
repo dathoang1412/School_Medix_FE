@@ -19,41 +19,63 @@ const SupplierDetailsPopup = ({ isOpen, onClose, supplier }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h4 className="text-lg font-semibold text-gray-800">Chi tiết nhà cung cấp</h4>
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 w-1/2 overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h4 className="text-xl font-bold text-gray-900">Chi tiết nhà cung cấp</h4>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+            aria-label="Đóng"
           >
-            <X size={20} className="text-gray-600" />
+            <X size={24} className="text-gray-500 hover:text-gray-700" />
           </button>
         </div>
-        <div className="space-y-4">
-          <div>
-            <h5 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Thông tin nhà cung cấp</h5>
-            <div className="mt-2 space-y-2 text-sm text-gray-600">
-              <div><span className="font-bold mr-2">Tên:</span> {supplier.name || "Không có"}</div>
-              <div><span className="font-bold mr-2">Mô tả:</span> {supplier.description || "Không có"}</div>
-              <div><span className="font-bold mr-2">Địa chỉ:</span> {supplier.address || "Không có"}</div>
-              <div><span className="font-bold mr-2">Số điện thoại:</span> {supplier.phone || "Không có"}</div>
-              <div><span className="font-bold mr-2">Email:</span> {supplier.email || "Không có"}</div>
-              <div><span className="font-bold mr-2">Người liên hệ:</span> {supplier.contact_person || "Không có"}</div>
-              <div><span className="font-bold mr-2">Mã số thuế:</span> {supplier.tax_code || "Không có"}</div>
-              <div>
-                <span className="font-bold mr-2">Trạng thái:</span>{" "}
-                <span className={status.color}>{status.text}</span>
+        <div className="space-y-6">
+          <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+            <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Thông tin nhà cung cấp</h5>
+            <dl className="space-y-3 text-sm text-gray-700">
+              <div className="flex items-start">
+                <dt className="font-medium text-gray-900 w-1/3">Tên:</dt>
+                <dd className="w-2/3">{supplier.name || "Không có"}</dd>
               </div>
-            </div>
+              <div className="flex items-start">
+                <dt className="font-medium text-gray-900 w-1/3">Mô tả:</dt>
+                <dd className="w-2/3">{supplier.description || "Không có"}</dd>
+              </div>
+              <div className="flex items-start">
+                <dt className="font-medium text-gray-900 w-1/3">Địa chỉ:</dt>
+                <dd className="w-2/3">{supplier.address || "Không có"}</dd>
+              </div>
+              <div className="flex items-start">
+                <dt className="font-medium text-gray-900 w-1/3">Số điện thoại:</dt>
+                <dd className="w-2/3">{supplier.phone || "Không có"}</dd>
+              </div>
+              <div className="flex items-start">
+                <dt className="font-medium text-gray-900 w-1/3">Email:</dt>
+                <dd className="w-2/3">{supplier.email || "Không có"}</dd>
+              </div>
+              <div className="flex items-start">
+                <dt className="font-medium text-gray-900 w-1/3">Người liên hệ:</dt>
+                <dd className="w-2/3">{supplier.contact_person || "Không có"}</dd>
+              </div>
+              <div className="flex items-start">
+                <dt className="font-medium text-gray-900 w-1/3">Mã số thuế:</dt>
+                <dd className="w-2/3">{supplier.tax_code || "Không có"}</dd>
+              </div>
+              <div className="flex items-start">
+                <dt className="font-medium text-gray-900 w-1/3">Trạng thái:</dt>
+                <dd className={`w-2/3 font-medium ${status.color}`}>{status.text}</dd>
+              </div>
+            </dl>
           </div>
         </div>
-        <div className="mt-6 flex justify-end">
+        <div className="mt-8 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+            className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Đóng
           </button>
