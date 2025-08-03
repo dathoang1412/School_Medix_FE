@@ -66,11 +66,12 @@ import AddMedicalSupplyForm from "../pages/Admin/MedicalSupplyManagement/AddMedi
 import MedicalItemsManagement from "../pages/Admin/MedicalSupplyManagement/MedicalItemsManagement";
 import AddSupplierForm from "../pages/Admin/MedicalSupplyManagement/AddSupplierForm";
 import AddMedicationForm from "../pages/Admin/MedicalSupplyManagement/AddMedicationForm";
-import AddTransactionForm from "../pages/Admin/MedicalSupplyManagement/AddTransactionForm";
-import InventoryTransactionList from "../pages/Admin/MedicalSupplyManagement/InventoryTransactionList";
-import TransactionExportList from "../pages/Admin/MedicalSupplyManagement/TransactionExportList";
-import TransactionImportList from "../pages/Admin/MedicalSupplyManagement/TransactionImportList";
-import DeletedTransactionList from "../pages/Admin/MedicalSupplyManagement/DeletedTransactionList";
+import AddTransactionForm from "../pages/Admin/InventoryTransaction/AddTransactionForm";
+import InventoryTransactionList from "../pages/Admin/InventoryTransaction/InventoryTransactionList";
+import TransactionExportList from "../pages/Admin/InventoryTransaction/TransactionExportList";
+import TransactionImportList from "../pages/Admin/InventoryTransaction/TransactionImportList";
+import DeletedTransactionList from "../pages/Admin/InventoryTransaction/DeletedTransactionList";
+import InventoryTransactionManager from "../pages/Admin/InventoryTransaction/InventoryTransactionManager";
 
 const routes = createBrowserRouter([
   {
@@ -177,19 +178,7 @@ const routes = createBrowserRouter([
           },
           {
             path: "inventory-transaction",
-            element: <InventoryTransactionList />,
-          },
-          {
-            path: "inventory-transaction/export-list",
-            element: <TransactionExportList />,
-          },
-          {
-            path: "inventory-transaction/import-list",
-            element: <TransactionImportList />,
-          },
-          {
-            path: "inventory-transaction/deleted-list",
-            element: <DeletedTransactionList />,
+            element: <InventoryTransactionManager />,
           },
           {
             path: "inventory-transaction/transaction-form",

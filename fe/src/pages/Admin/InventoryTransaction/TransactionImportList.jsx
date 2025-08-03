@@ -3,7 +3,7 @@ import { useNavigate, NavLink } from "react-router-dom";
 import { Loader2, Calendar, Package, Search, Plus, Users, Edit, X } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
-import Modal from "./Modal"; // Adjust the import path based on your project structure
+import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path based on your project structure
 
 const TransactionImportList = () => {
   const [transactions, setTransactions] = useState([]);
@@ -104,20 +104,20 @@ const TransactionImportList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-md p-6 max-w-md w-full text-center border border-gray-200">
           <p className="text-red-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
             Thử lại
           </button>
@@ -127,61 +127,8 @@ const TransactionImportList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex">
       <div className="w-full max-w-6xl mx-auto">
-        {/* Unified Header with Tabs */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 mb-8">
-          <div className="flex flex-col items-center">
-            <div className="w-full flex justify-center border-b border-gray-200">
-              <div className="flex flex-wrap gap-2 p-4">
-                <NavLink
-                  to="/admin/inventory-transaction"
-                  className={() =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800`
-                  }
-                >
-                  Tất cả giao dịch
-                </NavLink>
-                <NavLink
-                  to="/admin/inventory-transaction/export-list"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
-                    }`
-                  }
-                >
-                  Giao dịch xuất
-                </NavLink>
-                <NavLink
-                  to="/admin/inventory-transaction/import-list"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
-                    }`
-                  }
-                >
-                  Giao dịch nhập
-                </NavLink>
-                <NavLink
-                  to="/admin/inventory-transaction/deleted-list"
-                  className={({ isActive }) =>
-                    `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                      isActive
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800"
-                    }`
-                  }
-                >
-                  Giao dịch đã xóa
-                </NavLink>
-              </div>
-            </div>
-          </div>
-        </div>
         {/* Main Content */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 py-8">
@@ -194,7 +141,7 @@ const TransactionImportList = () => {
                     placeholder="Tìm kiếm giao dịch nhập"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm w-full text-gray-700"
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm w-full text-gray-700"
                   />
                   <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 </div>
@@ -202,7 +149,7 @@ const TransactionImportList = () => {
                   onClick={() =>
                     navigate("/admin/inventory-transaction/transaction-form")
                   }
-                  className="cursor-pointer inline-flex items-center gap-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium ml-auto"
+                  className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
                 >
                   <Plus className="w-4 h-4" />
                   Xuất/nhập vật tư
@@ -317,7 +264,7 @@ const TransactionImportList = () => {
                               </button>
                               <button
                                 onClick={() => openModal(transaction)}
-                                className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
+                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Search size={14} />
                                 Xem
