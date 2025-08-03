@@ -4,6 +4,19 @@ import { X } from "lucide-react";
 const SupplierDetailsPopup = ({ isOpen, onClose, supplier }) => {
   if (!isOpen || !supplier) return null;
 
+  // Determine status text and color
+  const getStatusDisplay = () => {
+    if (supplier.status === true) {
+      return { text: "Hoạt động", color: "text-green-600" };
+    } else if (supplier.status === false) {
+      return { text: "Không hoạt động", color: "text-red-600" };
+    } else {
+      return { text: "Không xác định", color: "text-yellow-600" };
+    }
+  };
+
+  const status = getStatusDisplay();
+
   return (
     <div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center"
@@ -32,7 +45,7 @@ const SupplierDetailsPopup = ({ isOpen, onClose, supplier }) => {
               <div><span className="font-bold mr-2">Mã số thuế:</span> {supplier.tax_code || "Không có"}</div>
               <div>
                 <span className="font-bold mr-2">Trạng thái:</span>{" "}
-                {supplier.status ? "Hoạt động" : "Không hoạt động"}
+                <span className={status.color}>{status.text}</span>
               </div>
             </div>
           </div>
