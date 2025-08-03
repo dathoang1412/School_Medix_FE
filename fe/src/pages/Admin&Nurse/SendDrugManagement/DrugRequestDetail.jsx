@@ -12,6 +12,7 @@ import {
   Eye,
   RefreshCw,
   Clock,
+  MessageSquare,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
@@ -30,6 +31,7 @@ const DrugRequestDetail = () => {
   const [actionLoading, setActionLoading] = useState({});
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [refreshLoading, setRefreshLoading] = useState(false);
+  const [commentModal, setCommentModal] = useState(null); // New state for comment modal
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -46,9 +48,7 @@ const DrugRequestDetail = () => {
       );
       enqueueSnackbar(
         error.response?.data?.message || "Không thể tải thông tin đơn thuốc.",
-        {
-          variant: "error",
-        }
+        { variant: "error" }
       );
     } finally {
       setLoading(false);
@@ -104,6 +104,7 @@ const DrugRequestDetail = () => {
 
   const handleRefresh = async () => {
     setRefreshLoading(true);
+    setCommentModal(null);
     await fetchDrugRequest();
   };
 
@@ -181,9 +182,7 @@ const DrugRequestDetail = () => {
     if (userRole !== "admin" && userRole !== "nurse") {
       enqueueSnackbar(
         "Chỉ admin hoặc nurse mới có quyền cập nhật trạng thái uống thuốc.",
-        {
-          variant: "error",
-        }
+        { variant: "error" }
       );
       return;
     }
@@ -197,57 +196,110 @@ const DrugRequestDetail = () => {
     if (isTaken === group.is_taken) {
       enqueueSnackbar(
         `Buổi này đã được ${isTaken ? "đánh dấu" : "bỏ đánh dấu"}.`,
-        {
-          variant: "warning",
-        }
+        { variant: "warning" }
       );
       return;
     }
 
+    if (isTaken) {
+      // Show comment modal for ticking
+      setCommentModal({ time, date, groupIndex, group });
+    } else {
+      setActionLoading((prev) => ({
+        ...prev,
+        [date + time + groupIndex]: true,
+      }));
+      try {
+        const medicationIds = group.medications.map(
+          (med) => med.medication_schedule_id
+        );
+        const promises = medicationIds.map((id) =>
+          axiosClient.patch(`/medication-schedule/${id}/untick`, {})
+        );
+        const responses = await Promise.all(promises);
+
+        if (responses.every((res) => res.status === 200)) {
+          setSchedules((prev) => {
+            const updated = { ...prev };
+            updated[date][time][groupIndex] = {
+              ...group,
+              is_taken: false,
+              note: "",
+            };
+            return updated;
+          });
+          enqueueSnackbar("Bỏ đánh dấu uống thuốc thành công!", {
+            variant: "success",
+          });
+        } else {
+          throw new Error("Yêu cầu không hợp lệ");
+        }
+      } catch (error) {
+        enqueueSnackbar(
+          error.response?.data?.message || "Lỗi khi cập nhật trạng thái.",
+          { variant: "error" }
+        );
+      } finally {
+        setActionLoading((prev) => ({
+          ...prev,
+          [date + time + groupIndex]: false,
+        }));
+      }
+    }
+  };
+
+  const handleCommentSubmit = async (
+    time,
+    date,
+    groupIndex,
+    group,
+    comment
+  ) => {
     setActionLoading((prev) => ({ ...prev, [date + time + groupIndex]: true }));
     try {
       const medicationIds = group.medications.map(
         (med) => med.medication_schedule_id
       );
-      const endpoint = isTaken
-        ? `/medication-schedule/${medicationIds[0]}/tick`
-        : `/medication-schedule/${medicationIds[0]}/untick`;
-      const payload = isTaken
-        ? { intake_time: new Date().toISOString(), note: "" }
-        : {};
       const promises = medicationIds.map((id) =>
-        axiosClient.patch(endpoint.replace(medicationIds[0], id), payload)
+        axiosClient.patch(`/medication-schedule/${id}/tick`, {
+          intake_time: new Date().toISOString(),
+          note: comment || "",
+        })
       );
       const responses = await Promise.all(promises);
 
       if (responses.every((res) => res.status === 200)) {
         setSchedules((prev) => {
           const updated = { ...prev };
-          updated[date][time][groupIndex] = { ...group, is_taken: isTaken };
+          updated[date][time][groupIndex] = {
+            ...group,
+            is_taken: true,
+            note: comment || "",
+          };
           return updated;
         });
-        enqueueSnackbar(
-          isTaken
-            ? "Đánh dấu uống thuốc thành công!"
-            : "Bỏ đánh dấu uống thuốc thành công!",
-          { variant: "success" }
-        );
+        enqueueSnackbar("Đánh dấu uống thuốc thành công!", {
+          variant: "success",
+        });
       } else {
         throw new Error("Yêu cầu không hợp lệ");
       }
     } catch (error) {
       enqueueSnackbar(
         error.response?.data?.message || "Lỗi khi cập nhật trạng thái.",
-        {
-          variant: "error",
-        }
+        { variant: "error" }
       );
     } finally {
       setActionLoading((prev) => ({
         ...prev,
         [date + time + groupIndex]: false,
       }));
+      setCommentModal(null);
     }
+  };
+
+  const handleViewComment = (time, date, groupIndex, note) => {
+    setCommentModal({ time, date, groupIndex, note, isViewOnly: true });
   };
 
   if (loading)
@@ -339,7 +391,7 @@ const DrugRequestDetail = () => {
                             key={date}
                             className={`p-2 sm:p-3 text-left font-medium ${
                               date === today
-                                ? "bg-blue-200 font-semibold"
+                                ? "bg-blue-50 font-semibold"
                                 : date > today
                                 ? "opacity-50"
                                 : ""
@@ -373,19 +425,22 @@ const DrugRequestDetail = () => {
                                     key={group.request_id}
                                     className="flex items-center gap-2"
                                   >
-                                    <button
-                                      onClick={() =>
-                                        setSelectedGroup({
-                                          date,
-                                          time,
-                                          groupIndex,
-                                          medications: group.medications,
-                                        })
-                                      }
-                                      className="text-blue-600 cursor-pointer hover:text-blue-800"
-                                    >
-                                      <Eye size={14} />
-                                    </button>
+                                    {(userRole === "admin" ||
+                                      userRole === "nurse") && (
+                                      <button
+                                        onClick={() =>
+                                          setSelectedGroup({
+                                            date,
+                                            time,
+                                            groupIndex,
+                                            medications: group.medications,
+                                          })
+                                        }
+                                        className="text-blue-600 cursor-pointer hover:text-blue-800"
+                                      >
+                                        <Eye size={14} />
+                                      </button>
+                                    )}
                                     {date > today ? (
                                       <Clock
                                         size={14}
@@ -393,19 +448,36 @@ const DrugRequestDetail = () => {
                                       />
                                     ) : date === today ? (
                                       userRole === "parent" ? (
-                                        group.is_taken ? (
-                                          <CheckSquare
-                                            size={14}
-                                            className="text-green-600"
-                                          />
-                                        ) : (
-                                          <X
-                                            size={14}
-                                            className="text-red-600"
-                                          />
-                                        )
+                                        <div className="flex items-center gap-2">
+                                          {group.is_taken ? (
+                                            <CheckSquare
+                                              size={14}
+                                              className="text-green-600"
+                                            />
+                                          ) : (
+                                            <X
+                                              size={14}
+                                              className="text-red-600"
+                                            />
+                                          )}
+                                          {group.note && (
+                                            <button
+                                              onClick={() =>
+                                                handleViewComment(
+                                                  time,
+                                                  date,
+                                                  groupIndex,
+                                                  group.note
+                                                )
+                                              }
+                                              className="text-gray-600 cursor-pointer hover:text-gray-800"
+                                            >
+                                              <MessageSquare size={14} />
+                                            </button>
+                                          )}
+                                        </div>
                                       ) : (
-                                        <>
+                                        <div className="flex items-center gap-2">
                                           <input
                                             type="checkbox"
                                             checked={group.is_taken}
@@ -437,15 +509,52 @@ const DrugRequestDetail = () => {
                                           ] && (
                                             <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
                                           )}
-                                        </>
+                                          {group.note && (
+                                            <button
+                                              onClick={() =>
+                                                handleViewComment(
+                                                  time,
+                                                  date,
+                                                  groupIndex,
+                                                  group.note
+                                                )
+                                              }
+                                              className="text-gray-600 cursor-pointer hover:text-gray-800"
+                                            >
+                                              <MessageSquare size={14} />
+                                            </button>
+                                          )}
+                                        </div>
                                       )
-                                    ) : group.is_taken ? (
-                                      <CheckSquare
-                                        size={14}
-                                        className="text-green-600"
-                                      />
                                     ) : (
-                                      <X size={14} className="text-red-600" />
+                                      <div className="flex items-center gap-2">
+                                        {group.is_taken ? (
+                                          <CheckSquare
+                                            size={14}
+                                            className="text-green-600"
+                                          />
+                                        ) : (
+                                          <X
+                                            size={14}
+                                            className="text-red-600"
+                                          />
+                                        )}
+                                        {group.note && (
+                                          <button
+                                            onClick={() =>
+                                              handleViewComment(
+                                                time,
+                                                date,
+                                                groupIndex,
+                                                group.note
+                                              )
+                                            }
+                                            className="text-gray-600 cursor-pointer hover:text-gray-800"
+                                          >
+                                            <MessageSquare size={14} />
+                                          </button>
+                                        )}
+                                      </div>
                                     )}
                                   </div>
                                 ))}
@@ -460,54 +569,112 @@ const DrugRequestDetail = () => {
             </div>
           )}
 
-          {selectedGroup && (
+          {(selectedGroup || commentModal) && (
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
               <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden">
                 <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-200">
                   <div>
-                    <h2 className="text-sm sm:text-base font-semibold text-gray-900">
-                      Danh sách thuốc
-                    </h2>
-                    <p className="text-xs text-gray-500">
-                      {formatDate(selectedGroup.date)} -{" "}
-                      {selectedGroup.time === "MORNING"
-                        ? "Sáng"
-                        : selectedGroup.time === "MIDDAY"
-                        ? "Trưa"
-                        : "Chiều"}
-                    </p>
+                    {selectedGroup ? (
+                      <>
+                        <h2 className="text-sm sm:text-base font-semibold text-gray-900">
+                          Danh sách thuốc
+                        </h2>
+                        <p className="text-xs text-gray-500">
+                          {formatDate(selectedGroup.date)} -{" "}
+                          {selectedGroup.time === "MORNING"
+                            ? "Sáng"
+                            : selectedGroup.time === "MIDDAY"
+                            ? "Trưa"
+                            : "Chiều"}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h2 className="text-sm sm:text-base font-semibold text-gray-900">
+                          {commentModal.isViewOnly
+                            ? "Xem ghi chú"
+                            : "Thêm ghi chú"}
+                        </h2>
+                        <p className="text-xs text-gray-500">
+                          {formatDate(commentModal.date)} -{" "}
+                          {commentModal.time === "MORNING"
+                            ? "Sáng"
+                            : commentModal.time === "MIDDAY"
+                            ? "Trưa"
+                            : "Chiều"}
+                        </p>
+                      </>
+                    )}
                   </div>
                   <button
-                    onClick={() => setSelectedGroup(null)}
+                    onClick={() => {
+                      setSelectedGroup(null);
+                      setCommentModal(null);
+                    }}
                     className="text-gray-400 cursor-pointer hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
                   >
                     <X size={16} />
                   </button>
                 </div>
                 <div className="p-3 sm:p-4 max-h-[60vh] overflow-y-auto">
-                  <ul className="space-y-2">
-                    {selectedGroup.medications.map((med) => (
-                      <li
-                        key={med.medication_schedule_id}
-                        className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200"
-                      >
-                        <span className="font-medium text-gray-900">
-                          {med.item_name}
-                        </span>
-                        <span className="text-gray-600 ml-1">
-                          {med.dosage_usage}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  {selectedGroup ? (
+                    <ul className="space-y-2">
+                      {selectedGroup.medications.map((med) => (
+                        <li
+                          key={med.medication_schedule_id}
+                          className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200"
+                        >
+                          <span className="font-medium text-gray-900">
+                            {med.item_name}
+                          </span>
+                          <span className="text-gray-600 ml-1">
+                            {med.dosage_usage}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : commentModal.isViewOnly ? (
+                    <p className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200">
+                      {commentModal.note || "Không có ghi chú"}
+                    </p>
+                  ) : (
+                    <div>
+                      <textarea
+                        placeholder="Nhập ghi chú..."
+                        defaultValue=""
+                        onChange={(e) => (commentModal.note = e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows={4}
+                      />
+                    </div>
+                  )}
                 </div>
-                <div className="p-3 sm:p-4 border-t border-gray-200 flex justify-end">
+                <div className="p-3 sm:p-4 border-t border-gray-200 flex justify-end gap-2">
                   <button
-                    onClick={() => setSelectedGroup(null)}
+                    onClick={() => {
+                      setSelectedGroup(null);
+                      setCommentModal(null);
+                    }}
                     className="px-3 cursor-pointer py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-xs sm:text-sm"
                   >
-                    Đóng
+                    {commentModal && !commentModal.isViewOnly ? "Hủy" : "Đóng"}
                   </button>
+                  {commentModal && !commentModal.isViewOnly && (
+                    <button
+                      onClick={() =>
+                        handleCommentSubmit(
+                          commentModal.time,
+                          commentModal.date,
+                          commentModal.groupIndex,
+                          commentModal.group,
+                          commentModal.note || ""
+                        )
+                      }
+                      className="px-3 cursor-pointer py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs sm:text-sm"
+                    >
+                      Gửi
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

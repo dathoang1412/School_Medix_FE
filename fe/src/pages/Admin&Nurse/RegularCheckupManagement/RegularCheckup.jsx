@@ -31,6 +31,27 @@ import {
 // Set app element for react-modal (for accessibility)
 Modal.setAppElement("#root");
 
+export const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    maxWidth: "500px",
+    width: "90%",
+    borderRadius: "0.5rem",
+    border: "none",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    padding: "0",
+  },
+  overlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 1000,
+  },
+};
+
 const RegularCheckup = () => {
   const [campaignList, setCampaignList] = useState([]);
   const [expandedItems, setExpandedItems] = useState({});
@@ -45,27 +66,7 @@ const RegularCheckup = () => {
   const [campaignToSend, setCampaignToSend] = useState(null);
   const navigate = useNavigate();
 
-  // Modal styles
-  const customStyles = {
-    content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      marginRight: "-50%",
-      transform: "translate(-50%, -50%)",
-      maxWidth: "500px",
-      width: "90%",
-      borderRadius: "0.5rem",
-      border: "none",
-      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-      padding: "0",
-    },
-    overlay: {
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      zIndex: 1000,
-    },
-  };
+  // Modal style
 
   const fetchCampaigns = useCallback(async () => {
     try {

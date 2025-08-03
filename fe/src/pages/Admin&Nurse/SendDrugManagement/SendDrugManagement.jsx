@@ -52,10 +52,10 @@ const SendDrugManagement = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2">
-                Quản lý Đơn Thuốc
+                Quản lý Dặn Thuốc
               </h1>
               <p className="text-sm text-gray-600">
-                Theo dõi và quản lý đơn thuốc của học sinh
+                Theo dõi và quản lý đơn dặn thuốc thuốc của học sinh
               </p>
             </div>
             <div className="flex items-center gap-4 sm:gap-6">
@@ -109,7 +109,7 @@ const SendDrugManagement = () => {
                     : "bg-white text-gray-700 hover:bg-gray-100"
                 }`}
               >
-                <Pill className="w-4 h-4" /> Quản lý đơn thuốc
+                <Pill className="w-4 h-4" /> Quản lý dặn thuốc
               </button>
             </div>
             <div className="flex gap-3 items-center">
