@@ -15,6 +15,7 @@ import {
   Stethoscope,
   Loader2,
   Send,
+  ArrowUpDown,
 } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
@@ -63,6 +64,9 @@ const UserInfo = ({ user, role, isDetailModal = false }) => (
         <p>
           <b>Lớp:</b> {user.class_name}
         </p>
+        <p>
+          <b>Khối:</b> {user.grade_name}
+        </p>
         {isDetailModal && (
           <>
             <h3 className="font-medium mt-4">Phụ huynh:</h3>
@@ -104,7 +108,12 @@ const UserManagement = () => {
     activeTab: "admin",
     searchTerm: "",
     emailConfirmedFilter: "",
+    sortOrder: "", // "" (none), "asc", "desc"
+    selectedGrade: "", // Selected grade_id
+    selectedClass: "", // Selected class_id
     users: { admin: [], nurse: [], parent: [], student: [] },
+    grades: [],
+    classes: [],
     loading: false,
     isRefreshing: false,
     showDeleteModal: false,
@@ -147,12 +156,14 @@ const UserManagement = () => {
   const fetchUsers = useCallback(async () => {
     updateState({ loading: true, isRefreshing: true });
     try {
-      const [adminRes, nurseRes, parentRes, studentRes] = await Promise.all([
-        axiosClient.get("/admin"),
-        axiosClient.get("/nurse"),
-        axiosClient.get("/parent"),
-        axiosClient.get("/student"),
-      ]);
+      const [adminRes, nurseRes, parentRes, studentRes, gradeRes] =
+        await Promise.all([
+          axiosClient.get("/admin"),
+          axiosClient.get("/nurse"),
+          axiosClient.get("/parent"),
+          axiosClient.get("/student"),
+          axiosClient.get("/grade"),
+        ]);
       updateState({
         users: {
           admin: adminRes.data.data,
@@ -160,6 +171,8 @@ const UserManagement = () => {
           parent: parentRes.data.data,
           student: studentRes.data.data,
         },
+        grades: gradeRes.data.data,
+        classes: [],
         selectedUsers: [],
       });
     } catch (error) {
@@ -172,9 +185,39 @@ const UserManagement = () => {
     }
   }, []);
 
+  const fetchClasses = useCallback(async (gradeId) => {
+    if (!gradeId) {
+      updateState({ classes: [], selectedClass: "" });
+      return;
+    }
+    try {
+      const response = await axiosClient.get(`/grade/${gradeId}/class`);
+      updateState({
+        classes: response.data.data.classes,
+        selectedClass: "",
+      });
+    } catch (error) {
+      enqueueSnackbar(
+        `Lỗi tải danh sách lớp: ${
+          error.response?.data?.message || error.message
+        }`,
+        { variant: "error" }
+      );
+      updateState({ classes: [], selectedClass: "" });
+    }
+  }, []);
+
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  useEffect(() => {
+    if (state.activeTab === "student" && state.selectedGrade) {
+      fetchClasses(state.selectedGrade);
+    } else {
+      updateState({ classes: [], selectedClass: "" });
+    }
+  }, [state.activeTab, state.selectedGrade, fetchClasses]);
 
   const applyFilters = (users) =>
     users.filter((user) => {
@@ -185,10 +228,31 @@ const UserManagement = () => {
       const matchesEmailConfirmed =
         state.emailConfirmedFilter === "" ||
         String(user.email_confirmed) === state.emailConfirmedFilter;
-      return matchesSearch && matchesEmailConfirmed;
+      const matchesGrade =
+        state.activeTab !== "student" ||
+        !state.selectedGrade ||
+        String(user.grade_id) === String(state.selectedGrade);
+      const matchesClass =
+        state.activeTab !== "student" ||
+        !state.selectedClass ||
+        String(user.class_id) === String(state.selectedClass);
+      return (
+        matchesSearch && matchesEmailConfirmed && matchesGrade && matchesClass
+      );
     });
 
-  const filteredUsers = applyFilters(state.users[state.activeTab] || []);
+  const sortUsers = (users) => {
+    if (!state.sortOrder) return users;
+    return [...users].sort((a, b) => {
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
+      return state.sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+  };
+
+  const filteredUsers = sortUsers(
+    applyFilters(state.users[state.activeTab] || [])
+  );
 
   const handleCheckboxChange = (user) => {
     updateState({
@@ -213,8 +277,6 @@ const UserManagement = () => {
       const response = await axiosClient.post("/send-invites", {
         users: selected_users,
       });
-
-      console.log(response);
       enqueueSnackbar(response.data.message || "Đã gửi lời mời!", {
         variant: "success",
       });
@@ -285,9 +347,19 @@ const UserManagement = () => {
       dob: user.dob,
       isMale: user.isMale ? "Nam" : "Nữ",
       address: user.address,
+      created_at: new Date(user.created_at).toLocaleString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       email_confirmed: user.email_confirmed ? "Đã xác thực" : "Chưa xác thực",
       ...(state.activeTab === "student" && {
+        class_id: user.class_id,
         class_name: user.class_name,
+        grade_id: user.grade_id,
+        grade_name: user.grade_name,
         year_of_enrollment: user.year_of_enrollment,
       }),
     }));
@@ -382,6 +454,13 @@ const UserManagement = () => {
 
   const handleRefresh = () => {
     fetchUsers();
+    updateState({ selectedGrade: "", selectedClass: "", sortOrder: "" });
+  };
+
+  const handleSortByCreatedAt = () => {
+    updateState({
+      sortOrder: state.sortOrder === "asc" ? "desc" : "asc",
+    });
   };
 
   const renderTableHeader = () => {
@@ -396,7 +475,8 @@ const UserManagement = () => {
         : state.activeTab === "student"
         ? [{ label: "Lớp", width: "w-28" }]
         : []),
-      { label: "Mời tham gia gần nhất", width: "w-20" },
+      { label: "Tạo lúc", width: "w-28" },
+      { label: "Mời gần nhất", width: "w-20" },
       { label: "Trạng thái", width: "w-28" },
       { label: "Hành động", width: "w-1/5" },
     ];
@@ -409,7 +489,22 @@ const UserManagement = () => {
               key={header.label}
               className={`${header.width} p-2 text-left whitespace-nowrap`}
             >
-              {header.label}
+              {header.label === "Tạo lúc" ? (
+                <button
+                  onClick={handleSortByCreatedAt}
+                  className="flex items-center gap-1"
+                >
+                  {header.label}
+                  <ArrowUpDown
+                    size={14}
+                    className={
+                      state.sortOrder ? "text-blue-600" : "text-gray-400"
+                    }
+                  />
+                </button>
+              ) : (
+                header.label
+              )}
             </th>
           ))}
         </tr>
@@ -442,10 +537,19 @@ const UserManagement = () => {
         <td className="p-2 whitespace-nowrap">{user.students?.length || 0}</td>
       )}
       {state.activeTab === "student" && (
-        <>
-          <td className="p-2 whitespace-nowrap">{user.class_name}</td>
-        </>
+        <td className="p-2 whitespace-nowrap">{user.class_name}</td>
       )}
+      <td className="p-2 whitespace-nowrap">
+        {user.created_at
+          ? new Date(user.created_at).toLocaleString("vi-VN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "—"}
+      </td>
       <td className="p-2 whitespace-nowrap">
         {user.last_invitation_at
           ? new Date(user.last_invitation_at).toLocaleString("vi-VN", {
@@ -517,9 +621,7 @@ const UserManagement = () => {
           >
             <Download size={14} /> Xuất CSV
           </button>
-          <label
-            className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer text-sm"
-          >
+          <label className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer text-sm">
             <Upload size={14} /> Nhập CSV
             <input
               type="file"
@@ -572,7 +674,14 @@ const UserManagement = () => {
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => updateState({ activeTab: tab.key })}
+              onClick={() =>
+                updateState({
+                  activeTab: tab.key,
+                  selectedGrade: "",
+                  selectedClass: "",
+                  sortOrder: "",
+                })
+              }
               className={`p-3 bg-white border rounded-lg text-left cursor-pointer ${
                 state.activeTab === tab.key
                   ? "border-blue-500 bg-blue-50"
@@ -596,16 +705,15 @@ const UserManagement = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
-            <p className="text-sm text-gray-600">Tổng số</p>
-            <p className="text-lg font-semibold text-gray-800">
-              {filteredUsers.length}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+          <div className="bg-white p-2 rounded-md border border-gray-200">
+            <p className="text-base font-semibold">
+              Tổng số: {filteredUsers.length}
             </p>
           </div>
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
-            <p className="text-sm text-gray-600">Đã xác thực</p>
-            <p className="text-lg font-semibold text-gray-800">
+          <div className="bg-white p-2 rounded-md border border-gray-200">
+            <p className="text-base font-semibold">
+              Đã xác thực:{" "}
               {filteredUsers.filter((user) => user.email_confirmed).length}
             </p>
           </div>
@@ -637,6 +745,45 @@ const UserManagement = () => {
                 <option value="false">Chưa xác thực</option>
               </select>
             </div>
+            {state.activeTab === "student" && (
+              <>
+                <div className="relative w-full sm:w-48">
+                  <Filter className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
+                  <select
+                    value={state.selectedGrade}
+                    onChange={(e) =>
+                      updateState({ selectedGrade: e.target.value })
+                    }
+                    className="w-full pl-10 pr-4 py-1.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  >
+                    <option value="">Tất cả khối</option>
+                    {state.grades.map((grade) => (
+                      <option key={grade.id} value={grade.id}>
+                        {grade.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="relative w-full sm:w-48">
+                  <Filter className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
+                  <select
+                    value={state.selectedClass}
+                    onChange={(e) =>
+                      updateState({ selectedClass: e.target.value })
+                    }
+                    className="w-full pl-10 pr-4 py-1.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    disabled={!state.selectedGrade}
+                  >
+                    <option value="">Tất cả lớp</option>
+                    {state.classes.map((cls) => (
+                      <option key={cls.class_id} value={cls.class_id}>
+                        {cls.class_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
             {state.selectedUsers.length > 0 && (
               <button
                 onClick={handleSendInvites}
@@ -678,7 +825,10 @@ const UserManagement = () => {
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p>
-                {state.searchTerm || state.emailConfirmedFilter
+                {state.searchTerm ||
+                state.emailConfirmedFilter ||
+                state.selectedGrade ||
+                state.selectedClass
                   ? "Không tìm thấy kết quả"
                   : `Chưa có ${activeTabData.label.toLowerCase()}`}
               </p>

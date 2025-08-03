@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Loader2, Calendar, Package, Search, Plus, Users, Edit, X } from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
-import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path based on your project structure
+import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path
+import SupplierDetailsPopup from "./SupplierDetailsPopup"; // Adjust the import path
 
 const TransactionImportList = () => {
   const [transactions, setTransactions] = useState([]);
@@ -14,6 +15,8 @@ const TransactionImportList = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [isSupplierPopupOpen, setIsSupplierPopupOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -96,6 +99,29 @@ const TransactionImportList = () => {
     }
   };
 
+  const handleSupplierClick = async (supplierName) => {
+    if (!supplierName) {
+      enqueueSnackbar("Không có thông tin nhà cung cấp để hiển thị.", { variant: "warning" });
+      return;
+    }
+
+    try {
+      const response = await axiosClient.get(`/supplierDetail/${encodeURIComponent(supplierName)}`);
+      if (response.data.error) {
+        throw new Error(response.data.message);
+      }
+      setSelectedSupplier(response.data.data);
+      setIsSupplierPopupOpen(true);
+    } catch (err) {
+      enqueueSnackbar(err.message || "Lỗi khi lấy thông tin nhà cung cấp.", { variant: "error" });
+    }
+  };
+
+  const closeSupplierPopup = () => {
+    setIsSupplierPopupOpen(false);
+    setSelectedSupplier(null);
+  };
+
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       closeModal();
@@ -133,7 +159,6 @@ const TransactionImportList = () => {
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col mb-6">
-              {/* Remove duplicate title here */}
               <div className="flex gap-3 items-center">
                 <div className="relative w-1/2">
                   <input
@@ -230,7 +255,10 @@ const TransactionImportList = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
-                            <span className="text-sm text-gray-600">
+                            <span
+                              className={`text-sm text-gray-600 ${transaction.supplier_name ? "cursor-pointer hover:text-blue-600" : ""}`}
+                              onClick={() => transaction.supplier_name && handleSupplierClick(transaction.supplier_name)}
+                            >
                               {transaction.supplier_name
                                 ? transaction.supplier_name
                                 : "Đơn nhập"}
@@ -369,9 +397,16 @@ const TransactionImportList = () => {
         cancelText="Hủy"
       >
         Bạn có chắc muốn xóa giao dịch nhập từ{" "}
-        <strong>{transactionToDelete?.supplier_name|| "này"}</strong>? Hành
+        <strong>{transactionToDelete?.supplier_name || "này"}</strong>? Hành
         động này không thể hoàn tác.
       </Modal>
+
+      {/* Supplier Details Popup */}
+      <SupplierDetailsPopup
+        isOpen={isSupplierPopupOpen}
+        onClose={closeSupplierPopup}
+        supplier={selectedSupplier}
+      />
     </div>
   );
 };
