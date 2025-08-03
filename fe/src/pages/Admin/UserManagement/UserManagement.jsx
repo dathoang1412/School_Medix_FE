@@ -90,7 +90,7 @@ const UserInfo = ({ user, role, isDetailModal = false }) => (
       <>
         <h3 className="font-medium mt-4">Danh sách con:</h3>
         <ul className="list-disc pl-5">
-          {user.students?.map((child) => (
+          {user.children?.map((child) => (
             <li key={child.id}>
               {child.name} - {child.class_name}
             </li>
@@ -260,6 +260,7 @@ const UserManagement = () => {
         ? state.selectedUsers.filter((u) => u.id !== user.id)
         : [...state.selectedUsers, { ...user, role: state.activeTab }],
     });
+    console.log(state.users);
   };
 
   const handleSendInvites = async () => {
@@ -295,6 +296,7 @@ const UserManagement = () => {
   const handleViewDetail = async (role, id) => {
     try {
       const { data } = await axiosClient.get(`/${role}/${id}`);
+      console.log(data);
       if (!data.error) {
         updateState({
           selectedUserDetail: { role, ...data.data },
@@ -338,37 +340,21 @@ const UserManagement = () => {
     }
   };
 
-  const handleExportCSV = () => {
-    const csvData = filteredUsers.map((user) => ({
-      id: user.id,
-      name: user.name,
-      email: user.email || "Chưa đăng ký tài khoản",
-      phone_number: user.phone_number || "Không có",
-      dob: user.dob,
-      isMale: user.isMale ? "Nam" : "Nữ",
-      address: user.address,
-      created_at: new Date(user.created_at).toLocaleString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      email_confirmed: user.email_confirmed ? "Đã xác thực" : "Chưa xác thực",
-      ...(state.activeTab === "student" && {
-        class_id: user.class_id,
-        class_name: user.class_name,
-        grade_id: user.grade_id,
-        grade_name: user.grade_name,
-        year_of_enrollment: user.year_of_enrollment,
-      }),
-    }));
-    const csv = Papa.unparse(csvData);
-    saveAs(
-      new Blob([csv], { type: "text/csv;charset=utf-8;" }),
-      `${state.activeTab}_users.csv`
-    );
-    enqueueSnackbar("Xuất CSV thành công!", { variant: "success" });
+  const handleExportCSV = async () => {
+    try {
+      const response = await axiosClient.get("/download-users", {
+        responseType: "blob", // Quan trọng để nhận file Excel đúng
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      saveAs(blob, `users_${new Date().toISOString()}.xlsx`);
+    } catch (error) {
+      console.error("❌ Tải file thất bại:", error);
+      enqueueSnackbar("Tải file thất bại!", { variant: "error" });
+    }
   };
 
   const handleImportCSV = async (event) => {

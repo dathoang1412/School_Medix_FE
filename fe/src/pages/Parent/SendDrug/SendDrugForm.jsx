@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, X, Loader2, Image as ImageIcon } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { getUser, getUserRole } from "../../../service/authService";
-import { getChildClass, getStudentInfo } from "../../../service/childenService";
+import { getStudentInfo } from "../../../service/childenService";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -14,10 +14,13 @@ const SendDrugForm = () => {
     create_by: "",
     diagnosis: "",
     schedule_send_date: "",
-    intake_date: "",
+    start_intake_date: "",
+    end_intake_date: "",
     note: "",
     status: "PROCESSING",
-    request_items: [{ name: "", intake_template_time: [], dosage_usage: "" }],
+    request_items: [
+      { name: "", intake_templates: [], dosage_usage: "" },
+    ],
     prescription_img_urls: [],
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +28,6 @@ const SendDrugForm = () => {
   const [error, setError] = useState(null);
   const [currChild, setCurrChild] = useState({});
   const [currUser, setCurrUser] = useState({});
-  const [childClass, setChildClass] = useState(null);
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [isEditMode, setIsEditMode] = useState(!!request_id);
@@ -59,9 +61,6 @@ const SendDrugForm = () => {
         }
         setCurrChild(child);
 
-        const clas = await getChildClass();
-        setChildClass(clas);
-
         if (request_id) {
           try {
             const response = await axiosClient.get(`/send-drug-request/${request_id}`);
@@ -71,19 +70,30 @@ const SendDrugForm = () => {
             const requestData = response.data.data;
             setFormData({
               student_id: requestData.student_id || "",
-              create_by: user.id || requestData.create_by ,
+              create_by: user.id || requestData.create_by,
               diagnosis: requestData.diagnosis || "",
-              schedule_send_date: requestData.schedule_send_date ? requestData.schedule_send_date.split('T')[0] : "",
-              intake_date: requestData.intake_date ? requestData.intake_date.split('T')[0] : "",
+              schedule_send_date: requestData.schedule_send_date
+                ? requestData.schedule_send_date.split("T")[0]
+                : "",
+              start_intake_date: requestData.start_intake_date
+                ? requestData.start_intake_date.split("T")[0]
+                : "",
+              end_intake_date: requestData.end_intake_date
+                ? requestData.end_intake_date.split("T")[0]
+                : "",
               note: requestData.note || "",
               status: requestData.status || "PROCESSING",
               request_items: requestData.request_items.length > 0
-                ? requestData.request_items.map(item => ({
+                ? requestData.request_items.map((item) => ({
                     name: item.name || "",
-                    intake_template_time: Array.isArray(item.intake_template_time) ? item.intake_template_time : [],
+                    intake_templates: Array.isArray(item.intake_templates)
+                      ? item.intake_templates.filter((time) =>
+                          ["MORNING", "MIDDAY", "AFTERNOON"].includes(time)
+                        )
+                      : [],
                     dosage_usage: item.dosage_usage || "",
                   }))
-                : [{ name: "", intake_template_time: [], dosage_usage: "" }],
+                : [{ name: "", intake_templates: [], dosage_usage: "" }],
               prescription_img_urls: requestData.prescription_img_urls || [],
             });
             setPreviews(requestData.prescription_img_urls || []);
@@ -142,26 +152,14 @@ const SendDrugForm = () => {
     setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
   };
 
-  const handleAddIntakeTime = (index) => {
+  const handleIntakeTimeChange = (index, time) => {
     const newRequestItems = [...formData.request_items];
-    newRequestItems[index].intake_template_time = [
-      ...newRequestItems[index].intake_template_time,
-      "",
-    ];
-    setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
-  };
-
-  const handleRemoveIntakeTime = (itemIndex, timeIndex) => {
-    const newRequestItems = [...formData.request_items];
-    newRequestItems[itemIndex].intake_template_time = newRequestItems[
-      itemIndex
-    ].intake_template_time.filter((_, i) => i !== timeIndex);
-    setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
-  };
-
-  const handleIntakeTimeChange = (itemIndex, timeIndex, value) => {
-    const newRequestItems = [...formData.request_items];
-    newRequestItems[itemIndex].intake_template_time[timeIndex] = value;
+    const currentTimes = newRequestItems[index].intake_templates;
+    if (currentTimes.includes(time)) {
+      newRequestItems[index].intake_templates = currentTimes.filter((t) => t !== time);
+    } else {
+      newRequestItems[index].intake_templates = [...currentTimes, time];
+    }
     setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
   };
 
@@ -170,7 +168,7 @@ const SendDrugForm = () => {
       ...prev,
       request_items: [
         ...prev.request_items,
-        { name: "", intake_template_time: [], dosage_usage: "" },
+        { name: "", intake_templates: [], dosage_usage: "" },
       ],
     }));
   };
@@ -184,8 +182,6 @@ const SendDrugForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Drug form: ", formData);
-
     if (userRole !== "parent") {
       enqueueSnackbar("Chỉ phụ huynh mới có quyền gửi hoặc cập nhật đơn thuốc.", {
         variant: "error",
@@ -202,17 +198,19 @@ const SendDrugForm = () => {
       return;
     }
 
-    if (!formData.schedule_send_date || !formData.intake_date) {
-      setError("Vui lòng nhập đầy đủ ngày hẹn gửi và ngày uống thuốc.");
+    if (!formData.schedule_send_date || !formData.start_intake_date || !formData.end_intake_date) {
+      setError("Vui lòng nhập đầy đủ ngày hẹn gửi và khoảng thời gian uống thuốc.");
       setIsSubmitting(false);
       return;
     }
 
     const validRequestItems = formData.request_items
-      .filter((item) => item.name.trim() && item.intake_template_time.length > 0)
+      .filter((item) => item.name.trim() && item.intake_templates.length > 0)
       .map((item) => ({
         name: item.name.trim(),
-        intake_template_time: item.intake_template_time.filter((time) => time.trim()),
+        intake_templates: item.intake_templates.filter((time) =>
+          ["MORNING", "MIDDAY", "AFTERNOON"].includes(time)
+        ),
         dosage_usage: item.dosage_usage.trim() || "Chưa nhập",
       }));
 
@@ -244,9 +242,10 @@ const SendDrugForm = () => {
     const dataToSend = {
       student_id: formData.student_id,
       create_by: formData.create_by,
-      diagnosis: formData.diagnosis || "Chưa nhập",
+      diagnosis: formData.diagnosis || "",
       schedule_send_date: formData.schedule_send_date,
-      intake_date: formData.intake_date,
+      start_intake_date: formData.start_intake_date,
+      end_intake_date: formData.end_intake_date,
       note: formData.note || null,
       request_items: validRequestItems,
       prescription_img_urls: prescriptionImgUrls,
@@ -259,7 +258,9 @@ const SendDrugForm = () => {
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      enqueueSnackbar(isEditMode ? "Cập nhật đơn thuốc thành công!" : "Gửi đơn thuốc thành công!", { variant: "success" });
+      enqueueSnackbar(isEditMode ? "Cập nhật đơn thuốc thành công!" : "Gửi đơn thuốc thành công!", {
+        variant: "success",
+      });
       navigate(`/parent/edit/${currChild.id}/drug-table`);
     } catch (error) {
       console.error("Error submitting drug request:", error);
@@ -340,7 +341,7 @@ const SendDrugForm = () => {
                   </label>
                   <input
                     type="text"
-                    value={childClass?.class_name || "Chưa có thông tin"}
+                    value={currChild?.class_name || "Chưa có thông tin"}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700"
                     disabled
                   />
@@ -393,7 +394,7 @@ const SendDrugForm = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Ngày hẹn gửi thuốc <span className="text-red-500">*</span>
@@ -409,12 +410,25 @@ const SendDrugForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Ngày cho uống thuốc <span className="text-red-500">*</span>
+                      Bắt đầu uống thuốc <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
-                      name="intake_date"
-                      value={formData.intake_date}
+                      name="start_intake_date"
+                      value={formData.start_intake_date}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Kết thúc uống thuốc <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="end_intake_date"
+                      value={formData.end_intake_date}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       required
@@ -481,9 +495,7 @@ const SendDrugForm = () => {
                 <button
                   type="button"
                   onClick={handleAddRequestItem}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-7
-
-00 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Thêm thuốc
@@ -498,7 +510,7 @@ const SendDrugForm = () => {
                       {formData.request_items.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => handleRemoveRequestItem(index)}
+                          onClick={() => handleRequestItemChange(index)}
                           className="text-red-600 hover:text-red-800 cursor-pointer"
                         >
                           <X className="w-4 h-4" />
@@ -528,7 +540,9 @@ const SendDrugForm = () => {
                         <input
                           type="text"
                           value={item.dosage_usage}
-                          onChange={(e) => handleRequestItemChange(index, "dosage_usage", e.target.value)}
+                          onChange={(e) =>
+                            handleRequestItemChange(index, "dosage_usage", e.target.value)
+                          }
                           placeholder="VD: Uống 1 viên/lần"
                           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           required
@@ -539,34 +553,21 @@ const SendDrugForm = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Thời gian uống <span className="text-red-500">*</span>
                         </label>
-                        <div className="space-y-2">
-                          {item.intake_template_time.map((time, timeIndex) => (
-                            <div key={timeIndex} className="flex items-center gap-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                          {["MORNING", "MIDDAY", "AFTERNOON"].map((time) => (
+                            <label key={time} className="flex items-center gap-2">
                               <input
-                                type="text"
-                                value={time}
-                                onChange={(e) => handleIntakeTimeChange(index, timeIndex, e.target.value)}
-                                placeholder="VD: Trước khi ăn sáng"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required
+                                type="checkbox"
+                                checked={item.intake_templates.includes(time)}
+                                onChange={() => handleIntakeTimeChange(index, time)}
+                                className="h-4 cursor-pointer w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                required={item.intake_templates.length === 0}
                               />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveIntakeTime(index, timeIndex)}
-                                className="text-red-600 hover:text-red-800 cursor-pointer"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
+                              <span className="text-sm cursor-pointer text-gray-700">
+                                {time === "MORNING" ? "Sáng" : time === "MIDDAY" ? "Trưa" : "Chiều"}
+                              </span>
+                            </label>
                           ))}
-                          <button
-                            type="button"
-                            onClick={() => handleAddIntakeTime(index)}
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Thêm thời gian uống
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -597,7 +598,11 @@ const SendDrugForm = () => {
                     ? "bg-blue-400 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700"
                 }`}
-                title={userRole !== "parent" ? "Chỉ phụ huynh mới có quyền gửi/cập nhật đơn thuốc" : ""}
+                title={
+                  userRole !== "parent"
+                    ? "Chỉ phụ huynh mới có quyền gửi/cập nhật đơn thuốc"
+                    : ""
+                }
               >
                 {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                 {isEditMode ? "Cập nhật đơn thuốc" : "Gửi đơn thuốc"}
