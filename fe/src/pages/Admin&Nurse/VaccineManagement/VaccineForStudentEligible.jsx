@@ -201,7 +201,7 @@ const VaccineForStudentEligible = () => {
                   student.dose_quantity
                 );
                 const progress =
-                  (parseInt(student.completed_doses) / parseInt(student.dose_quantity)) * 100;
+                  (parseInt((student.completed_doses) <= parseInt(student.dose_quantity) ? student.completed_doses : student.dose_quantity) / parseInt(student.dose_quantity)) * 100;
 
                 return (
                   <tr
