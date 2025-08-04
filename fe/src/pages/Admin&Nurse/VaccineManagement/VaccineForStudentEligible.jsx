@@ -19,15 +19,21 @@ const VaccineForStudentEligible = () => {
       setLoading(true);
       setIsRefreshing(true);
 
-      // Lấy thông tin vaccine để hiển thị tên
+      // Fetch vaccine details to display name
       const vaccineResponse = await axiosClient.get(`/vaccine/${vaccine_id}`);
       console.log("Vaccine details: ", vaccineResponse.data.data[0].name);
       setVaccineName(vaccineResponse.data.data[0].name);
 
-      // Lấy danh sách học sinh
+      // Fetch student list
       const response = await axiosClient.get(`/vaccines/${vaccine_id}/student-eligible`);
-      setStudentList(response.data.data);
-      setDiseaseName(response.data.data[0].disease_name);
+      
+      // Sort students by completed_doses in descending order
+      const sortedStudents = response.data.data.sort((a, b) => 
+        parseInt(b.completed_doses) - parseInt(a.completed_doses)
+      );
+      
+      setStudentList(sortedStudents);
+      setDiseaseName(response.data.data[0]?.disease_name || "");
       setError(null);
     } catch (err) {
       console.error("Error fetching students:", err);
@@ -157,7 +163,7 @@ const VaccineForStudentEligible = () => {
           Thông tin tiêm chủng - Mũi tiêm:
         </h2>
         <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span className="text-green-600">{ diseaseName }</span>
+          <span className="text-green-600">{diseaseName}</span>
         </h2>
         <div className="flex flex-wrap gap-4">
           <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
@@ -183,9 +189,6 @@ const VaccineForStudentEligible = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Họ tên
                 </th>
-                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Vaccine
-                </th> */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tình trạng tiêm chủng
                 </th>
@@ -223,9 +226,6 @@ const VaccineForStudentEligible = () => {
                         </button>
                       </div>
                     </td>
-                    {/* <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{student.vaccine_name}</div>
-                    </td> */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${vaccinationInfo.bgColor} ${vaccinationInfo.textColor}`}
