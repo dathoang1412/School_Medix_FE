@@ -31,8 +31,7 @@ const DrugRequestDetail = () => {
   const [actionLoading, setActionLoading] = useState({});
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [refreshLoading, setRefreshLoading] = useState(false);
-  const [commentModal, setCommentModal] = useState(null); // New state for comment modal
-
+  const [commentModal, setCommentModal] = useState(null);
   const today = new Date().toISOString().split("T")[0];
 
   const fetchDrugRequest = async () => {
@@ -121,6 +120,21 @@ const DrugRequestDetail = () => {
     }
   };
 
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "N/A";
+    try {
+      return new Date(timestamp).toLocaleString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "N/A";
+    }
+  };
+
   const getStatusDisplay = (status) => {
     const statusMap = {
       PROCESSING: "Đang xử lý",
@@ -193,6 +207,12 @@ const DrugRequestDetail = () => {
       return;
     }
     const group = schedules[date][time][groupIndex];
+    if (group.request_status === "DONE") {
+      enqueueSnackbar("Không thể cập nhật trạng thái cho đơn đã hoàn thành.", {
+        variant: "warning",
+      });
+      return;
+    }
     if (isTaken === group.is_taken) {
       enqueueSnackbar(
         `Buổi này đã được ${isTaken ? "đánh dấu" : "bỏ đánh dấu"}.`,
@@ -202,7 +222,6 @@ const DrugRequestDetail = () => {
     }
 
     if (isTaken) {
-      // Show comment modal for ticking
       setCommentModal({ time, date, groupIndex, group });
     } else {
       setActionLoading((prev) => ({
@@ -255,6 +274,12 @@ const DrugRequestDetail = () => {
     group,
     comment
   ) => {
+    if (group.request_status === "DONE") {
+      enqueueSnackbar("Không thể cập nhật trạng thái cho đơn đã hoàn thành.", {
+        variant: "warning",
+      });
+      return;
+    }
     setActionLoading((prev) => ({ ...prev, [date + time + groupIndex]: true }));
     try {
       const medicationIds = group.medications.map(
@@ -362,7 +387,7 @@ const DrugRequestDetail = () => {
             </h1>
           </div>
 
-          {drug.status === "RECEIVED" && (
+          {(drug.status === "RECEIVED" || drug.status === "DONE") && (
             <div className="mb-4 sm:mb-6 bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200">
               <div className="flex items-center gap-2 mb-2 sm:mb-3">
                 <Calendar className="w-4 sm:w-5 h-4 sm:h-5 text-gray-600" />
@@ -425,8 +450,7 @@ const DrugRequestDetail = () => {
                                     key={group.request_id}
                                     className="flex items-center gap-2"
                                   >
-                                    {(userRole === "admin" ||
-                                      userRole === "nurse") && (
+                                    { (
                                       <button
                                         onClick={() =>
                                           setSelectedGroup({
@@ -434,6 +458,9 @@ const DrugRequestDetail = () => {
                                             time,
                                             groupIndex,
                                             medications: group.medications,
+                                            note: group.note,
+                                            intake_time: group.intake_time,
+                                            is_taken: group.is_taken,
                                           })
                                         }
                                         className="text-blue-600 cursor-pointer hover:text-blue-800"
@@ -446,6 +473,35 @@ const DrugRequestDetail = () => {
                                         size={14}
                                         className="text-gray-400"
                                       />
+                                    ) : group.request_status === "DONE" ? (
+                                      <div className="flex items-center gap-2">
+                                        {group.is_taken ? (
+                                          <CheckSquare
+                                            size={14}
+                                            className="text-green-600"
+                                          />
+                                        ) : (
+                                          <X
+                                            size={14}
+                                            className="text-red-600"
+                                          />
+                                        )}
+                                        {group.note && (
+                                          <button
+                                            onClick={() =>
+                                              handleViewComment(
+                                                time,
+                                                date,
+                                                groupIndex,
+                                                group.note
+                                              )
+                                            }
+                                            className="text-gray-600 cursor-pointer hover:text-gray-800"
+                                          >
+                                            <MessageSquare size={14} />
+                                          </button>
+                                        )}
+                                      </div>
                                     ) : date === today ? (
                                       userRole === "parent" ? (
                                         <div className="flex items-center gap-2">
@@ -618,21 +674,43 @@ const DrugRequestDetail = () => {
                 </div>
                 <div className="p-3 sm:p-4 max-h-[60vh] overflow-y-auto">
                   {selectedGroup ? (
-                    <ul className="space-y-2">
-                      {selectedGroup.medications.map((med) => (
-                        <li
-                          key={med.medication_schedule_id}
-                          className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200"
-                        >
-                          <span className="font-medium text-gray-900">
-                            {med.item_name}
-                          </span>
-                          <span className="text-gray-600 ml-1">
-                            {med.dosage_usage}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="space-y-4">
+                      <ul className="space-y-2">
+                        {selectedGroup.medications.map((med) => (
+                          <li
+                            key={med.medication_schedule_id}
+                            className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200"
+                          >
+                            <span className="font-medium text-gray-900">
+                              {med.item_name}
+                            </span>
+                            <span className="text-gray-600 ml-1">
+                              {med.dosage_usage}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      {selectedGroup.is_taken && (
+                        <div className="space-y-2">
+                          <div>
+                            <span className="text-gray-500 block mb-1">
+                              Ghi chú:
+                            </span>
+                            <p className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200">
+                              {selectedGroup.note || "Không có ghi chú"}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500 block mb-1">
+                              Thời gian uống:
+                            </span>
+                            <p className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200">
+                              {formatTimestamp(selectedGroup.intake_time)}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ) : commentModal.isViewOnly ? (
                     <p className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200">
                       {commentModal.note || "Không có ghi chú"}

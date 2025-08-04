@@ -6,7 +6,7 @@ import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import Modal from "./Modal"; // Adjust the import path based on your project structure
 
-const SupplierManagement = () => {
+const SupplierList = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [filteredSuppliers, setFilteredSuppliers] = useState([]);
   const [expanded, setExpanded] = useState(new Set());
@@ -134,7 +134,7 @@ const SupplierManagement = () => {
             </div>
             <button
               onClick={() => navigate("/admin/medical-items-management/supplier-form")}
-              className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium ml-auto"
+              className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
             >
               <Package className="w-4 h-4" />
               Thêm nhà cung cấp
@@ -223,7 +223,7 @@ const SupplierManagement = () => {
                               className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium transition-colors duration-200"
                             >
                               <Edit size={14} />
-                              Cập nhật
+                              Sửa
                             </button>
                             <button
                               onClick={() => openDeleteModal(supplier.id, supplier.name)}
@@ -322,4 +322,4 @@ const SupplierManagement = () => {
   );
 };
 
-export default React.memo(SupplierManagement);
+export default React.memo(SupplierList);

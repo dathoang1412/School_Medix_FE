@@ -145,7 +145,7 @@ const DeclarationManagement = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl py-8">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2">
             <XCircle className="w-5 h-5" /> {error}
