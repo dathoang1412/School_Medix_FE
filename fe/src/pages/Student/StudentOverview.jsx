@@ -21,6 +21,7 @@ import HealthRecordList from "../Parent/HealthRecord/HealthRecordList";
 import HealthDeclarationHistory from "../Parent/Declare/HealthDeclarationHistory";
 import HealthRecord from "../Parent/DailyHealth/HealthRecord";
 import VaccineRecordInfo from "../Parent/VaccineCampaign/VaccineRecordInfo";
+import VaccinationHistory from "../Parent/VaccinationRecord/VaccinationHistory";
 import DrugTable from "../Parent/SendDrug/DrugTable";
 import { getSession } from "../../config/Supabase";
 import { getStudentInfo } from "../../service/childenService";
@@ -132,7 +133,7 @@ const StudentOverview = () => {
       id: "vaccineRecord",
       label: "Tiêm chủng",
       icon: Syringe,
-      component: <VaccineRecordInfo />,
+      component: <VaccinationHistory />,
       color: "bg-indigo-50 text-indigo-600 border-indigo-200",
     },
     {
