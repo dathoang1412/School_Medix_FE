@@ -118,12 +118,27 @@ const AddRecordPage = () => {
     const item = availableItems.find(i => i.id === parseInt(selectedItem));
     if (!item) return;
 
-    const newItem = {
-      id: item.id,
-      name: item.name,
-      quantity: quantity,
-      unit: item.unit
-    };
+    // Check if item already exists in items array
+    const existingItemIndex = items.findIndex(i => i.id === item.id);
+    let updatedItems;
+    
+    if (existingItemIndex !== -1) {
+      // Item exists, update its quantity
+      updatedItems = items.map((i, index) =>
+        index === existingItemIndex
+          ? { ...i, quantity: i.quantity + quantity }
+          : i
+      );
+    } else {
+      // Item doesn't exist, create new entry
+      const newItem = {
+        id: item.id,
+        name: item.name,
+        quantity: quantity,
+        unit: item.unit
+      };
+      updatedItems = [...items, newItem];
+    }
 
     // Update availableItems by reducing the quantity
     const updatedAvailableItems = availableItems.map(i =>
@@ -131,8 +146,8 @@ const AddRecordPage = () => {
     );
     setAvailableItems(updatedAvailableItems);
 
-    // Add item to items array
-    setItems([...items, newItem]);
+    // Update items array
+    setItems(updatedItems);
     setSelectedItem('');
     setQuantity(0);
     setError('');
@@ -174,11 +189,6 @@ const AddRecordPage = () => {
 
   // Handle back navigation
   const handleBack = () => {
-    if (Object.values(formData).some((value) => value !== '') || items.length > 0) {
-      if (!window.confirm('Bạn có chắc muốn quay lại? Các thay đổi sẽ không được lưu.')) {
-        return;
-      }
-    }
     navigate(`/${getUserRole()}/daily-health`);
   };
 
@@ -365,7 +375,7 @@ const AddRecordPage = () => {
                   <button
                     type="button"
                     onClick={handleAddItem}
-                    className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+                    className="px-3 py-1.5 cursor-pointer bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
                   >
                     Thêm
                   </button>
@@ -378,7 +388,7 @@ const AddRecordPage = () => {
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(index)}
-                      className="text-red-500 hover:text-red-700 transition-colors"
+                      className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
                     >
                       <X size={16} />
                     </button>
@@ -398,7 +408,7 @@ const AddRecordPage = () => {
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+              className="px-6 cursor-pointer py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
             >
               Lưu Hồ Sơ
             </button>

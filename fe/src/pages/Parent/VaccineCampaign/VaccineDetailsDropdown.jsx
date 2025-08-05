@@ -17,9 +17,9 @@ const VaccineDetailsDropdown = ({ diseaseId, details, loading }) => {
     </div>
   );
 
-  const handleRowClick = (recordId) => {
-    navigate(`${recordId}`);
-  }
+  // const handleRowClick = (recordId) => {
+  //   navigate(`${recordId}`);
+  // }
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full overflow-hidden transition-all duration-200 hover:shadow-md">
       {/* Header */}
@@ -77,7 +77,7 @@ const VaccineDetailsDropdown = ({ diseaseId, details, loading }) => {
                   <tr 
                     key={index} 
                     className="hover:bg-blue-50 transition-colors duration-150 cursor-pointer"
-                    onClick={() => handleRowClick(detail.id)}
+                    // onClick={() => handleRowClick(detail.id)}
                   >
                     <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
                       Mũi tiêm #{index + 1}
