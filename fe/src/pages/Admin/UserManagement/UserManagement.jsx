@@ -40,7 +40,7 @@ const UserInfo = ({ user, role, isDetailModal = false }) => (
       <b>Email:</b> {user.email || "Chưa đăng ký tài khoản"}
     </p>
     <p>
-      <b>Giới tính:</b> {user.isMale ? "Nam" : "Nữ"}
+      <b>Giới tính:</b> {user.ismale ? "Nam" : "Nữ"}
     </p>
     <p>
       <b>Ngày sinh:</b> {new Date(user.dob).toLocaleDateString()}
@@ -107,6 +107,7 @@ const UserManagement = () => {
     activeTab: "admin",
     searchTerm: "",
     emailConfirmedFilter: "",
+    sortColumn: "", // Cột đang được sắp xếp: "id", "created_at", "last_invitation_at"
     sortOrder: "", // "" (none), "asc", "desc"
     selectedGrade: "", // Selected grade_id
     selectedClass: "", // Selected class_id
@@ -120,7 +121,8 @@ const UserManagement = () => {
     selectedUserDetail: null,
     selectedUsers: [],
     isSendingInvites: false,
-    isUploading: false, // Thêm trạng thái để quản lý upload
+    isUploading: false,
+    isAllSelected: false, // Trạng thái checkbox "Chọn tất cả"
   });
 
   const updateState = (updates) =>
@@ -172,8 +174,9 @@ const UserManagement = () => {
           student: studentRes.data.data,
         },
         grades: gradeRes.data.data,
-        classes: [],
-        selectedUsers: [],
+        classes: state.selectedGrade ? state.classes : [], // Giữ classes nếu selectedGrade không thay đổi
+        selectedUsers: [], // Reset selectedUsers
+        isAllSelected: false, // Reset checkbox "Chọn tất cả"
       });
     } catch (error) {
       enqueueSnackbar(
@@ -183,7 +186,7 @@ const UserManagement = () => {
     } finally {
       updateState({ loading: false, isRefreshing: false });
     }
-  }, []);
+  }, [state.selectedGrade]);
 
   const fetchClasses = useCallback(async (gradeId) => {
     if (!gradeId) {
@@ -242,11 +245,24 @@ const UserManagement = () => {
     });
 
   const sortUsers = (users) => {
-    if (!state.sortOrder) return users;
+    if (!state.sortColumn || !state.sortOrder) return users;
     return [...users].sort((a, b) => {
-      const dateA = new Date(a.created_at);
-      const dateB = new Date(b.created_at);
-      return state.sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      let valueA, valueB;
+      if (state.sortColumn === "id") {
+        valueA = a.id;
+        valueB = b.id;
+      } else if (state.sortColumn === "created_at") {
+        valueA = new Date(a.created_at);
+        valueB = new Date(b.created_at);
+      } else if (state.sortColumn === "last_invitation_at") {
+        valueA = a.last_invitation_at ? new Date(a.last_invitation_at) : null;
+        valueB = b.last_invitation_at ? new Date(b.last_invitation_at) : null;
+        // Đẩy các giá trị null xuống cuối
+        if (!valueA && !valueB) return 0;
+        if (!valueA) return state.sortOrder === "asc" ? 1 : -1;
+        if (!valueB) return state.sortOrder === "asc" ? -1 : 1;
+      }
+      return state.sortOrder === "asc" ? valueA - valueB : valueB - valueA;
     });
   };
 
@@ -255,11 +271,30 @@ const UserManagement = () => {
   );
 
   const handleCheckboxChange = (user) => {
+    const newSelectedUsers = state.selectedUsers.some((u) => u.id === user.id)
+      ? state.selectedUsers.filter((u) => u.id !== user.id)
+      : [...state.selectedUsers, { ...user, role: state.activeTab }];
     updateState({
-      selectedUsers: state.selectedUsers.some((u) => u.id === user.id)
-        ? state.selectedUsers.filter((u) => u.id !== user.id)
-        : [...state.selectedUsers, { ...user, role: state.activeTab }],
+      selectedUsers: newSelectedUsers,
+      isAllSelected: newSelectedUsers.length === filteredUsers.length,
     });
+  };
+
+  const handleSelectAll = () => {
+    if (state.isAllSelected) {
+      updateState({
+        selectedUsers: [],
+        isAllSelected: false,
+      });
+    } else {
+      updateState({
+        selectedUsers: filteredUsers.map((user) => ({
+          ...user,
+          role: state.activeTab,
+        })),
+        isAllSelected: true,
+      });
+    }
   };
 
   const handleSendInvites = async () => {
@@ -280,7 +315,11 @@ const UserManagement = () => {
       enqueueSnackbar(response.data.message || "Đã gửi lời mời!", {
         variant: "success",
       });
-      updateState({ selectedUsers: [], isSendingInvites: false });
+      updateState({
+        selectedUsers: [],
+        isSendingInvites: false,
+        isAllSelected: false,
+      });
     } catch (error) {
       enqueueSnackbar(
         `Lỗi khi gửi lời mời: ${
@@ -330,6 +369,7 @@ const UserManagement = () => {
           (user) => !deletedUserIds.includes(user.id)
         ),
         showDeleteModal: false,
+        isAllSelected: false,
       });
       enqueueSnackbar("Xóa người dùng thành công!", { variant: "success" });
     } catch (error) {
@@ -446,20 +486,23 @@ const UserManagement = () => {
   };
 
   const handleRefresh = () => {
-    fetchUsers();
-    updateState({ selectedGrade: "", selectedClass: "", sortOrder: "" });
+    fetchUsers(); // Chỉ gọi fetchUsers, không reset trạng thái
   };
 
-  const handleSortByCreatedAt = () => {
+  const handleSort = (column) => {
     updateState({
-      sortOrder: state.sortOrder === "asc" ? "desc" : "asc",
+      sortColumn: column,
+      sortOrder:
+        state.sortColumn === column && state.sortOrder === "asc"
+          ? "desc"
+          : "asc",
     });
   };
 
   const renderTableHeader = () => {
     const headers = [
       { label: "", width: "w-12" }, // Checkbox
-      { label: "ID", width: "w-16" },
+      { label: "ID", width: "w-16", sortKey: "id" },
       { label: "Họ tên", width: "w-1/3" },
       { label: "Email", width: "w-1/4" },
       { label: "SĐT", width: "w-20" },
@@ -468,8 +511,8 @@ const UserManagement = () => {
         : state.activeTab === "student"
         ? [{ label: "Lớp", width: "w-28" }]
         : []),
-      { label: "Tạo lúc", width: "w-28" },
-      { label: "Mời gần nhất", width: "w-20" },
+      { label: "Tạo lúc", width: "w-28", sortKey: "created_at" },
+      { label: "Mời gần nhất", width: "w-20", sortKey: "last_invitation_at" },
       { label: "Trạng thái", width: "w-28" },
       { label: "Hành động", width: "w-1/5" },
     ];
@@ -477,21 +520,30 @@ const UserManagement = () => {
     return (
       <thead>
         <tr className="bg-gray-100 text-gray-700 text-sm font-medium">
-          {headers.map((header) => (
+          {headers.map((header, index) => (
             <th
               key={header.label}
               className={`${header.width} p-2 text-left whitespace-nowrap`}
             >
-              {header.label === "Tạo lúc" ? (
+              {index === 0 ? (
+                <input
+                  type="checkbox"
+                  checked={state.isAllSelected}
+                  onChange={handleSelectAll}
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                />
+              ) : header.sortKey ? (
                 <button
-                  onClick={handleSortByCreatedAt}
+                  onClick={() => handleSort(header.sortKey)}
                   className="flex items-center gap-1"
                 >
                   {header.label}
                   <ArrowUpDown
                     size={14}
                     className={
-                      state.sortOrder ? "text-blue-600" : "text-gray-400"
+                      state.sortColumn === header.sortKey
+                        ? "text-blue-600"
+                        : "text-gray-400"
                     }
                   />
                 </button>
@@ -687,7 +739,10 @@ const UserManagement = () => {
                   activeTab: tab.key,
                   selectedGrade: "",
                   selectedClass: "",
+                  sortColumn: "",
                   sortOrder: "",
+                  selectedUsers: [],
+                  isAllSelected: false,
                 })
               }
               className={`p-3 bg-white border rounded-lg text-left cursor-pointer ${

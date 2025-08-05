@@ -40,12 +40,12 @@ const CreateUserPage = () => {
       };
       const endpoint = endpointMap[role];
       if (!endpoint) throw new Error("Loại người dùng không hợp lệ");
-
       const payload = {
         ...newUser,
         profile_img_url,
-        isMale: newUser.gender === "Nam",
+        isMale: newUser.gender === "male",
       };
+
       const response = await axiosClient.post(endpoint, payload);
 
       if (!response.data.error) {
@@ -60,14 +60,13 @@ const CreateUserPage = () => {
     } catch (error) {
       enqueueSnackbar(
         "Lỗi tạo người dùng: " +
-          (error.response?.data?.message || error.message), {variant: "error"}
+          (error.response?.data?.message || error.message),
+        { variant: "error" }
       );
     } finally {
       setLoading((prev) => ({ ...prev, formSubmit: false }));
     }
   };
-
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -202,11 +201,10 @@ const CreateUserPage = () => {
               {role !== "student" && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email <span className="text-red-500">*</span>
+                    Email
                   </label>
                   <input
                     type="email"
-                    required
                     value={newUser.email || ""}
                     onChange={(e) =>
                       setNewUser({ ...newUser, email: e.target.value })
@@ -259,8 +257,8 @@ const CreateUserPage = () => {
                   }`}
                 >
                   <option value="">Chọn giới tính</option>
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
+                  <option value="male">Nam</option>
+                  <option value="female">Nữ</option>
                 </select>
               </div>
 

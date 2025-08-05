@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import axiosClient from "../../../config/axiosClient";
 import { ArrowLeft } from "lucide-react";
 import { useSnackbar } from "notistack";
-import ChangeAccountConfirmModal from '../../../components/ChangeEmailConfirmModal';
-import SendInviteConfirmModal from '../../../components/SendInviteConfirmModal';
-import DeleteAccountModal from '../../../components/DeleteAccountModal';
+import ChangeAccountConfirmModal from "../../../components/ChangeEmailConfirmModal";
+import SendInviteConfirmModal from "../../../components/SendInviteConfirmModal";
+import DeleteAccountModal from "../../../components/DeleteAccountModal";
 
 const EditUserPage = () => {
   const { role, id } = useParams();
@@ -33,7 +33,10 @@ const EditUserPage = () => {
           console.log("User details: ", data.data);
           const formattedData = {
             ...data.data,
-            dob: data.data.dob ? new Date(data.data.dob).toISOString().split("T")[0] : "",
+            dob: data.data.dob
+              ? new Date(data.data.dob).toISOString().split("T")[0]
+              : "",
+            ismale: data.data.ismale !== undefined ? data.data.ismale : false, // Đảm bảo ismale có giá trị mặc định
           };
           setFormData(formattedData);
           setImagePreview(data.data.profile_img_url);
@@ -74,7 +77,7 @@ const EditUserPage = () => {
         profile_img_url,
         name: formData.name,
         dob: formData.dob,
-        isMale: formData.isMale,
+        ismale: formData.ismale !== undefined ? formData.ismale : false, // Đảm bảo ismale luôn có giá trị
         address: formData.address,
         phone_number: formData.phone_number,
         ...(role === "student" && {
@@ -85,7 +88,7 @@ const EditUserPage = () => {
         }),
       };
 
-      console.log(updates);
+      console.log("Updates sent: ", updates); // Kiểm tra giá trị gửi đi
       await axiosClient.patch("/admin/edit-user-profile", {
         id,
         role,
@@ -99,7 +102,7 @@ const EditUserPage = () => {
     } catch (error) {
       enqueueSnackbar(
         "Lỗi khi cập nhật thông tin cá nhân: " +
-        (error.response?.data?.message || error.message),
+          (error.response?.data?.message || error.message),
         {
           variant: "error",
           autoHideDuration: 3000,
@@ -124,7 +127,7 @@ const EditUserPage = () => {
       await axiosClient.patch("/admin/update-user-account", {
         role: formData.role,
         id: formData.id,
-        name: formData.role, // Có vẻ lỗi ở đây, có thể muốn dùng formData.name thay vì formData.role
+        name: formData.name,
         email: formData.email,
       });
       enqueueSnackbar("Cập nhật thông tin tài khoản thành công!", {
@@ -135,7 +138,7 @@ const EditUserPage = () => {
     } catch (error) {
       enqueueSnackbar(
         "Lỗi khi cập nhật thông tin tài khoản: " +
-        (error.response?.data?.message || error.message),
+          (error.response?.data?.message || error.message),
         {
           variant: "error",
           autoHideDuration: 3000,
@@ -181,7 +184,7 @@ const EditUserPage = () => {
       }
 
       await axiosClient.delete("/admin/delete-user-account", {
-        data: { id, role }, // Sử dụng data thay vì params để gửi body
+        data: { id, role },
       });
       setFormData({ ...formData, email: null });
       setShowEmailInput(false);
@@ -191,7 +194,8 @@ const EditUserPage = () => {
       });
     } catch (error) {
       enqueueSnackbar(
-        "Lỗi khi xóa tài khoản: " + (error.response?.data?.message || error.message),
+        "Lỗi khi xóa tài khoản: " +
+          (error.response?.data?.message || error.message),
         {
           variant: "error",
           autoHideDuration: 3000,
@@ -234,7 +238,8 @@ const EditUserPage = () => {
       }
     } catch (error) {
       enqueueSnackbar(
-        "Lỗi khi gửi thư mời: " + (error.response?.data?.message || error.message),
+        "Lỗi khi gửi thư mời: " +
+          (error.response?.data?.message || error.message),
         {
           variant: "error",
           autoHideDuration: 3000,
@@ -329,7 +334,8 @@ const EditUserPage = () => {
                           setSelectedImgFile(file);
                           if (file) {
                             const reader = new FileReader();
-                            reader.onloadend = () => setImagePreview(reader.result);
+                            reader.onloadend = () =>
+                              setImagePreview(reader.result);
                             reader.readAsDataURL(file);
                           }
                         }}
@@ -346,16 +352,21 @@ const EditUserPage = () => {
                 <div className="md:col-span-3">
                   <div className="space-y-2">
                     <div>
-                      <span className="text-sm font-medium text-gray-700">Ngày tạo: </span>
+                      <span className="text-sm font-medium text-gray-700">
+                        Ngày tạo:{" "}
+                      </span>
                       <span className="text-sm text-gray-600">
                         {formData.created_at
-                          ? new Date(formData.created_at).toLocaleString("vi-VN", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
+                          ? new Date(formData.created_at).toLocaleString(
+                              "vi-VN",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )
                           : "Chưa có dữ liệu"}
                       </span>
                     </div>
@@ -397,11 +408,11 @@ const EditUserPage = () => {
                   </label>
                   <select
                     required
-                    value={formData.isMale ? "true" : "false"}
+                    value={formData.ismale ? "true" : "false"} // Đảm bảo giá trị mặc định dựa trên ismale
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        isMale: e.target.value === "true",
+                        ismale: e.target.value === "true",
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
@@ -505,7 +516,9 @@ const EditUserPage = () => {
                 <div className="md:col-span-3 flex justify-start mt-2">
                   <button
                     type="submit"
-                    className={`px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 ${isPersonalLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 ${
+                      isPersonalLoading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                     disabled={isPersonalLoading}
                   >
                     {isPersonalLoading ? (
@@ -535,29 +548,39 @@ const EditUserPage = () => {
                 <div className="md:col-span-3">
                   <div className="space-y-2">
                     <div>
-                      <span className="text-sm font-medium text-gray-700">Đăng ký tài khoản: </span>
+                      <span className="text-sm font-medium text-gray-700">
+                        Đăng ký tài khoản:{" "}
+                      </span>
                       <span className="text-sm text-gray-700">
                         {formData.supabase_uid ? "Đã đăng ký" : "Chưa đăng ký"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-gray-700">Mời tham gia gần nhất: </span>
+                      <span className="text-sm font-medium text-gray-700">
+                        Mời tham gia gần nhất:{" "}
+                      </span>
                       <span className="text-sm text-gray-600">
                         {formData.last_invitation_at
-                          ? new Date(formData.last_invitation_at).toLocaleString("vi-VN", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
+                          ? new Date(
+                              formData.last_invitation_at
+                            ).toLocaleString("vi-VN", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
                           : "--"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-gray-700">Xác thực email: </span>
+                      <span className="text-sm font-medium text-gray-700">
+                        Xác thực email:{" "}
+                      </span>
                       <span className="text-sm text-gray-600">
-                        {formData.email_confirmed ? "Đã xác thực" : "Chưa xác thực"}
+                        {formData.email_confirmed
+                          ? "Đã xác thực"
+                          : "Chưa xác thực"}
                       </span>
                     </div>
                   </div>
@@ -582,7 +605,11 @@ const EditUserPage = () => {
                       </div>
                       <button
                         type="submit"
-                        className={`px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 ${isAccountLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 ${
+                          isAccountLoading
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
                         disabled={isAccountLoading}
                       >
                         {isAccountLoading ? (
@@ -596,7 +623,9 @@ const EditUserPage = () => {
                       </button>
                       <button
                         onClick={handleDeleteEmail}
-                        className={`px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 ${isDeleteLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 ${
+                          isDeleteLoading ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                         disabled={isDeleteLoading}
                       >
                         {isDeleteLoading ? (
@@ -627,7 +656,9 @@ const EditUserPage = () => {
                 </label>
                 <button
                   onClick={handleSendInvite}
-                  className={`block px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 ${isInviteLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`block px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 ${
+                    isInviteLoading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   disabled={isInviteLoading || !formData.email}
                 >
                   {isInviteLoading ? (

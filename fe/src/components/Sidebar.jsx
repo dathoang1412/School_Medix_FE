@@ -392,8 +392,12 @@ const Sidebar = () => {
             className="flex items-center gap-2.5 cursor-pointer transition-colors duration-200 group"
             title={isCollapsed ? "SchoolMedix" : ""}
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm group-hover:from-blue-500 group-hover:to-blue-600">
-              <MdOutlineSchool className="text-white text-[17px]" />
+            <div className="flex justify-center">
+              <img
+                src="../../../public/Gemini_Generated_Image_yzvndbyzvndbyzvn.png" // Thay bằng đường dẫn thực tế của logo
+                alt="SchoolMedix Logo"
+                className="h-10 w-auto"
+              />
             </div>
             {!isCollapsed && (
               <span className="font-bold text-gray-900 text-[17px] group-hover:text-blue-600">
