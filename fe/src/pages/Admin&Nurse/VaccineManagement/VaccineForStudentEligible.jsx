@@ -26,6 +26,7 @@ const VaccineForStudentEligible = () => {
 
       // Fetch student list
       const response = await axiosClient.get(`/vaccines/${vaccine_id}/student-eligible`);
+      console.log("Vaccine for student eligible: ", response.data.data);
       
       // Sort students by completed_doses in descending order
       const sortedStudents = response.data.data.sort((a, b) => 

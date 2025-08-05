@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Syringe, Loader2, AlertCircle, ChevronDown, ChevronUp, Filter, Info } from "lucide-react";
+import {
+  Syringe,
+  Loader2,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  Filter,
+  Info,
+} from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { getStudentInfo } from "../../../service/childenService";
 import { getSession } from "../../../config/Supabase";
 import { useSnackbar } from "notistack";
 import VaccineDetailsDropdown from "./VaccineDetailsDropdown";
+import { getUserRole } from "../../../service/authService";
 
 const VaccineRecordInfo = () => {
   const [records, setRecords] = useState([]);
@@ -53,7 +62,9 @@ const VaccineRecordInfo = () => {
         setCurrChild(child);
 
         // Fetch completed doses
-        const dosesRes = await axiosClient.get(`/student/${child.id}/vnvc/completed-doses`);
+        const dosesRes = await axiosClient.get(
+          `/student/${child.id}/vnvc/completed-doses`
+        );
         const dosesData = dosesRes.data.diseases || [];
         setRecords(dosesData);
         setError(null);
@@ -75,15 +86,19 @@ const VaccineRecordInfo = () => {
       try {
         console.log(diseaseId);
         setLoadingDetails((prev) => ({ ...prev, [diseaseId]: true }));
-        const res = await axiosClient.get(`/student/${currChild.id}/disease/vaccination-record`, 
-          { 
-            params: { diseaseId } 
-          });
+        const res = await axiosClient.get(
+          `/student/${currChild.id}/disease/vaccination-record`,
+          {
+            params: { diseaseId },
+          }
+        );
         const allRecords = res.data.data || [];
         setDetails((prev) => ({ ...prev, [diseaseId]: allRecords }));
       } catch (error) {
         console.error("Error fetching vaccination details:", error);
-        enqueueSnackbar("Không thể tải chi tiết tiêm chủng!", { variant: "error" });
+        enqueueSnackbar("Không thể tải chi tiết tiêm chủng!", {
+          variant: "error",
+        });
       } finally {
         setLoadingDetails((prev) => ({ ...prev, [diseaseId]: false }));
       }
@@ -107,10 +122,14 @@ const VaccineRecordInfo = () => {
     switch (filterMode) {
       case "notEnough":
         return records.filter(
-          (record) => record.completed_doses > 0 && record.completed_doses < record.dose_quantity
+          (record) =>
+            record.completed_doses > 0 &&
+            record.completed_doses < record.dose_quantity
         );
       case "enough":
-        return records.filter((record) => +record.completed_doses === record.dose_quantity);
+        return records.filter(
+          (record) => +record.completed_doses === record.dose_quantity
+        );
       default:
         return records;
     }
@@ -143,7 +162,9 @@ const VaccineRecordInfo = () => {
       <div className="flex items-center justify-center min-h-96">
         <div className="bg-white rounded-lg border border-gray-200 p-6 max-w-md w-full text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Lỗi tải dữ liệu</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Lỗi tải dữ liệu
+          </h3>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
@@ -162,7 +183,7 @@ const VaccineRecordInfo = () => {
       <div className="flex justify-center gap-3">
         <button
           onClick={() => setFilterMode("all")}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+          className={`px-4 py-2 cursor-pointer text-sm font-medium rounded-lg transition-colors ${
             filterMode === "all"
               ? "bg-gray-900 text-white"
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -172,7 +193,7 @@ const VaccineRecordInfo = () => {
         </button>
         <button
           onClick={() => setFilterMode("notEnough")}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+          className={`px-4 cursor-pointer py-2 text-sm font-medium rounded-lg transition-colors ${
             filterMode === "notEnough"
               ? "bg-gray-900 text-white"
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -182,7 +203,7 @@ const VaccineRecordInfo = () => {
         </button>
         <button
           onClick={() => setFilterMode("enough")}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+          className={`px-4 py-2 cursor-pointer text-sm font-medium rounded-lg transition-colors ${
             filterMode === "enough"
               ? "bg-gray-900 text-white"
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -193,28 +214,37 @@ const VaccineRecordInfo = () => {
       </div>
 
       {/* Information Note */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-blue-800">
-            <p className="mb-2">
-              <strong>Ghi chú:</strong> Đây là danh sách các mũi tiêm khuyến nghị tham khảo từ{" "}
-              <a 
-                href="https://vnvc.vn/lich-tiem-chung-cho-be/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-700 underline hover:text-blue-900"
-              >
-                lịch tiêm chủng cho bé của VNVC
-              </a>.
-            </p>
-            <p>
-              Đây chỉ là danh sách các mũi tiêm khuyến nghị được nhà trường tham khảo được và cung cấp cho phụ huynh, không có ý nghĩa ràng buộc y tế rằng học sinh phải tiêm đủ hết tất cả mũi. 
-              <br />Có thể học sinh đã được tiêm những mũi tiêm khác ngoài các mũi tiêm được liệt kê, xem đầy đủ lịch sử các mũi tiêm của học sinh ở phần <strong>Lịch sử tiêm chủng</strong>.
-            </p>
+      {getUserRole() === "parent" && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-blue-800">
+              <p className="mb-2">
+                <strong>Ghi chú:</strong> Đây là danh sách các mũi tiêm khuyến
+                nghị tham khảo từ{" "}
+                <a
+                  href="https://vnvc.vn/lich-tiem-chung-cho-be/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-700 underline hover:text-blue-900"
+                >
+                  lịch tiêm chủng cho bé của VNVC
+                </a>
+                .
+              </p>
+              <p>
+                Đây chỉ là danh sách các mũi tiêm khuyến nghị được nhà trường
+                tham khảo được và cung cấp cho phụ huynh, không có ý nghĩa ràng
+                buộc y tế rằng học sinh phải tiêm đủ hết tất cả mũi.
+                <br />
+                Có thể học sinh đã được tiêm những mũi tiêm khác ngoài các mũi
+                tiêm được liệt kê, xem đầy đủ lịch sử các mũi tiêm của học sinh
+                ở phần <strong>Lịch sử tiêm chủng</strong>.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       {filteredRecords.length === 0 ? (
@@ -235,9 +265,6 @@ const VaccineRecordInfo = () => {
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     STT
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Mã học sinh
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Loại bệnh
@@ -262,9 +289,6 @@ const VaccineRecordInfo = () => {
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {index + 1}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {String(currChild?.id || "").padStart(6, "0")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {record.disease_name}
@@ -294,7 +318,7 @@ const VaccineRecordInfo = () => {
                         {record.completed_doses > 0 ? (
                           <button
                             onClick={() => toggleDropdown(record.disease_id)}
-                            className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
+                            className="inline-flex cursor-pointer items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
                           >
                             {loadingDetails[record.disease_id] ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -303,8 +327,10 @@ const VaccineRecordInfo = () => {
                             ) : (
                               <ChevronDown className="w-4 h-4" />
                             )}
-                            <span className="text-sm">
-                              {openDropdown === record.disease_id ? "Ẩn" : "Xem"}
+                            <span className="cursor-pointer text-sm">
+                              {openDropdown === record.disease_id
+                                ? "Ẩn"
+                                : "Xem"}
                             </span>
                           </button>
                         ) : (

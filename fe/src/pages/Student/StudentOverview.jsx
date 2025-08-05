@@ -87,7 +87,7 @@ const StudentOverview = () => {
           <div className="bg-gray-100 rounded-lg p-1 flex space-x-1">
             <button
               onClick={() => setActiveCheckupTab("dashboard")}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 ${
+              className={`flex items-center cursor-pointer gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 ${
                 activeCheckupTab === "dashboard"
                   ? "bg-white text-green-600 shadow-sm"
                   : "text-gray-600 hover:text-green-600 hover:bg-gray-50"
@@ -98,7 +98,7 @@ const StudentOverview = () => {
             </button>
             <button
               onClick={() => setActiveCheckupTab("checkupHistory")}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 ${
+              className={`flex items-center cursor-pointer gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 ${
                 activeCheckupTab === "checkupHistory"
                   ? "bg-white text-teal-600 shadow-sm"
                   : "text-gray-600 hover:text-teal-600 hover:bg-gray-50"

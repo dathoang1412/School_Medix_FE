@@ -5,6 +5,7 @@ import axiosClient from "../../../config/axiosClient";
 import { getStudentInfo } from "../../../service/childenService";
 import { Download, FileText, ChevronDown, X } from "lucide-react";
 import PDFViewer from "../../../components/PDFViewer";
+import { getUserRole } from "../../../service/authService";
 
 const CheckupHistoryInfo = () => {
   const { student_id } = useParams();
@@ -499,13 +500,14 @@ const CheckupHistoryInfo = () => {
                   <td className="px-4 py-3 text-sm text-gray-800 border-r border-gray-200 font-medium">
                     {item.student_name}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-800 border-r border-gray-200">
+                  <td onClick={() => {navigate(`/${getUserRole()}/checkup-campaign/${item.campaign_id}`)}}
+                  className="px-4 cursor-pointer underline py-3 text-sm text-blue-600 border-r border-gray-200">
                     {item.campaign_name}
                   </td>
                   <td className="px-4 py-3 text-sm border-r border-gray-200">
                     <button
                       onClick={() => toggleRow(item.health_record_id)}
-                      className="inline-flex items-center justify-center w-8 h-8 border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:border-gray-400 rounded-md transition-colors"
+                      className="inline-flex cursor-pointer items-center justify-center w-8 h-8 border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:border-gray-400 rounded-md transition-colors"
                       title="Xem chuyên khoa"
                     >
                       <ChevronDown
@@ -530,7 +532,7 @@ const CheckupHistoryInfo = () => {
                           `${item.student_id}_${item.campaign_id}`
                         ] || loading.fetch
                       }
-                      className={`inline-flex items-center justify-center w-8 h-8 border rounded-md transition-colors ${
+                      className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 border rounded-md transition-colors ${
                         loading.download[
                           `${item.student_id}_${item.campaign_id}`
                         ]
@@ -578,7 +580,7 @@ const CheckupHistoryInfo = () => {
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => openFullDetailsModal(item)}
-                      className="inline-flex items-center justify-center w-8 h-8 border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:border-gray-400 rounded-md transition-colors"
+                      className="inline-flex cursor-pointer items-center justify-center w-8 h-8 border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:border-gray-400 rounded-md transition-colors"
                       title="Xem chi tiết"
                     >
                       <FileText className="h-4 w-4" />

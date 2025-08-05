@@ -197,19 +197,7 @@ const VaccineCampaignDetails = () => {
   };
 
   const handleBack = () => {
-    const { from, childId } = location.state || {};
-    if (from) {
-      navigate(from, { state: { childId } });
-    } else {
-      const backRoutes = {
-        admin: "/admin/vaccine-campaign",
-        nurse: "/nurse/vaccine-campaign",
-        parent: "/parent/student-vaccine-campaign",
-      };
-      navigate(backRoutes[userRole] || "/parent/student-vaccine-campaign", {
-        state: { childId },
-      });
-    }
+    navigate(-1)
   };
 
   const getStatusIcon = (status) => {
