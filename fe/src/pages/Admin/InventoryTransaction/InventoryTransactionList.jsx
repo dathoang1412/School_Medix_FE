@@ -153,7 +153,7 @@ const InventoryTransactionList = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex">
-      <div className="w-full max-w-6xl mx-auto">
+      <div className="w-full mx-auto">
         {/* Main Content */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 py-8">
