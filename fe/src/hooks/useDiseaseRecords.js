@@ -29,7 +29,7 @@ const useDiseaseRecords = () => {
             endpoint = "/disease-record";
         }
         const response = await axiosClient.get(endpoint);
-        console.log("Disease: ",response.data.data);
+        console.log("Disease record list: ",response.data.data);
         if (response.data.error === false || response.data.data) {
           setRecords(response.data.data || []);
         } else {

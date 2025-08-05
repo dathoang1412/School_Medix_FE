@@ -1,13 +1,12 @@
-import React, { useState } from "react";
 import { Plus, Search, FileText } from "lucide-react";
 import useDiseaseRecords from "../../../hooks/useDiseaseRecords";
 import DiseaseRecordList from "./DiseaseRecordList";
 import AddDiseaseRecord from "./AddDiseaseRecord";
+import { useNavigate } from "react-router-dom";
 
 const DiseaseRecordManagement = () => {
-  const [showAddForm, setShowAddForm] = useState(false);
   const { records, searchTerm, setSearchTerm, categoryFilter, setCategoryFilter, loading, error } = useDiseaseRecords();
-
+  const navigate = useNavigate();
   // Get today's records count
   const todayRecordsCount = records.filter(record => {
     const detectDate = new Date(record.detect_date);
@@ -53,7 +52,7 @@ const DiseaseRecordManagement = () => {
         )}
 
         {/* Search and Filter Controls */}
-        {!showAddForm && (
+        {
           <div className="bg-white shadow-sm border border-gray-200 p-6 mb-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
@@ -84,7 +83,7 @@ const DiseaseRecordManagement = () => {
                 </div>
               </div>
               <button
-                onClick={() => setShowAddForm(true)}
+                onClick={() => navigate('/admin/diseaseRecord/add')}
                 className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
               >
                 <Plus size={16} />
@@ -92,7 +91,7 @@ const DiseaseRecordManagement = () => {
               </button>
             </div>
           </div>
-        )}
+        }
 
         {/* Content */}
         {loading ? (
@@ -100,9 +99,7 @@ const DiseaseRecordManagement = () => {
             <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-4"></div>
             <p className="text-gray-500">Đang tải dữ liệu...</p>
           </div>
-        ) : showAddForm ? (
-          <AddDiseaseRecord onClose={() => setShowAddForm(false)} categoryFilter={categoryFilter} />
-        ) : records.length === 0 ? (
+        )  : records.length === 0 ? (
           <div className="bg-white shadow-sm border border-gray-200 p-12 text-center">
             <FileText size={40} className="mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">Không tìm thấy hồ sơ nào</p>
