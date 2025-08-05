@@ -611,6 +611,8 @@ const CheckupHistoryInfo = () => {
     </div>
   );
 
+  console.log("selectedPDFUrl: ", selectedPDFUrl);
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="bg-white rounded-md shadow-sm border border-gray-200">
