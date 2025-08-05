@@ -365,21 +365,16 @@ const UserManagement = () => {
     formData.append("file", file);
 
     try {
-      const endpointMap = {
-        admin: "/upload-admin-excel",
-        nurse: "/upload-nurse-excel",
-        parent: "/upload-parent-excel",
-        student: "/upload-student-excel",
-      };
-
-      const endpoint = endpointMap[state.activeTab];
-
-      const response = await axiosClient.post(endpoint, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        responseType: "blob",
-      });
+      const response = await axiosClient.post(
+        "/upload-student-excel",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          responseType: "blob",
+        }
+      );
 
       enqueueSnackbar("Tải file lên và xử lý thành công!", {
         variant: "success",
@@ -392,7 +387,7 @@ const UserManagement = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${state.activeTab}_upload_result.xlsx`;
+      a.download = `student_upload_result.xlsx`;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
@@ -408,12 +403,9 @@ const UserManagement = () => {
 
   const handleGetImportSample = async () => {
     try {
-      const response = await axiosClient.get(
-        `/${state.activeTab}-import-sample`,
-        {
-          responseType: "blob",
-        }
-      );
+      const response = await axiosClient.get(`/student-import-sample`, {
+        responseType: "blob",
+      });
 
       enqueueSnackbar("Tải file mẫu thành công!", { variant: "success" });
 
@@ -424,7 +416,7 @@ const UserManagement = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${state.activeTab}_import_sample.xlsx`);
+      link.setAttribute("download", `student_import_sample.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
