@@ -7,9 +7,7 @@ import {
   X,
   Eye,
   Edit2,
-  File,
   FileText,
-  FileTextIcon,
 } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { useSnackbar } from "notistack";
@@ -28,7 +26,7 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
   const [noteInputs, setNoteInputs] = useState({});
   const [editingNotes, setEditingNotes] = useState({});
   const [selectedGroup, setSelectedGroup] = useState(null);
-  const today = new Date().toISOString().split("T")[0]; // 2025-08-03
+  const today = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
 
   const formatDate = (dateString) => {
@@ -66,8 +64,15 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
       const res = await axiosClient.get(
         `/medication-schedule-by-day?date=${date}`
       );
-      console.log("SEND DRUG " + date + ": ", res.data.data);
-      setScheduleDetails(res.data.data || {});
+      const filteredData = {};
+      ["MORNING", "MIDDAY", "AFTERNOON"].forEach((time) => {
+        if (res.data.data[time]) {
+          filteredData[time] = res.data.data[time].filter(
+            (group) => group.request_status !== "DONE"
+          );
+        }
+      });
+      setScheduleDetails(filteredData);
       setNoteInputs({});
       setEditingNotes({});
     } catch (error) {
@@ -96,6 +101,12 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
       return;
     }
     const group = scheduleDetails[time][groupIndex];
+    if (group.request_status === "DONE") {
+      enqueueSnackbar("Không thể cập nhật trạng thái cho đơn đã hoàn thành.", {
+        variant: "warning",
+      });
+      return;
+    }
     if (isTaken === group.is_taken) {
       enqueueSnackbar(
         `Buổi này đã được ${isTaken ? "đánh dấu" : "bỏ đánh dấu"}.`,
