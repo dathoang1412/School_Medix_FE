@@ -70,6 +70,7 @@ const DrugRequestDetail = () => {
         axiosClient.get(`/medication-schedule-by-day?date=${date}`)
       );
       const responses = await Promise.all(schedulePromises);
+      console.log("Lich uong thuoc detail: ", responses.map(res2 => res2.data.data))
       const scheduleData = {};
       responses.forEach((res, index) => {
         const filteredData = {
@@ -99,7 +100,7 @@ const DrugRequestDetail = () => {
 
   useEffect(() => {
     fetchDrugRequest();
-  }, [id, enqueueSnackbar]);
+  }, [id]);
 
   const handleRefresh = async () => {
     setRefreshLoading(true);
@@ -123,17 +124,23 @@ const DrugRequestDetail = () => {
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "N/A";
     try {
-      return new Date(timestamp).toLocaleString("vi-VN", {
+      const date = new Date(timestamp);
+      // Ensure the date is treated as UTC and then displayed in +07:00
+      const options = {
+        timeZone: "Asia/Ho_Chi_Minh",
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-      });
+        hour12: false,
+      };
+      return date.toLocaleString("vi-VN", options);
     } catch {
       return "N/A";
     }
   };
+  
 
   const getStatusDisplay = (status) => {
     const statusMap = {
@@ -244,6 +251,7 @@ const DrugRequestDetail = () => {
               ...group,
               is_taken: false,
               note: "",
+              intake_time: null, // Reset intake_time when unticking
             };
             return updated;
           });
@@ -285,14 +293,19 @@ const DrugRequestDetail = () => {
       const medicationIds = group.medications.map(
         (med) => med.medication_schedule_id
       );
+      // Create local time in +07:00
+      const localDate = new Date();
+      const currentTime = new Date(
+        localDate.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
+      ).toISOString();
       const promises = medicationIds.map((id) =>
         axiosClient.patch(`/medication-schedule/${id}/tick`, {
-          intake_time: new Date().toISOString(),
+          intake_time: currentTime,
           note: comment || "",
         })
       );
       const responses = await Promise.all(promises);
-
+  
       if (responses.every((res) => res.status === 200)) {
         setSchedules((prev) => {
           const updated = { ...prev };
@@ -300,6 +313,7 @@ const DrugRequestDetail = () => {
             ...group,
             is_taken: true,
             note: comment || "",
+            intake_time: currentTime, // Update intake_time in state
           };
           return updated;
         });
@@ -395,10 +409,10 @@ const DrugRequestDetail = () => {
                   Lịch uống thuốc
                 </h2>
               </div>
-              <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
+              {/* <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
                 Tổng: {daysInfo.total} ngày, Đã uống: {daysInfo.taken}, Còn lại:{" "}
                 {daysInfo.remaining}
-              </p>
+              </p> */}
               {Object.keys(schedules).length === 0 ? (
                 <p className="text-xs sm:text-sm text-gray-500">
                   Không có lịch uống thuốc.
@@ -450,24 +464,22 @@ const DrugRequestDetail = () => {
                                     key={group.request_id}
                                     className="flex items-center gap-2"
                                   >
-                                    { (
-                                      <button
-                                        onClick={() =>
-                                          setSelectedGroup({
-                                            date,
-                                            time,
-                                            groupIndex,
-                                            medications: group.medications,
-                                            note: group.note,
-                                            intake_time: group.intake_time,
-                                            is_taken: group.is_taken,
-                                          })
-                                        }
-                                        className="text-blue-600 cursor-pointer hover:text-blue-800"
-                                      >
-                                        <Eye size={14} />
-                                      </button>
-                                    )}
+                                    <button
+                                      onClick={() =>
+                                        setSelectedGroup({
+                                          date,
+                                          time,
+                                          groupIndex,
+                                          medications: group.medications,
+                                          note: group.note,
+                                          intake_time: group.intake_time,
+                                          is_taken: group.is_taken,
+                                        })
+                                      }
+                                      className="text-blue-600 cursor-pointer hover:text-blue-800"
+                                    >
+                                      <Eye size={14} />
+                                    </button>
                                     {date > today ? (
                                       <Clock
                                         size={14}
@@ -705,7 +717,7 @@ const DrugRequestDetail = () => {
                               Thời gian uống:
                             </span>
                             <p className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200">
-                              {formatTimestamp(selectedGroup.intake_time)}
+                              {formatTimestamp(selectedGroup?.intake_time)}
                             </p>
                           </div>
                         </div>
