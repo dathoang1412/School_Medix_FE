@@ -36,7 +36,8 @@ const MedicalItemsManagement = () => {
             <div className="flex rounded-lg border border-gray-300 overflow-hidden">
               <button
                 onClick={() => setActiveTab("MEDICATION")}
-                className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer ${
+                style={{borderRight: '1px solid #ccc'}}
+                className={`px-4 py-2 text-sm font-medium flex items-center gap-8 transition-colors cursor-pointer ${
                   activeTab === "MEDICATION"
                     ? "bg-blue-600 text-white"
                     : "bg-white text-gray-700 hover:bg-gray-100"
@@ -48,7 +49,8 @@ const MedicalItemsManagement = () => {
               </button>
               <button
                 onClick={() => setActiveTab("MEDICAL_SUPPLY")}
-                className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer ${
+                style={{borderRight: '1px solid #ccc'}}
+                className={`px-4 py-2 text-sm font-medium flex items-center gap-8 transition-colors cursor-pointer ${
                   activeTab === "MEDICAL_SUPPLY"
                     ? "bg-blue-600 text-white"
                     : "bg-white text-gray-700 hover:bg-gray-100"
@@ -60,7 +62,7 @@ const MedicalItemsManagement = () => {
               </button>
               <button
                 onClick={() => setActiveTab("SUPPLIER")}
-                className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer ${
+                className={`px-4 py-2 text-sm font-medium flex items-center gap-8 transition-colors cursor-pointer ${
                   activeTab === "SUPPLIER"
                     ? "bg-blue-600 text-white"
                     : "bg-white text-gray-700 hover:bg-gray-100"

@@ -76,6 +76,7 @@ import HomeManagement from "../pages/Admin/UserManagement/HomeManagement";
 import CreateNewHome from "../pages/Admin/UserManagement/CreateNewHome";
 import EditHome from "../pages/Admin/UserManagement/EditHome";
 import DrugRequestDetail from "../pages/Admin&Nurse/SendDrugManagement/DrugRequestDetail";
+import AddDiseaseRecord from "../pages/Admin&Nurse/DiseaseManagement/AddDiseaseRecord";
 
 const routes = createBrowserRouter([
   {
@@ -280,6 +281,10 @@ const routes = createBrowserRouter([
           {
             path: "disease",
             element: <DiseaseRecordManagement />,
+          },
+          {
+            path: "diseaseRecord/add",
+            element: <AddDiseaseRecord />,
           },
           {
             path: "DeclarationManagement",

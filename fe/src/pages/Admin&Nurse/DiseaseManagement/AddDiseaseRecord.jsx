@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../../../config/axiosClient';
+import { useNavigate } from 'react-router-dom';
 
 const AddDiseaseRecord = ({ onClose }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     student_id: '',
     disease_id: '',
@@ -16,21 +18,22 @@ const AddDiseaseRecord = ({ onClose }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  useEffect(() => {
-    const fetchDiseases = async () => {
-      try {
-        const response = await axiosClient.get('/diseases');
-        if (response.data && response.data.length > 0) {
-          setDiseases(response.data);
-        } else {
-          setError('Không thể tải danh sách bệnh: Không có dữ liệu');
-        }
-      } catch (err) {
-        setError('Lỗi server khi tải danh sách bệnh: ' + err.message);
+useEffect(() => {
+  const fetchDiseases = async () => {
+    try {
+      const response = await axiosClient.get('/diseases');
+      if (response.data.data && response.data.data.length > 0) {
+        setDiseases(response.data.data);
+        console.log("Fetched diseases:", response.data.data);
+      } else {
+        setError('Không thể tải danh sách bệnh: Không có dữ liệu');
       }
-    };
-    fetchDiseases();
-  }, []);
+    } catch (err) {
+      setError('Lỗi server khi tải danh sách bệnh: ' + err.message);
+    }
+  };
+  fetchDiseases();
+}, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -158,7 +161,7 @@ const AddDiseaseRecord = ({ onClose }) => {
         </button>
         <button
           type="button"
-          onClick={onClose}
+          onClick={()=>navigate('/admin/disease')}
           className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
         >
           Hủy
