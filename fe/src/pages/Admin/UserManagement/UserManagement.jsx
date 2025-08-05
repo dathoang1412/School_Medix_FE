@@ -21,7 +21,6 @@ import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import DeleteConfirmModal from "../../../components/DeleteConfirmModal";
 import { saveAs } from "file-saver";
-import Papa from "papaparse";
 import { getUserRole } from "../../../service/authService";
 
 // UserInfo component remains unchanged
@@ -121,6 +120,7 @@ const UserManagement = () => {
     selectedUserDetail: null,
     selectedUsers: [],
     isSendingInvites: false,
+    isUploading: false, // Thêm trạng thái để quản lý upload
   });
 
   const updateState = (updates) =>
@@ -260,7 +260,6 @@ const UserManagement = () => {
         ? state.selectedUsers.filter((u) => u.id !== user.id)
         : [...state.selectedUsers, { ...user, role: state.activeTab }],
     });
-    console.log(state.users);
   };
 
   const handleSendInvites = async () => {
@@ -296,7 +295,6 @@ const UserManagement = () => {
   const handleViewDetail = async (role, id) => {
     try {
       const { data } = await axiosClient.get(`/${role}/${id}`);
-      console.log(data);
       if (!data.error) {
         updateState({
           selectedUserDetail: { role, ...data.data },
@@ -340,26 +338,41 @@ const UserManagement = () => {
     }
   };
 
-  const handleExportCSV = async () => {
+  const handleExportExcel = async () => {
     try {
       const response = await axiosClient.get("/download-users", {
-        responseType: "blob", // Quan trọng để nhận file Excel đúng
+        responseType: "blob",
       });
-
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-
       saveAs(blob, `users_${new Date().toISOString()}.xlsx`);
+      enqueueSnackbar("Tải file Excel thành công!", { variant: "success" });
     } catch (error) {
       console.error("❌ Tải file thất bại:", error);
-      enqueueSnackbar("Tải file thất bại!", { variant: "error" });
+      enqueueSnackbar("Tải file Excel thất bại!", { variant: "error" });
     }
   };
 
-  const handleImportCSV = async (event) => {
+  const handleImportExcel = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
+    // Kiểm tra định dạng file
+    const validTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+    ];
+    if (!validTypes.includes(file.type)) {
+      enqueueSnackbar("Vui lòng chọn file Excel (.xlsx hoặc .xls)!", {
+        variant: "error",
+      });
+      event.target.value = null; // Reset input file
+      return;
+    }
+
+    event.target.value = null; // Reset input để cho phép upload liên tục
+    updateState({ isUploading: true }); // Bật trạng thái loading
 
     const formData = new FormData();
     formData.append("file", file);
@@ -376,28 +389,33 @@ const UserManagement = () => {
         }
       );
 
-      enqueueSnackbar("Tải file lên và xử lý thành công!", {
+      enqueueSnackbar("Tải file Excel lên và xử lý thành công!", {
         variant: "success",
       });
 
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `student_upload_result.xlsx`;
       a.click();
       window.URL.revokeObjectURL(url);
+
+      // Làm mới danh sách người dùng
+      await fetchUsers();
     } catch (error) {
       console.error("Error uploading file:", error);
       enqueueSnackbar(
-        `Lỗi khi tải file lên: ${
+        `Lỗi khi tải file Excel lên: ${
           error.response?.data?.message || error.message
         }`,
         { variant: "error" }
       );
+    } finally {
+      updateState({ isUploading: false }); // Tắt trạng thái loading
+      event.target.value = null; // Đảm bảo reset input
     }
   };
 
@@ -406,13 +424,10 @@ const UserManagement = () => {
       const response = await axiosClient.get(`/student-import-sample`, {
         responseType: "blob",
       });
-
       enqueueSnackbar("Tải file mẫu thành công!", { variant: "success" });
-
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -594,18 +609,33 @@ const UserManagement = () => {
 
         <div className="flex justify-end gap-2 mb-6">
           <button
-            onClick={handleExportCSV}
+            onClick={handleExportExcel}
             className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm cursor-pointer"
           >
-            <Download size={14} /> Xuất CSV
+            <Download size={14} /> Xuất Excel
           </button>
-          <label className="flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer text-sm">
-            <Upload size={14} /> Nhập CSV
+          <label
+            className={`flex items-center gap-2 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm cursor-pointer ${
+              state.isUploading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {state.isUploading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang tải...</span>
+              </>
+            ) : (
+              <>
+                <Upload size={14} />
+                <span>Nhập Excel</span>
+              </>
+            )}
             <input
               type="file"
-              accept=".csv"
-              onChange={handleImportCSV}
+              accept=".xlsx,.xls"
+              onChange={handleImportExcel}
               className="hidden"
+              disabled={state.isUploading}
             />
           </label>
           <button
