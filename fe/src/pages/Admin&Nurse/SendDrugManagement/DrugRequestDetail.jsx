@@ -99,7 +99,7 @@ const DrugRequestDetail = () => {
 
   useEffect(() => {
     fetchDrugRequest();
-  }, [id, enqueueSnackbar]);
+  }, [id]);
 
   const handleRefresh = async () => {
     setRefreshLoading(true);
@@ -123,16 +123,25 @@ const DrugRequestDetail = () => {
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "N/A";
     try {
-      return new Date(timestamp).toLocaleString("vi-VN", {
+      const date = new Date(timestamp);
+      return date.toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        hour12: false,
       });
     } catch {
       return "N/A";
     }
+  };
+
+  const getCurrentVietnamTime = () => {
+    const now = new Date();
+    const vietnamTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    return vietnamTime.toISOString();
   };
 
   const getStatusDisplay = (status) => {
@@ -244,6 +253,7 @@ const DrugRequestDetail = () => {
               ...group,
               is_taken: false,
               note: "",
+              intake_time: null,
             };
             return updated;
           });
@@ -285,10 +295,11 @@ const DrugRequestDetail = () => {
       const medicationIds = group.medications.map(
         (med) => med.medication_schedule_id
       );
+      const currentTime = getCurrentVietnamTime();
       const promises = medicationIds.map((id) =>
         axiosClient.patch(`/medication-schedule/${id}/tick`, {
-          intake_time: new Date().toISOString(),
-          note: comment || "",
+          intake_time: currentTime,
+          note: comment || "Đã uống",
         })
       );
       const responses = await Promise.all(promises);
@@ -299,7 +310,8 @@ const DrugRequestDetail = () => {
           updated[date][time][groupIndex] = {
             ...group,
             is_taken: true,
-            note: comment || "",
+            note: comment || "Đã uống",
+            intake_time: currentTime,
           };
           return updated;
         });
@@ -320,6 +332,7 @@ const DrugRequestDetail = () => {
         [date + time + groupIndex]: false,
       }));
       setCommentModal(null);
+      await handleRefresh();
     }
   };
 
@@ -450,24 +463,22 @@ const DrugRequestDetail = () => {
                                     key={group.request_id}
                                     className="flex items-center gap-2"
                                   >
-                                    { (
-                                      <button
-                                        onClick={() =>
-                                          setSelectedGroup({
-                                            date,
-                                            time,
-                                            groupIndex,
-                                            medications: group.medications,
-                                            note: group.note,
-                                            intake_time: group.intake_time,
-                                            is_taken: group.is_taken,
-                                          })
-                                        }
-                                        className="text-blue-600 cursor-pointer hover:text-blue-800"
-                                      >
-                                        <Eye size={14} />
-                                      </button>
-                                    )}
+                                    <button
+                                      onClick={() =>
+                                        setSelectedGroup({
+                                          date,
+                                          time,
+                                          groupIndex,
+                                          medications: group.medications,
+                                          note: group.note,
+                                          intake_time: group.intake_time,
+                                          is_taken: group.is_taken,
+                                        })
+                                      }
+                                      className="text-blue-600 cursor-pointer hover:text-blue-800"
+                                    >
+                                      <Eye size={14} />
+                                    </button>
                                     {date > today ? (
                                       <Clock
                                         size={14}
@@ -705,7 +716,7 @@ const DrugRequestDetail = () => {
                               Thời gian uống:
                             </span>
                             <p className="text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200">
-                              {formatTimestamp(selectedGroup.intake_time)}
+                              {formatTimestamp(selectedGroup?.intake_time)}
                             </p>
                           </div>
                         </div>
@@ -745,7 +756,7 @@ const DrugRequestDetail = () => {
                           commentModal.date,
                           commentModal.groupIndex,
                           commentModal.group,
-                          commentModal.note || ""
+                          commentModal.note || "Đã uống"
                         )
                       }
                       className="px-3 cursor-pointer py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs sm:text-sm"
