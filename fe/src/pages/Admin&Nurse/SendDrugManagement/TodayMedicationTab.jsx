@@ -46,7 +46,8 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
     if (!timestamp) return "N/A";
     try {
       const date = new Date(timestamp);
-      const options = {
+      // Format in Vietnamese locale with UTC+7 timezone
+      return date.toLocaleString("vi-VN", {
         timeZone: "Asia/Ho_Chi_Minh",
         day: "2-digit",
         month: "2-digit",
@@ -54,11 +55,17 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
-      };
-      return date.toLocaleString("vi-VN", options);
+      });
     } catch {
       return "N/A";
     }
+  };
+
+  const getCurrentVietnamTime = () => {
+    const now = new Date();
+    // Vietnam is UTC+7, so we add 7 hours to get Vietnam time
+    const vietnamTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    return vietnamTime.toISOString();
   };
 
   const handleDateSelect = async (date) => {
@@ -128,35 +135,30 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
         (med) => med.medication_schedule_id
       );
       const note = noteInputs[time + groupIndex] || "Đã uống";
-      // Get current local time in +07:00
-      const localDate = new Date();
-      console.log("Browser local time:", localDate.toString()); // Log browser time
-      // Convert to UTC by subtracting 7 hours (+07:00 offset)
-      const currentTime = new Date(localDate.getTime() - 7 * 60 * 60 * 1000).toISOString();
-      console.log("Sending intake_time to server:", currentTime); // Log sent timestamp
+      const currentTime = getCurrentVietnamTime();
+      console.log("Sending intake_time to server:", currentTime);
+
       const endpoint = isTaken
         ? `/medication-schedule/${medicationIds[0]}/tick`
         : `/medication-schedule/${medicationIds[0]}/untick`;
       const payload = isTaken
         ? { intake_time: currentTime, note }
         : {};
+      
       const promises = medicationIds.map((id) =>
         axiosClient.patch(endpoint.replace(medicationIds[0], id), payload)
       );
       const responses = await Promise.all(promises);
-      console.log("Server responses:", responses.map(res => res.data)); // Log server response
+      console.log("Server responses:", responses.map(res => res.data));
 
       if (responses.every((res) => res.status === 200)) {
-        // Use server-provided intake_time if available, else use client-generated
-        const serverIntakeTime = responses[0]?.data?.intake_time || currentTime;
-        console.log("Using intake_time for state:", serverIntakeTime); // Log final intake_time
         setScheduleDetails((prev) => {
           const updated = { ...prev };
           updated[time][groupIndex] = {
             ...group,
             is_taken: isTaken,
             note: isTaken ? note : group.note,
-            intake_time: isTaken ? serverIntakeTime : null,
+            intake_time: isTaken ? currentTime : null,
           };
           return updated;
         });
@@ -183,6 +185,7 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
       );
     } finally {
       setActionLoading((prev) => ({ ...prev, [time + groupIndex]: false }));
+      await handleDateSelect(selectedDate);
     }
   };
 
@@ -403,8 +406,8 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
                                 )
                               ) : (
                                 <span className="text-xs text-gray-500">
-                                  {group.note || "N/A"}
-                                </span>
+                                      {group.note || "N/A"}
+                                    </span>
                               )}
                             </div>
                           ))}

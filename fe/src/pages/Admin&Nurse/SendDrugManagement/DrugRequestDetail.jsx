@@ -70,7 +70,6 @@ const DrugRequestDetail = () => {
         axiosClient.get(`/medication-schedule-by-day?date=${date}`)
       );
       const responses = await Promise.all(schedulePromises);
-      console.log("Lich uong thuoc detail: ", responses.map(res2 => res2.data.data))
       const scheduleData = {};
       responses.forEach((res, index) => {
         const filteredData = {
@@ -125,8 +124,7 @@ const DrugRequestDetail = () => {
     if (!timestamp) return "N/A";
     try {
       const date = new Date(timestamp);
-      // Ensure the date is treated as UTC and then displayed in +07:00
-      const options = {
+      return date.toLocaleString("vi-VN", {
         timeZone: "Asia/Ho_Chi_Minh",
         day: "2-digit",
         month: "2-digit",
@@ -134,13 +132,17 @@ const DrugRequestDetail = () => {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
-      };
-      return date.toLocaleString("vi-VN", options);
+      });
     } catch {
       return "N/A";
     }
   };
-  
+
+  const getCurrentVietnamTime = () => {
+    const now = new Date();
+    const vietnamTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    return vietnamTime.toISOString();
+  };
 
   const getStatusDisplay = (status) => {
     const statusMap = {
@@ -251,7 +253,7 @@ const DrugRequestDetail = () => {
               ...group,
               is_taken: false,
               note: "",
-              intake_time: null, // Reset intake_time when unticking
+              intake_time: null,
             };
             return updated;
           });
@@ -293,27 +295,23 @@ const DrugRequestDetail = () => {
       const medicationIds = group.medications.map(
         (med) => med.medication_schedule_id
       );
-      // Create local time in +07:00
-      const localDate = new Date();
-      const currentTime = new Date(
-        localDate.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
-      ).toISOString();
+      const currentTime = getCurrentVietnamTime();
       const promises = medicationIds.map((id) =>
         axiosClient.patch(`/medication-schedule/${id}/tick`, {
           intake_time: currentTime,
-          note: comment || "",
+          note: comment || "Đã uống",
         })
       );
       const responses = await Promise.all(promises);
-  
+
       if (responses.every((res) => res.status === 200)) {
         setSchedules((prev) => {
           const updated = { ...prev };
           updated[date][time][groupIndex] = {
             ...group,
             is_taken: true,
-            note: comment || "",
-            intake_time: currentTime, // Update intake_time in state
+            note: comment || "Đã uống",
+            intake_time: currentTime,
           };
           return updated;
         });
@@ -334,6 +332,7 @@ const DrugRequestDetail = () => {
         [date + time + groupIndex]: false,
       }));
       setCommentModal(null);
+      await handleRefresh();
     }
   };
 
@@ -409,10 +408,10 @@ const DrugRequestDetail = () => {
                   Lịch uống thuốc
                 </h2>
               </div>
-              {/* <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
+              <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
                 Tổng: {daysInfo.total} ngày, Đã uống: {daysInfo.taken}, Còn lại:{" "}
                 {daysInfo.remaining}
-              </p> */}
+              </p>
               {Object.keys(schedules).length === 0 ? (
                 <p className="text-xs sm:text-sm text-gray-500">
                   Không có lịch uống thuốc.
@@ -757,7 +756,7 @@ const DrugRequestDetail = () => {
                           commentModal.date,
                           commentModal.groupIndex,
                           commentModal.group,
-                          commentModal.note || ""
+                          commentModal.note || "Đã uống"
                         )
                       }
                       className="px-3 cursor-pointer py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs sm:text-sm"
