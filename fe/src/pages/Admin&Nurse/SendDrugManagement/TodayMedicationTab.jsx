@@ -45,16 +45,27 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "N/A";
     try {
-      return new Date(timestamp).toLocaleString("vi-VN", {
+      const date = new Date(timestamp);
+      // Format in Vietnamese locale with UTC+7 timezone
+      return date.toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        hour12: false,
       });
     } catch {
       return "N/A";
     }
+  };
+
+  const getCurrentVietnamTime = () => {
+    const now = new Date();
+    // Vietnam is UTC+7, so we add 7 hours to get Vietnam time
+    const vietnamTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    return vietnamTime.toISOString();
   };
 
   const handleDateSelect = async (date) => {
@@ -64,6 +75,7 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
       const res = await axiosClient.get(
         `/medication-schedule-by-day?date=${date}`
       );
+      console.log("Lich uong thuoc: ", res.data.data);
       const filteredData = {};
       ["MORNING", "MIDDAY", "AFTERNOON"].forEach((time) => {
         if (res.data.data[time]) {
@@ -123,16 +135,21 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
         (med) => med.medication_schedule_id
       );
       const note = noteInputs[time + groupIndex] || "Đã uống";
+      const currentTime = getCurrentVietnamTime();
+      console.log("Sending intake_time to server:", currentTime);
+
       const endpoint = isTaken
         ? `/medication-schedule/${medicationIds[0]}/tick`
         : `/medication-schedule/${medicationIds[0]}/untick`;
       const payload = isTaken
-        ? { intake_time: new Date().toISOString(), note }
+        ? { intake_time: currentTime, note }
         : {};
+      
       const promises = medicationIds.map((id) =>
         axiosClient.patch(endpoint.replace(medicationIds[0], id), payload)
       );
       const responses = await Promise.all(promises);
+      console.log("Server responses:", responses.map(res => res.data));
 
       if (responses.every((res) => res.status === 200)) {
         setScheduleDetails((prev) => {
@@ -141,7 +158,7 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
             ...group,
             is_taken: isTaken,
             note: isTaken ? note : group.note,
-            intake_time: isTaken ? new Date().toISOString() : null,
+            intake_time: isTaken ? currentTime : null,
           };
           return updated;
         });
@@ -159,6 +176,7 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
         throw new Error("Yêu cầu không hợp lệ");
       }
     } catch (error) {
+      console.error("Error updating medication status:", error);
       enqueueSnackbar(
         error.response?.data?.message || "Lỗi khi cập nhật trạng thái.",
         {
@@ -167,6 +185,7 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
       );
     } finally {
       setActionLoading((prev) => ({ ...prev, [time + groupIndex]: false }));
+      await handleDateSelect(selectedDate);
     }
   };
 
@@ -387,8 +406,8 @@ const TodayMedicationTab = ({ medicationSchedules }) => {
                                 )
                               ) : (
                                 <span className="text-xs text-gray-500">
-                                  {group.note || "N/A"}
-                                </span>
+                                      {group.note || "N/A"}
+                                    </span>
                               )}
                             </div>
                           ))}
