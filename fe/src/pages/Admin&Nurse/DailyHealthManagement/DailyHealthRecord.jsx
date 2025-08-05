@@ -4,6 +4,7 @@ import { Plus, ChevronDown, ChevronUp, Search, FileText, CheckCircle, Calendar, 
 import axiosClient from '../../../config/axiosClient';
 import { getUserRole } from '../../../service/authService';
 import { fetchClass } from '../../../utils/classUtils';
+import { enqueueSnackbar } from 'notistack';
 
 const DailyHealthRecord = () => {
   const navigate = useNavigate();
@@ -212,9 +213,8 @@ const DailyHealthRecord = () => {
 
   // Clear success message after 3 seconds
   useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => setSuccess(''), 3000);
-      return () => clearTimeout(timer);
+    if (success){
+      enqueueSnackbar(success, {variant: "success"})
     }
   }, [success]);
 
@@ -408,16 +408,6 @@ const DailyHealthRecord = () => {
             </div>
           </div>
         </div>
-
-        {/* Success Message */}
-        {success && (
-          <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-400 text-green-800">
-            <div className="flex items-center">
-              <CheckCircle size={20} className="text-green-600 mr-3" />
-              {success}
-            </div>
-          </div>
-        )}
 
         {/* Error Message */}
         {error && (

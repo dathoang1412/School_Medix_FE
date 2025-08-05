@@ -573,7 +573,7 @@ const VaccineCampaignDetails = () => {
             className="flex items-center text-blue-600 hover:text-blue-800 mb-4 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
-            <span>Quay lại danh sách</span>
+            <span>Quay lại</span>
           </button>
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
