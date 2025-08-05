@@ -26,6 +26,7 @@ const CompletedVaccineReport = () => {
       const res = await axiosClient.get(
         `/vaccination-campaign/${campaign_id}/registered-record`
       );
+      console.log("Registered record:", res.data.data);
       setStudentList(res.data.data);
       setLoading(false);
       const res2 = await axiosClient.get(`/vaccination-campaign/${campaign_id}`);
@@ -162,7 +163,7 @@ const CompletedVaccineReport = () => {
                     Thông tin học sinh
                   </h4>
                   <p className="text-sm text-gray-600 mt-1">
-                    Mã học sinh: {selectedRecord.student_id} | Họ tên: {selectedRecord.student_profile?.name || 'N/A'}
+                    Mã học sinh: {selectedRecord.student_id} | Họ tên: {selectedRecord.student_name || 'N/A'}
                   </p>
                 </div>
                 <div className="space-y-4">
@@ -298,7 +299,7 @@ const CompletedVaccineReport = () => {
                       to={`/${getUserRole()}/student-overview/${student.student_id}`}
                       className="text-blue-600 hover:text-blue-800 hover:underline"
                     >
-                      {student.student_profile?.name || "N/A"}
+                      {student.student_name || "N/A"}
                     </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
