@@ -50,7 +50,9 @@ const ParentCheckupLayout = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full text-center">
           <div className="w-12 h-12 text-red-500 mx-auto mb-4">⚠️</div>
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Lỗi tải dữ liệu</h3>
+          <h3 className="text-lg font-semibold text-red-800 mb-2">
+            Lỗi tải dữ liệu
+          </h3>
           <p className="text-red-700 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
@@ -73,8 +75,13 @@ const ParentCheckupLayout = () => {
               <Shield className="w-8 h-8 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Kiểm tra sức khỏe</h1>
-              <p className="text-gray-600">Theo dõi và đăng ký tham gia các chiến dịch kiểm tra sức khỏe cho {currChild?.name || "học sinh"}</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Kiểm tra sức khỏe
+              </h1>
+              <p className="text-gray-600">
+                Theo dõi và đăng ký tham gia các chiến dịch kiểm tra sức khỏe
+                cho {currChild?.name || "học sinh"}
+              </p>
             </div>
           </div>
 
@@ -119,7 +126,9 @@ const ParentCheckupLayout = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6">
-        {activeTab === "plans" && <StudentRegularCheckup currChild={currChild} />}
+        {activeTab === "plans" && (
+          <StudentRegularCheckup currChild={currChild} />
+        )}
         {activeTab === "history" && <CheckupHistoryInfo />}
         {activeTab === "dashboard" && <HealthDashboard currChild={currChild} />}
       </div>

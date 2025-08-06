@@ -1,6 +1,7 @@
 // src/api/axiosClient.js
 import axios from 'axios';
 import { enqueueSnackbar } from 'notistack';
+import { supabase } from './Supabase';
 
 // const axiosClient = axios.create({
 //   baseURL: 'https://schoolmedix-be.fly.dev/api',
@@ -19,11 +20,19 @@ const axiosClient = axios.create({
 });
 
 axiosClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("access_token");
+  async (config) => {
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error("Lỗi khi lấy session:", error.message);
+    }
+
+    const token = data?.session?.access_token;
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => {
@@ -31,6 +40,7 @@ axiosClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
 
 
 axiosClient.interceptors.response.use(
