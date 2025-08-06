@@ -14,7 +14,7 @@ const AddTransactionForm = () => {
     purpose_id: "",
     transaction_date: "",
     note: "",
-    medical_items: [{ id: "", quantity: 0 }],
+    medical_items: [{ id: "", quantity: "" }],
     supplier_id: "",
   });
   const [medicalItems, setMedicalItems] = useState([]);
@@ -53,7 +53,7 @@ const AddTransactionForm = () => {
           const formattedMedicalItems = transaction.medical_items.map(
             (item) => ({
               id: item.id,
-              quantity: item.quantity,
+              quantity: Math.abs(parseInt(item.transaction_quantity)) || "",
             })
           );
 
@@ -64,7 +64,7 @@ const AddTransactionForm = () => {
             medical_items:
               formattedMedicalItems.length > 0
                 ? formattedMedicalItems
-                : [{ id: "", quantity: 0 }],
+                : [{ id: "", quantity: "" }],
             supplier_id: transaction.supplier_id || "",
           });
         }
@@ -95,12 +95,9 @@ const AddTransactionForm = () => {
           });
           return prev;
         }
-        updatedItems[index] = { ...updatedItems[index], id: value };
+        updatedItems[index] = { ...updatedItems[index], id: value, quantity: updatedItems[index].quantity || "" };
       } else if (name === "quantity") {
-        updatedItems[index] = {
-          ...updatedItems[index],
-          quantity: parseInt(value) || 0,
-        };
+        updatedItems[index] = { ...updatedItems[index], quantity: value };
       }
       return { ...prev, medical_items: updatedItems };
     });
@@ -109,7 +106,7 @@ const AddTransactionForm = () => {
   const addMedicalItem = () => {
     setFormData((prev) => ({
       ...prev,
-      medical_items: [...prev.medical_items, { id: "", quantity: 0 }],
+      medical_items: [...prev.medical_items, { id: "", quantity: "" }],
     }));
   };
 
@@ -130,7 +127,7 @@ const AddTransactionForm = () => {
         note: formData.note,
         medical_items: formData.medical_items.map((item) => ({
           id: item.id,
-          quantity: item.quantity,
+          quantity: item.quantity || "",
         })),
         supplier_id: formData.supplier_id || null,
       };
@@ -139,20 +136,9 @@ const AddTransactionForm = () => {
         !payload.purpose_id ||
         !payload.transaction_date ||
         !payload.medical_items.length ||
-        payload.medical_items.every((item) => !item.id || !item.quantity)
+        payload.medical_items.every((item) => !item.id)
       ) {
         throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc.");
-      }
-
-      if (payload.purpose_id !== "2" && payload.purpose_id !== "3") {
-        for (const item of payload.medical_items) {
-          const medicalItem = medicalItems.find((mi) => mi.id === item.id);
-          if (medicalItem && item.quantity > medicalItem.quantity) {
-            throw new Error(
-              `Số lượng vật tư/thuốc "${medicalItem.name}" vượt quá số lượng hiện tại (${medicalItem.quantity}).`
-            );
-          }
-        }
       }
 
       let response;
@@ -167,13 +153,7 @@ const AddTransactionForm = () => {
 
       if (response.data.error) {
         if (response.status === 400) {
-          if (response.data.message === "Không đủ vật tư/ thuốc để sử dụng!") {
-            throw new Error(
-              "Không được nhập quá số lượng thuốc/vật tư có sẵn."
-            );
-          } else {
-            throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc.");
-          }
+          throw new Error(response.data.message || "Dữ liệu không hợp lệ.");
         }
         throw new Error(response.data.message);
       }
@@ -186,9 +166,10 @@ const AddTransactionForm = () => {
       );
       navigate("/admin/inventory-transaction");
     } catch (err) {
+      console.log(err);
       let errorMessage = "Có lỗi xảy ra khi xử lý giao dịch.";
       if (err.message.includes("Request failed with status code 400")) {
-        errorMessage = "Không được nhập quá số lượng thuốc/vật tư có sẵn.";
+        errorMessage = err.message || "Dữ liệu không hợp lệ.";
       } else if (err.message) {
         errorMessage = err.message;
       }
@@ -320,12 +301,7 @@ const AddTransactionForm = () => {
                         placeholder="Số lượng"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
                         min="0"
-                        max={
-                          selectedMedicalItem
-                            ? selectedMedicalItem.quantity
-                            : undefined
-                        }
-                        required
+                        disabled={!item.id}
                       />
                     </div>
                     <button
