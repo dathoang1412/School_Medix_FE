@@ -1,7 +1,18 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronUp, User, Calendar, FileText, Activity, Eye, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  User,
+  Calendar,
+  FileText,
+  Activity,
+  Eye,
+  X,
+  Edit2,
+  PenBox,
+} from "lucide-react";
 import { getUserRole } from "../../../service/authService";
 
 const DiseaseRecordList = ({ records }) => {
@@ -102,7 +113,7 @@ const DiseaseRecordList = ({ records }) => {
   // Render Details Modal with updated styling
   const renderDetailsModal = () => {
     if (!selectedRecord) return null;
-    
+
     return (
       <div className="fixed inset-0 bg-gray-900/40 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-lg">
@@ -112,7 +123,7 @@ const DiseaseRecordList = ({ records }) => {
             </h3>
             <button
               onClick={closeModal}
-              className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+              className="text-gray-500 cursor-pointer hover:text-gray-700 p-1 rounded-full transition-colors"
               aria-label="Đóng"
             >
               <X className="h-5 w-5" />
@@ -152,7 +163,8 @@ const DiseaseRecordList = ({ records }) => {
                     Thông tin học sinh
                   </h4>
                   <p className="text-sm text-gray-600 mt-1">
-                    Mã học sinh: {selectedRecord.student_id} | Họ tên: {selectedRecord.student_name || 'N/A'}
+                    Mã học sinh: {selectedRecord.student_id} | Họ tên:{" "}
+                    {selectedRecord.student_name || "N/A"}
                   </p>
                 </div>
                 <div className="space-y-4">
@@ -161,47 +173,101 @@ const DiseaseRecordList = ({ records }) => {
                       Chi tiết y tế
                     </h4>
                     <div className="space-y-4">
-                      <h5 className="text-sm font-bold text-gray-800">I. Thông tin cơ bản</h5>
+                      <h5 className="text-sm font-bold text-gray-800">
+                        I. Thông tin cơ bản
+                      </h5>
                       {[
-                        { label: "Tên bệnh", value: selectedRecord.disease_name || 'Không có thông tin' },
-                        { label: "Mô tả bệnh", value: selectedRecord.description || 'Không có mô tả' },
-                        { label: "Phân loại", value: selectedRecord.disease_category || 'Chưa phân loại' },
-                        { label: "Ngày phát hiện", value: formatDate(selectedRecord.detect_date) },
-                        { label: "Ngày ghi nhận", value: formatDate(selectedRecord.created_at) },
+                        {
+                          label: "Tên bệnh",
+                          value:
+                            selectedRecord.disease_name || "Không có thông tin",
+                        },
+                        {
+                          label: "Mô tả bệnh",
+                          value: selectedRecord.description || "Không có mô tả",
+                        },
+                        {
+                          label: "Phân loại",
+                          value:
+                            selectedRecord.disease_category || "Chưa phân loại",
+                        },
+                        {
+                          label: "Ngày phát hiện",
+                          value: formatDate(selectedRecord.detect_date),
+                        },
+                        {
+                          label: "Ngày ghi nhận",
+                          value: formatDate(selectedRecord.created_at),
+                        },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex items-start">
-                          <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
-                          <p className="flex-1 text-sm text-gray-800">{value}</p>
+                          <label className="w-1/4 text-sm font-bold text-gray-800">
+                            {label}
+                          </label>
+                          <p className="flex-1 text-sm text-gray-800">
+                            {value}
+                          </p>
                         </div>
                       ))}
                     </div>
                     <div className="space-y-4 mt-6">
-                      <h5 className="text-sm font-bold text-gray-800">II. Chẩn đoán </h5>
+                      <h5 className="text-sm font-bold text-gray-800">
+                        II. Chẩn đoán{" "}
+                      </h5>
                       {[
-                        { label: "Chẩn đoán", value: selectedRecord.diagnosis || 'Chưa có chẩn đoán' },
+                        {
+                          label: "Chẩn đoán",
+                          value:
+                            selectedRecord.diagnosis || "Chưa có chẩn đoán",
+                        },
                         // { label: "Yêu cầu vaccine", value: selectedRecord.vaccine_need ? 'Cần thiết' : 'Không cần' },
                         // { label: "Số liều vaccine", value: selectedRecord.dose_quantity || 'Chưa xác định' },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex items-start">
-                          <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
-                          <p className="flex-1 text-sm text-gray-800">{value}</p>
+                          <label className="w-1/4 text-sm font-bold text-gray-800">
+                            {label}
+                          </label>
+                          <p className="flex-1 text-sm text-gray-800">
+                            {value}
+                          </p>
                         </div>
                       ))}
                     </div>
                     <div className="mt-6 space-y-4">
-                      <h5 className="text-sm font-bold text-gray-800">III. Điều trị & Cập nhật</h5>
+                      <h5 className="text-sm font-bold text-gray-800">
+                        III. Điều trị & Cập nhật
+                      </h5>
                       {[
-                        { label: "Ngày điều trị", value: selectedRecord.cure_date ? formatDate(selectedRecord.cure_date) : 'Chưa điều trị' },
-                        { label: "Nơi điều trị", value: selectedRecord.location_cure || 'Chưa xác định' },
-                        { label: "Ngày tạo", value: formatDateTime(selectedRecord.created_at) },
-                        { label: "Cập nhật cuối", value: formatDateTime(selectedRecord.updated_at) },
+                        {
+                          label: "Ngày điều trị",
+                          value: selectedRecord.cure_date
+                            ? formatDate(selectedRecord.cure_date)
+                            : "Chưa điều trị",
+                        },
+                        {
+                          label: "Nơi điều trị",
+                          value:
+                            selectedRecord.location_cure || "Chưa xác định",
+                        },
+                        {
+                          label: "Ngày tạo",
+                          value: formatDateTime(selectedRecord.created_at),
+                        },
+                        {
+                          label: "Cập nhật cuối",
+                          value: formatDateTime(selectedRecord.updated_at),
+                        },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex items-start">
-                          <label className="w-1/4 text-sm font-bold text-gray-800">{label}</label>
+                          <label className="w-1/4 text-sm font-bold text-gray-800">
+                            {label}
+                          </label>
                           <p className="flex-1 text-sm text-gray-800">
-                            <div dangerouslySetInnerHTML={{ 
-                              __html: value.replace(/\n/g, '<br/>') 
-                            }} />
+                            <div
+                              dangerouslySetInnerHTML={{
+                                __html: value.replace(/\n/g, "<br/>"),
+                              }}
+                            />
                           </p>
                         </div>
                       ))}
@@ -214,7 +280,7 @@ const DiseaseRecordList = ({ records }) => {
           <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
             <button
               onClick={closeModal}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+              className="px-4 py-2 cursor-pointer bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
             >
               Đóng
             </button>
@@ -230,46 +296,70 @@ const DiseaseRecordList = ({ records }) => {
         <table className="w-full border-collapse table-fixed min-w-[1200px]">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '7%' }}>
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                style={{ width: "7%" }}
+              >
                 <div className="flex items-center gap-1 whitespace-nowrap">
                   <User size={14} />
                   <span>Mã HS</span>
                 </div>
               </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '15%' }}>
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                style={{ width: "15%" }}
+              >
                 <div className="flex items-center gap-1 whitespace-nowrap">
                   <User size={14} />
                   <span>Họ Tên</span>
                 </div>
               </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '12%' }}>
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                style={{ width: "12%" }}
+              >
                 <div className="flex items-center gap-1 whitespace-nowrap">
                   <Calendar size={14} />
                   <span>Ngày phát hiện</span>
                 </div>
               </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '12%' }}>
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                style={{ width: "12%" }}
+              >
                 <div className="flex items-center gap-1 whitespace-nowrap">
                   <FileText size={14} />
                   <span>Ngày ghi nhận</span>
                 </div>
               </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '13%' }}>
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                style={{ width: "13%" }}
+              >
                 <div className="flex items-center gap-1 whitespace-nowrap">
                   <Activity size={14} />
                   <span>Tên Bệnh</span>
                 </div>
               </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '18%' }}>
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                style={{ width: "18%" }}
+              >
                 <div className="flex items-center gap-1 whitespace-nowrap">
                   <Activity size={14} />
                   <span>Chẩn Đoán</span>
                 </div>
               </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200" style={{ width: '11%' }}>
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                style={{ width: "11%" }}
+              >
                 <div className="whitespace-nowrap">Phân Loại</div>
               </th>
-              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: '8%' }}>
+              <th
+                className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider"
+                style={{ width: "8%" }}
+              >
                 <div className="whitespace-nowrap">Chi Tiết</div>
               </th>
             </tr>
@@ -279,81 +369,127 @@ const DiseaseRecordList = ({ records }) => {
               <tr>
                 <td colSpan="8" className="px-6 py-12 text-center">
                   <FileText size={40} className="mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-500 text-lg">Không tìm thấy hồ sơ nào</p>
-                  <p className="text-gray-400 text-sm mt-2">Thử điều chỉnh bộ lọc hoặc thêm hồ sơ mới</p>
+                  <p className="text-gray-500 text-lg">
+                    Không tìm thấy hồ sơ nào
+                  </p>
+                  <p className="text-gray-400 text-sm mt-2">
+                    Thử điều chỉnh bộ lọc hoặc thêm hồ sơ mới
+                  </p>
                 </td>
               </tr>
             ) : (
               records.map((record, index) => (
                 <React.Fragment key={index}>
                   <tr className="hover:bg-gray-50 transition-colors">
-                    <td className="px-3 py-3  border-gray-100" style={{ width: '10%' }}>
-                      <div className="text-sm font-medium text-gray-900 truncate" title={getStudentDisplay(record.student_id)}>
+                    <td
+                      className="px-3 py-3  border-gray-100"
+                      style={{ width: "10%" }}
+                    >
+                      <div
+                        className="text-sm font-medium text-gray-900 truncate"
+                        title={getStudentDisplay(record.student_id)}
+                      >
                         {getStudentDisplay(record.student_id)}
                       </div>
                     </td>
-                    <td className="px-3 py-3  border-gray-100" style={{ width: '15%' }}>
+                    <td
+                      className="px-3 py-3  border-gray-100"
+                      style={{ width: "15%" }}
+                    >
                       <button
                         onClick={() => handleNameClick(record.student_id)}
                         className="text-sm cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200 truncate w-full text-left"
-                        title={record.student_name || 'N/A'}
+                        title={record.student_name || "N/A"}
                       >
-                        {record.student_name || 'N/A'}
+                        {record.student_name || "N/A"}
                       </button>
                     </td>
-                    <td className="px-3 py-3  border-gray-100" style={{ width: '12%' }}>
+                    <td
+                      className="px-3 py-3  border-gray-100"
+                      style={{ width: "12%" }}
+                    >
                       <div className="flex items-center">
                         {isToday(record.detect_date) && (
                           <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 flex-shrink-0"></span>
                         )}
-                        <span className="text-sm text-gray-900 truncate" title={formatDate(record.detect_date)}>
+                        <span
+                          className="text-sm text-gray-900 truncate"
+                          title={formatDate(record.detect_date)}
+                        >
                           {formatDate(record.detect_date)}
                         </span>
                       </div>
                     </td>
-                    <td className="px-3 py-3  border-gray-100" style={{ width: '12%' }}>
+                    <td
+                      className="px-3 py-3  border-gray-100"
+                      style={{ width: "12%" }}
+                    >
                       <div className="flex items-center">
                         {isToday(record.created_at) && (
                           <span className="w-2 h-2 bg-green-500 rounded-full mr-2 flex-shrink-0"></span>
                         )}
-                        <span className="text-sm text-gray-900 truncate" title={formatDate(record.created_at)}>
+                        <span
+                          className="text-sm text-gray-900 truncate"
+                          title={formatDate(record.created_at)}
+                        >
                           {formatDate(record.created_at)}
                         </span>
                       </div>
                     </td>
-                    <td className="px-3 py-3  border-gray-100" style={{ width: '18%' }}>
-                      <span className="text-sm text-gray-900 truncate block" title={record.disease_name || 'Chưa có thông tin'}>
+                    <td
+                      className="px-3 py-3  border-gray-100"
+                      style={{ width: "18%" }}
+                    >
+                      <span
+                        className="text-sm text-gray-900 truncate block"
+                        title={record.disease_name || "Chưa có thông tin"}
+                      >
                         {truncateText(record.disease_name)}
                       </span>
                     </td>
-                    <td className="px-3 py-3  border-gray-100" style={{ width: '18%' }}>
-                      <span className="text-sm text-gray-900 truncate block" title={record.diagnosis || 'Chưa có chẩn đoán'}>
+                    <td
+                      className="px-3 py-3  border-gray-100"
+                      style={{ width: "18%" }}
+                    >
+                      <span
+                        className="text-sm text-gray-900 truncate block"
+                        title={record.diagnosis || "Chưa có chẩn đoán"}
+                      >
                         {truncateText(record.diagnosis)}
                       </span>
                     </td>
-                    <td className="px-3 py-3  border-gray-100" style={{ width: '10%' }}>
+                    <td
+                      className="px-3 py-3  border-gray-100"
+                      style={{ width: "10%" }}
+                    >
                       <div className="flex justify-start">
                         {getStatusBadge(record.disease_category)}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center" style={{ width: '5%' }}>
+                    <td
+                      className="px-3 py-3 gap-2 text-center"
+                      style={{ width: "5%" }}
+                    >
+                      <button className="cursor-pointer mr-2" onClick={() => {navigate(`/${getUserRole()}/diseaseRecord/edit/${record.id}`)}}>
+                        <PenBox className="text-green-600" size={18} />
+                      </button>
                       <button
                         onClick={() => renderModalDetail(record)}
                         disabled={downloading.has(`details_${record.id}`)}
-                        className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                        className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 rounded-full transition-colors ${
                           downloading.has(`details_${record.id}`)
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700'
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700"
                         }`}
                         title={
                           downloading.has(`details_${record.id}`)
-                            ? 'Đang tải chi tiết...'
-                            : 'Xem chi tiết'
+                            ? "Đang tải chi tiết..."
+                            : "Xem chi tiết"
                         }
                         aria-label={
                           downloading.has(`details_${record.id}`)
-                            ? 'Đang tải chi tiết...'
-                            : 'Xem chi tiết'
+                            ? "Đang tải chi tiết..."
+                            : "Xem chi tiết"
                         }
                       >
                         {downloading.has(`details_${record.id}`) ? (
@@ -375,7 +511,7 @@ const DiseaseRecordList = ({ records }) => {
                               className="opacity-75"
                               fill="currentColor"
                               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
+                              ></path>
                           </svg>
                         ) : (
                           <FileText className="h-4 w-4" />
@@ -389,7 +525,7 @@ const DiseaseRecordList = ({ records }) => {
           </tbody>
         </table>
       </div>
-      
+
       {renderDetailsModal()}
     </div>
   );

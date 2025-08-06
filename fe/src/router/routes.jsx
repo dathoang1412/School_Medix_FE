@@ -333,6 +333,10 @@ const routes = createBrowserRouter([
           {
             path: "drug-request/:id",
             element: <DrugRequestDetail/>
+          },
+          {
+            path: "diseaseRecord/edit/:id",
+            element: <AddDiseaseRecord/>
           }
         ],
       },
@@ -545,6 +549,10 @@ const routes = createBrowserRouter([
           {
             path: "drug-request/:id",
             element: <DrugRequestDetail/>
+          },
+          {
+            path: "diseaseRecord/edit/:id",
+            element: <AddDiseaseRecord/>
           }
         ],
       },
