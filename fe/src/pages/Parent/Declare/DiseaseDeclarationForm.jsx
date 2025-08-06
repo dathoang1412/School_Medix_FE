@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../../config/axiosClient";
 import { getStudentInfo } from "../../../service/childenService";
+import { enqueueSnackbar } from "notistack";
 
 const DiseaseDeclarationForm = () => {
-  const { student_id } = useParams();
+  const { student_id, disease_id } = useParams();
   const navigate = useNavigate();
+  const isEditMode = !!disease_id;
   const [formData, setFormData] = useState({
     student_id: "",
     disease_id: "",
@@ -20,10 +22,9 @@ const DiseaseDeclarationForm = () => {
   const [student, setStudent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [warning, setWarning] = useState(null); // For cure_date warning
+  const [warning, setWarning] = useState(null);
 
-  // Fetch student and diseases data
+  // Fetch student, diseases, and record data (if in edit mode)
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -43,7 +44,6 @@ const DiseaseDeclarationForm = () => {
           setIsLoading(false);
           return;
         }
-
         setStudent(studentData);
         setFormData((prev) => ({
           ...prev,
@@ -58,7 +58,7 @@ const DiseaseDeclarationForm = () => {
       try {
         const response = await axiosClient.get("/diseases");
         console.log("Diseases response:", response.data.data);
-        setDiseases(response.data.data); // Response is an array of { id, name, description }
+        setDiseases(response.data.data);
       } catch (error) {
         console.error("Error fetching diseases:", error);
         setError(
@@ -66,19 +66,48 @@ const DiseaseDeclarationForm = () => {
             "Không thể tải danh sách bệnh. Vui lòng thử lại sau."
         );
         setDiseases([]);
-      } finally {
-        setIsLoading(false);
       }
+
+      // Fetch record data if in edit mode
+      if (isEditMode) {
+        try {
+          const response = await axiosClient.get(`/disease-record/${disease_id}`);
+          if (!response.data.error && response.data.data[0]) {
+            const record = response.data.data[0];
+            setFormData({
+              student_id: record.student_id || "",
+              disease_id: record.disease_id || "",
+              diagnosis: record.diagnosis || "",
+              detect_date: record.detect_date ? record.detect_date.split('T')[0] : "",
+              cure_date: record.cure_date ? record.cure_date.split('T')[0] : "",
+              location_cure: record.location_cure || "",
+              transferred_to: record.transferred_to || "",
+              status: record.status || "",
+            });
+          } else {
+            setError(response.data.message || "Không thể tải thông tin bản ghi bệnh.");
+          }
+        } catch (error) {
+          console.error("Error fetching disease record:", error);
+          setError(
+            error.response?.data?.message ||
+              error.message ||
+              "Không thể tải thông tin bản ghi bệnh."
+          );
+        }
+      }
+
+      setIsLoading(false);
     };
     fetchData();
-  }, [student_id]);
+  }, [student_id, disease_id, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (name === "status" && value !== "RECOVERED") {
-      setFormData((prev) => ({ ...prev, cure_date: "" })); // Clear cure_date if status is not RECOVERED
-      setWarning(null); // Clear warning when status changes
+      setFormData((prev) => ({ ...prev, cure_date: "" }));
+      setWarning(null);
     }
   };
 
@@ -86,16 +115,16 @@ const DiseaseDeclarationForm = () => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setSuccess(false);
     setWarning(null);
 
     // Validate required fields
-    if (
-      !formData.student_id ||
-      !formData.disease_id ||
-      !formData.detect_date ||
-      !formData.status
-    ) {
+    if (!formData.student_id || !formData.status) {
+      setError("Vui lòng nhập đầy đủ các trường bắt buộc.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!isEditMode && (!formData.disease_id || !formData.detect_date)) {
       setError("Vui lòng nhập đầy đủ các trường bắt buộc.");
       setIsLoading(false);
       return;
@@ -107,55 +136,80 @@ const DiseaseDeclarationForm = () => {
       return;
     }
 
-    const dataToSend = {
-      student_id: formData.student_id,
-      disease_id: parseInt(formData.disease_id, 10),
-      diagnosis: formData.diagnosis || null,
-      detect_date: formData.detect_date,
-      cure_date: formData.cure_date || null,
-      location_cure: formData.location_cure || null,
-      transferred_to: formData.transferred_to || null,
-      status: formData.status,
-    };
+    const dataToSend = isEditMode
+      ? {
+          id: disease_id,
+          status: formData.status,
+          cure_date: formData.cure_date || null,
+        }
+      : {
+          student_id: formData.student_id,
+          disease_id: parseInt(formData.disease_id, 10),
+          diagnosis: formData.diagnosis || null,
+          detect_date: formData.detect_date,
+          cure_date: formData.cure_date || null,
+          location_cure: formData.location_cure || null,
+          transferred_to: formData.transferred_to || null,
+          status: formData.status,
+        };
 
     console.log("Submitting data:", dataToSend);
 
     try {
-      const response = await axiosClient.post(
-        `/student/${formData.student_id}/disease-record`,
-        dataToSend
-      );
-      if (response.data.error) {
-        throw new Error(response.data.message);
+      if (isEditMode) {
+        const response = await axiosClient.patch(`/student/${disease_id}/disease-record`, dataToSend);
+        if (response.data.error) {
+          throw new Error(response.data.message);
+        }
+        enqueueSnackbar("Cập nhật trạng thái sức khỏe thành công!", { variant: "success" });
+      } else {
+        const response = await axiosClient.post(`/student/${student_id}/disease-record`, dataToSend);
+        if (response.data.error) {
+          throw new Error(response.data.message);
+        }
+        enqueueSnackbar("Đăng ký thành công!", { variant: "success" });
       }
-      setSuccess(true);
-      setTimeout(() => {
-        navigate(`/parent/edit/${formData.student_id}/disease-declare`);
-      }, 2000); // Redirect after 2 seconds
+      navigate(`/parent/edit/${student_id}/history-declare-record`);
     } catch (error) {
-      console.error("Error submitting disease record:", error);
+      console.error(`Error ${isEditMode ? 'updating' : 'submitting'} disease record:`, error);
       setError(
         error.response?.data?.message ||
           error.message ||
-          "Không thể gửi khai báo bệnh. Vui lòng thử lại sau."
+          `Không thể ${isEditMode ? 'cập nhật' : 'gửi'} khai báo bệnh. Vui lòng thử lại sau.`
       );
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleBack = () => {
+    navigate(`/parent/edit/${student_id}/history-declare-record`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm border">
-          {/* Header */}
-          <div className="px-8 py-6 border-b border-gray-200">
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Khai Báo Bệnh
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Vui lòng điền đầy đủ thông tin dưới đây
-            </p>
+          {/* Header and Back Button */}
+          <div className="px-8 py-6 border-b border-gray-200 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                {isEditMode ? "Cập Nhật Trạng Thái Bệnh" : "Khai Báo Bệnh"}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                {isEditMode ? "Cập nhật trạng thái sức khỏe của học sinh" : "Vui lòng điền đầy đủ thông tin dưới đây"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleBack}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 flex items-center"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Quay lại
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="px-8 py-6 space-y-8">
@@ -207,6 +261,7 @@ const DiseaseDeclarationForm = () => {
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 whitespace-nowrap"
                     required
+                    disabled={isEditMode}
                   >
                     <option value="" disabled>
                       {diseases.length > 0 ? "Chọn bệnh" : "Không có bệnh nào"}
@@ -230,6 +285,7 @@ const DiseaseDeclarationForm = () => {
                     placeholder="Nhập chẩn đoán (nếu có)..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     rows="4"
+                    disabled={isEditMode}
                   />
                 </div>
 
@@ -244,6 +300,7 @@ const DiseaseDeclarationForm = () => {
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
+                    disabled={isEditMode}
                   />
                 </div>
 
@@ -258,6 +315,7 @@ const DiseaseDeclarationForm = () => {
                     onChange={handleChange}
                     placeholder="Nhập nơi điều trị..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isEditMode}
                   />
                 </div>
 
@@ -272,6 +330,7 @@ const DiseaseDeclarationForm = () => {
                     onChange={handleChange}
                     placeholder="Nhập nơi chuyển đến (nếu có)..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isEditMode}
                   />
                 </div>
 
@@ -321,24 +380,25 @@ const DiseaseDeclarationForm = () => {
             {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                <p className="textWr-sm text-red-800">{error}</p>
+                <p className="text-sm text-red-800">{error}</p>
               </div>
             )}
 
-            {/* Action Buttons and Success Message */}
+            {/* Action Buttons */}
             <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
-              {success && (
-                <p className="text-sm font-medium text-green-600 flex items-center">
-                  <span className="mr-1">✔</span> GHI NHẬN BỆNH CHO HỌC SINH
-                  THÀNH CÔNG
-                </p>
-              )}
+              <button
+                type="button"
+                onClick={handleBack}
+                className="px-4 py-2 text-sm font-medium text-white bg-gray-600 border border-transparent rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Hủy
+              </button>
               <button
                 type="submit"
                 disabled={isLoading}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Đang gửi..." : "Gửi khai báo"}
+                {isLoading ? "Đang gửi..." : isEditMode ? "Cập nhật" : "Gửi khai báo"}
               </button>
             </div>
           </form>

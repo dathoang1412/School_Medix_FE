@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, FileText, Calendar, Clock, Shield, Loader2, XCircle, CheckCircle, AlertCircle, Pill, User, MapPin, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronDown, ChevronUp, FileText, Calendar, Clock, Shield, Loader2, XCircle, CheckCircle, AlertCircle, Pill, User, MapPin, Activity, Edit } from 'lucide-react';
 import axiosClient from '../../../config/axiosClient';
 import { getStudentInfo } from '../../../service/childenService';
 
 const DiseaseDeclarationHistory = ({ student_id }) => {
+  const navigate = useNavigate();
   const [records, setRecords] = useState([]);
   const [filteredRecords, setFilteredRecords] = useState([]);
   const [diseaseMap, setDiseaseMap] = useState({});
@@ -92,6 +94,9 @@ const DiseaseDeclarationHistory = ({ student_id }) => {
     setExpandedRows(newExpandedRows);
   };
 
+  const handleEdit = (recordId) => {
+    navigate(`/parent/edit/${student_id}/disease-declare/${recordId}`);
+  };
 
   const getBadge = (type, value) => {
     const config = {
@@ -168,13 +173,21 @@ const DiseaseDeclarationHistory = ({ student_id }) => {
                     <td className="p-4 text-sm text-gray-800 font-medium">{record.diagnosis || 'Chưa có chẩn đoán'}</td>
                     <td className="p-4">{getBadge('pending', record.pending)}</td>
                     <td className="p-4 text-center">
-                      <button
-                        onClick={() => toggleRowExpansion(record.id)}
-                        className="flex items-center gap-2 mx-auto px-3 py-2 text-blue-600 border border-gray-300 rounded-lg hover:bg-blue-50 text-sm"
-                      >
-                        {expandedRows.has(record.id) ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        {expandedRows.has(record.id) ? 'Ẩn' : 'Xem'}
-                      </button>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => toggleRowExpansion(record.id)}
+                          className="flex items-center gap-2 px-3 py-2 text-blue-600 border border-gray-300 rounded-lg hover:bg-blue-50 text-sm"
+                        >
+                          {expandedRows.has(record.id) ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          {expandedRows.has(record.id) ? 'Ẩn' : 'Xem'}
+                        </button>
+                        <button
+                          onClick={() => handleEdit(record.id)}
+                          className="flex items-center gap-2 px-3 py-2 text-blue-600 border border-gray-300 rounded-lg hover:bg-blue-50 text-sm"
+                        >
+                          <Edit className="w-4 h-4" /> Sửa
+                        </button>
+                      </div>
                     </td>
                   </tr>
                   {expandedRows.has(record.id) && (

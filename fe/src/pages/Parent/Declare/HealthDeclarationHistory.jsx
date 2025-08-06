@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Shield, Syringe, Pill } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Shield, Syringe, Pill, Plus } from 'lucide-react';
 import DiseaseDeclarationHistory from './DiseaseDeclarationHistory';
 import VaccineDeclarationHistory from './VaccineDeclarationHistory';
 
 const HealthDeclarationHistory = () => {
   const { student_id } = useParams();
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState('disease'); // Default to 'disease'
+
+  const handleAddNew = () => {
+    const path = viewMode === 'disease'
+      ? `/parent/edit/${student_id}/disease-declare`
+      : `/parent/edit/${student_id}/vaccine-declare`;
+    navigate(path);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -19,7 +27,7 @@ const HealthDeclarationHistory = () => {
                 {viewMode === 'disease' ? 'Lịch sử khai báo bệnh' : 'Lịch sử khai báo tiêm chủng'}
               </h1>
               <p className="text-gray-600">
-                Xem trạng thái và chi tiết các đơn khai báo {viewMode === 'disease' ? 'bệnh' : 'tiêm chủng  '}
+                Xem trạng thái và chi tiết các đơn khai báo {viewMode === 'disease' ? 'bệnh' : 'tiêm chủng'}
               </p>
             </div>
           </div>
@@ -48,6 +56,12 @@ const HealthDeclarationHistory = () => {
                 </button>
               </div>
             </div>
+            <button
+              onClick={handleAddNew}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" /> Thêm mới khai báo
+            </button>
           </div>
         </div>
       </div>

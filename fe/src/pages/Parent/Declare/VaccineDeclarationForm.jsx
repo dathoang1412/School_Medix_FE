@@ -130,7 +130,7 @@ const VaccineDeclarationForm = () => {
       location: formData.location || null,
       vaccination_date: formData.vaccination_date,
       status: formData.status,
-      campaign_id: null, // Explicitly set to null as per requirement
+      campaign_id: null,
     };
 
     console.log("Submitting data:", dataToSend);
@@ -143,10 +143,10 @@ const VaccineDeclarationForm = () => {
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      enqueueSnackbar("Khai báo tiêm chủng thành công.", {
+      enqueueSnackbar("Đăng ký thành công!", {
         variant: "success",
       });
-      navigate(`/parent/edit/${formData.student_id}/vaccine-declare`);
+      navigate(`/parent/edit/${student_id}/history-declare-record`);
     } catch (error) {
       console.error("Error submitting vaccination record:", error);
       enqueueSnackbar(
@@ -160,18 +160,34 @@ const VaccineDeclarationForm = () => {
     }
   };
 
+  const handleBack = () => {
+    navigate(`/parent/edit/${student_id}/history-vaccination-record`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm border">
-          {/* Header */}
-          <div className="px-8 py-6 border-b border-gray-200">
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Khai Báo Tiêm Chủng
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Vui lòng điền đầy đủ thông tin dưới đây
-            </p>
+          {/* Header and Back Button */}
+          <div className="px-8 py-6 border-b border-gray-200 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                Khai Báo Tiêm Chủng
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Vui lòng điền đầy đủ thông tin dưới đây
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleBack}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 flex items-center"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Quay lại
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="px-8 py-6 space-y-8">
@@ -324,8 +340,15 @@ const VaccineDeclarationForm = () => {
               </div>
             )}
 
-            {/* Action Buttons and Success Message */}
+            {/* Action Buttons */}
             <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="px-4 py-2 text-sm font-medium text-white bg-gray-600 border border-transparent rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Hủy
+              </button>
               <button
                 type="submit"
                 disabled={isLoading || !formData.vaccine_id}

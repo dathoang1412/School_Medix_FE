@@ -286,6 +286,7 @@ const routes = createBrowserRouter([
             path: "diseaseRecord/add",
             element: <AddDiseaseRecord />,
           },
+
           {
             path: "DeclarationManagement",
             element: <DeclarationManagement />,
@@ -428,6 +429,10 @@ const routes = createBrowserRouter([
           },
           {
             path: "disease-declare",
+            element: <DiseaseDeclarationForm />,
+          },
+          {
+            path: "disease-declare/:disease_id",
             element: <DiseaseDeclarationForm />,
           },
           {
