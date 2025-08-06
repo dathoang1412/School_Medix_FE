@@ -8,7 +8,7 @@ import { enqueueSnackbar } from "notistack";
 const createDiseaseRecord = async (studentId, data) => {
   try {
     const response = await axiosClient.post(
-      `/student/${studentId}/disease-record`,
+      `admin/student/${studentId}/disease-record`,
       {
         disease_id: data.disease_id,
         diagnosis: data.diagnosis,
