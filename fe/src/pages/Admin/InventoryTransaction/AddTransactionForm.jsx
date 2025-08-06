@@ -306,7 +306,8 @@ const AddTransactionForm = () => {
                       <option value="">Chọn vật tư/thuốc</option>
                       {medicalItems.map((mi) => (
                         <option key={mi.id} value={mi.id}>
-                          {mi.name} ({mi.unit}) - Số lượng hiện tại: {mi.quantity}
+                          {mi.name} ({mi.unit}) - Số lượng hiện tại:{" "}
+                          {mi.quantity}
                         </option>
                       ))}
                     </select>
@@ -319,7 +320,11 @@ const AddTransactionForm = () => {
                         placeholder="Số lượng"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400"
                         min="0"
-                        max={selectedMedicalItem ? selectedMedicalItem.quantity : undefined}
+                        max={
+                          selectedMedicalItem
+                            ? selectedMedicalItem.quantity
+                            : undefined
+                        }
                         required
                       />
                     </div>
