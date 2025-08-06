@@ -21,6 +21,7 @@ const DiseaseDeclarationForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [warning, setWarning] = useState(null); // For cure_date warning
 
   // Fetch student and diseases data
   useEffect(() => {
@@ -75,6 +76,10 @@ const DiseaseDeclarationForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "status" && value !== "RECOVERED") {
+      setFormData((prev) => ({ ...prev, cure_date: "" })); // Clear cure_date if status is not RECOVERED
+      setWarning(null); // Clear warning when status changes
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -82,6 +87,7 @@ const DiseaseDeclarationForm = () => {
     setIsLoading(true);
     setError(null);
     setSuccess(false);
+    setWarning(null);
 
     // Validate required fields
     if (
@@ -91,6 +97,12 @@ const DiseaseDeclarationForm = () => {
       !formData.status
     ) {
       setError("Vui lòng nhập đầy đủ các trường bắt buộc.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.status === "RECOVERED" && !formData.cure_date) {
+      setWarning('Vui lòng nhập ngày khỏi bệnh khi trạng thái là "Đã khỏi"');
       setIsLoading(false);
       return;
     }
@@ -117,7 +129,9 @@ const DiseaseDeclarationForm = () => {
         throw new Error(response.data.message);
       }
       setSuccess(true);
-      navigate(`/parent/edit/${formData.student_id}/disease-declare`);
+      setTimeout(() => {
+        navigate(`/parent/edit/${formData.student_id}/disease-declare`);
+      }, 2000); // Redirect after 2 seconds
     } catch (error) {
       console.error("Error submitting disease record:", error);
       setError(
@@ -235,19 +249,6 @@ const DiseaseDeclarationForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ngày khỏi bệnh
-                  </label>
-                  <input
-                    type="date"
-                    name="cure_date"
-                    value={formData.cure_date}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Nơi điều trị
                   </label>
                   <input
@@ -292,13 +293,35 @@ const DiseaseDeclarationForm = () => {
                     <option value="UNDER_TREATMENT">Đang điều trị</option>
                   </select>
                 </div>
+
+                {formData.status === "RECOVERED" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ngày khỏi bệnh <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="cure_date"
+                      value={formData.cure_date}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                )}
               </div>
             </section>
+
+            {/* Warning Message */}
+            {warning && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                <p className="text-sm text-yellow-800">{warning}</p>
+              </div>
+            )}
 
             {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                <p className="text-sm text-red-800">{error}</p>
+                <p className="textWr-sm text-red-800">{error}</p>
               </div>
             )}
 
@@ -306,7 +329,8 @@ const DiseaseDeclarationForm = () => {
             <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
               {success && (
                 <p className="text-sm font-medium text-green-600 flex items-center">
-                  <span className="mr-1">✔</span> GHI NHẬN BỆNH CHO HỌC SINH THÀNH CÔNG
+                  <span className="mr-1">✔</span> GHI NHẬN BỆNH CHO HỌC SINH
+                  THÀNH CÔNG
                 </p>
               )}
               <button
