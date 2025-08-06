@@ -9,6 +9,8 @@ import {
   Activity,
   User,
   Syringe,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import DiseaseRecordRow from "./DiseaseRecordRow";
 import VaccineRecordRow from "./VaccineRecordRow";
@@ -33,11 +35,8 @@ const DeclarationManagement = () => {
 
     // Fetch disease records
     try {
-      const { data } = await axiosClient.get(
-        "/disease-record/requests/history"
-      );
+      const { data } = await axiosClient.get("/disease-record/requests/history");
       if (!data.error && data.data?.rows) {
-        // Deduplicate by id
         const uniqueRecords = Array.from(
           new Map(data.data.rows.map((record) => [record.id, record])).values()
         );
@@ -47,10 +46,7 @@ const DeclarationManagement = () => {
         setError(data.message || "Không thể tải danh sách khai báo bệnh");
       }
     } catch (err) {
-      console.error(
-        "Fetch disease records error:",
-        err.response?.data || err.message
-      );
+      console.error("Fetch disease records error:", err.response?.data || err.message);
       setError(
         "Không thể tải danh sách khai báo bệnh: " +
           (err.response?.data?.message || err.message)
@@ -59,11 +55,8 @@ const DeclarationManagement = () => {
 
     // Fetch vaccine records
     try {
-      const { data } = await axiosClient.get(
-        "/vaccination-record/requests/history"
-      );
+      const { data } = await axiosClient.get("/vaccination-record/requests/history");
       if (!data.error && data.data?.rows) {
-        // Deduplicate by id
         const uniqueRecords = Array.from(
           new Map(data.data.rows.map((record) => [record.id, record])).values()
         );
@@ -73,10 +66,7 @@ const DeclarationManagement = () => {
         setError(data.message || "Không thể tải danh sách khai báo vaccine");
       }
     } catch (err) {
-      console.error(
-        "Fetch vaccine records error:",
-        err.response?.data || err.message
-      );
+      console.error("Fetch vaccine records error:", err.response?.data || err.message);
       setError(
         "Không thể tải danh sách khai báo vaccine: " +
           (err.response?.data?.message || err.message)
@@ -115,18 +105,48 @@ const DeclarationManagement = () => {
     );
     setFilteredDiseaseRecords(filteredDiseases);
     setFilteredVaccineRecords(filteredVaccines);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to page 1 when filter changes
   }, [statusFilter, diseaseRecords, vaccineRecords]);
 
+  // Pagination logic
+  const totalRecords = viewMode === "disease" ? filteredDiseaseRecords.length : filteredVaccineRecords.length;
+  const totalPages = Math.ceil(totalRecords / recordsPerPage);
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = (
     viewMode === "disease" ? filteredDiseaseRecords : filteredVaccineRecords
   ).slice(indexOfFirstRecord, indexOfLastRecord);
-  const totalPages = Math.ceil(
-    (viewMode === "disease" ? filteredDiseaseRecords : filteredVaccineRecords)
-      .length / recordsPerPage
-  );
+
+  // Generate page numbers (show up to 5 pages, with ellipses for large ranges)
+  const getPageNumbers = () => {
+    const maxPagesToShow = 5;
+    const pages = [];
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    // Add first page and ellipsis
+    if (startPage > 1) {
+      pages.push(1);
+      if (startPage > 2) pages.push("...");
+    }
+
+    // Add page range
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    // Add last page and ellipsis
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -152,15 +172,13 @@ const DeclarationManagement = () => {
               <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 text-sm">
                 Tổng hồ sơ:{" "}
                 <span className="font-medium text-blue-600">
-                  {viewMode === "disease"
-                    ? diseaseRecords.length
-                    : vaccineRecords.length}
+                  {totalRecords}
                 </span>
               </div>
               <div className="flex rounded-lg border border-gray-300 overflow-hidden">
                 <button
                   onClick={() => setViewMode("disease")}
-                  className={`px-4 py-2 text-sm  cursor-pointer font-medium flex items-center gap-2 transition-colors ${
+                  className={`px-4 py-2 text-sm cursor-pointer font-medium flex items-center gap-2 transition-colors ${
                     viewMode === "disease"
                       ? "bg-blue-600 text-white"
                       : "bg-white text-gray-700 hover:bg-gray-100"
@@ -196,33 +214,33 @@ const DeclarationManagement = () => {
 
       <div className="max-w-7xl py-8 mx-auto">
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg flex items-center gap-2">
             <XCircle className="w-5 h-5" /> {error}
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden ">
-          <table className="w-full border-collapse">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <table className="w-full border-collapse table-fixed min-w-[1000px]">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                <th className="p-4 text-left text-sm font-semibold text-gray-700" style={{ width: '15%' }}>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" /> Ngày Tạo
                   </div>
                 </th>
-                <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                <th className="p-4 text-left text-sm font-semibold text-gray-700" style={{ width: '15%' }}>
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" /> Mã Học Sinh
                   </div>
                 </th>
                 {viewMode === "disease" ? (
                   <>
-                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                    <th className="p-4 text-left text-sm font-semibold text-gray-700" style={{ width: '20%' }}>
                       <div className="flex items-center gap-2">
                         <Pill className="w-4 h-4" /> Tên Bệnh
                       </div>
                     </th>
-                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                    <th className="p-4 text-left text-sm font-semibold text-gray-700" style={{ width: '15%' }}>
                       <div className="flex items-center gap-2">
                         <Activity className="w-4 h-4" /> Tình trạng
                       </div>
@@ -230,24 +248,24 @@ const DeclarationManagement = () => {
                   </>
                 ) : (
                   <>
-                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                    <th className="p-4 text-left text-sm font-semibold text-gray-700" style={{ width: '20%' }}>
                       <div className="flex items-center gap-2">
                         <Syringe className="w-4 h-4" /> Tên Vaccine
                       </div>
                     </th>
-                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                    <th className="p-4 text-left text-sm font-semibold text-gray-700" style={{ width: '20%' }}>
                       <div className="flex items-center gap-2">
                         <Pill className="w-4 h-4" /> Bệnh Ngừa
                       </div>
                     </th>
                   </>
                 )}
-                <th className="p-4 text-left text-sm font-semibold text-gray-700">
+                <th className="p-4 text-left text-sm font-semibold text-gray-700" style={{ width: '15%' }}>
                   <div className="flex items-center gap-2">
                     <Shield className="w-4 h-4" /> Trạng Thái Đơn
                   </div>
                 </th>
-                <th className="p-4 text-center text-sm font-semibold text-gray-700">
+                <th className="p-4 text-center text-sm font-semibold text-gray-700" style={{ width: '15%' }}>
                   Hành Động
                 </th>
               </tr>
@@ -291,22 +309,51 @@ const DeclarationManagement = () => {
           </table>
         </div>
 
-        {totalPages > 1 && (
-          <div className="mt-6 flex justify-center gap-4 text-sm">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-50"
-            >
-              Trước
-            </button>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-50"
-            >
-              Sau
-            </button>
+        {/* Pagination Controls */}
+        {totalRecords > 0 && (
+          <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
+            <div className="text-gray-600">
+              Hiển thị {indexOfFirstRecord + 1} - {Math.min(indexOfLastRecord, totalRecords)} của {totalRecords} hồ sơ
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Trước
+              </button>
+              <div className="flex gap-1">
+                {getPageNumbers().map((page, index) =>
+                  page === "..." ? (
+                    <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-600">
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 border border-gray-300 rounded-md ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white"
+                          : "bg-white text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+              </div>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sau
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
