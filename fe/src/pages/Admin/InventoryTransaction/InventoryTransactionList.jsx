@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Calendar, Package, Search, Plus, Users, Edit, Trash2, X } from "lucide-react";
+import {
+  Loader2,
+  Calendar,
+  Package,
+  Search,
+  Plus,
+  Users,
+  Edit,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path
@@ -25,13 +35,18 @@ const InventoryTransactionList = () => {
     const fetchTransactions = async () => {
       setLoading(true);
       try {
-        const endpoint = selectedPurpose === "Tất cả" ? "/inventory-transaction" : `/inventory-transaction/purpose/${getPurposeId(selectedPurpose)}`;
+        const endpoint =
+          selectedPurpose === "Tất cả"
+            ? "/inventory-transaction"
+            : `/inventory-transaction/purpose/${getPurposeId(selectedPurpose)}`;
         const response = await axiosClient.get(endpoint);
         if (response.data.error) throw new Error(response.data.message);
         setTransactions(response.data.data);
       } catch (err) {
         err && setError("Không thể tải danh sách giao dịch.");
-        enqueueSnackbar("Không thể tải danh sách giao dịch.", { variant: "error" });
+        enqueueSnackbar("Không thể tải danh sách giao dịch.", {
+          variant: "error",
+        });
       } finally {
         setLoading(false);
       }
@@ -45,9 +60,14 @@ const InventoryTransactionList = () => {
       const lowerSearch = searchTerm.toLowerCase();
       result = result.filter(
         (transaction) =>
-          (transaction.supplier_name && transaction.supplier_name.toLowerCase().includes(lowerSearch)) ||
-          (transaction.purpose_title && transaction.purpose_title.toLowerCase().includes(lowerSearch)) ||
-          new Date(transaction.transaction_date).toLocaleDateString("vi-VN").toLowerCase().includes(lowerSearch)
+          (transaction.supplier_name &&
+            transaction.supplier_name.toLowerCase().includes(lowerSearch)) ||
+          (transaction.purpose_title &&
+            transaction.purpose_title.toLowerCase().includes(lowerSearch)) ||
+          new Date(transaction.transaction_date)
+            .toLocaleDateString("vi-VN")
+            .toLowerCase()
+            .includes(lowerSearch)
       );
     }
     setFilteredTransactions(result);
@@ -83,36 +103,50 @@ const InventoryTransactionList = () => {
     if (!transactionToDelete) return;
 
     try {
-      const response = await axiosClient.delete(`/inventory-transaction/${transactionToDelete.id}`);
+      const response = await axiosClient.delete(
+        `/inventory-transaction/${transactionToDelete.id}`
+      );
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      setTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToDelete.id));
-      setFilteredTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToDelete.id));
+      setTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== transactionToDelete.id)
+      );
+      setFilteredTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== transactionToDelete.id)
+      );
       enqueueSnackbar("Xóa giao dịch thành công.", { variant: "success" });
     } catch (err) {
-      enqueueSnackbar(err.message || "Lỗi khi xóa giao dịch.", { variant: "error" });
+      enqueueSnackbar(err.message || "Lỗi khi xóa giao dịch.", {
+        variant: "error",
+      });
     } finally {
       setIsDeleteModalOpen(false);
       setTransactionToDelete(null);
     }
   };
 
-  const handleSupplierClick = async (supplierName) => {
-    if (!supplierName) {
-      enqueueSnackbar("Không có thông tin nhà cung cấp để hiển thị.", { variant: "warning" });
+  const handleSupplierClick = async (supplierId, supplierName) => {
+    if (!supplierId) {
+      enqueueSnackbar("Không có thông tin nhà cung cấp để hiển thị.", {
+        variant: "warning",
+      });
       return;
     }
 
     try {
-      const response = await axiosClient.get(`/supplierDetail/${encodeURIComponent(supplierName)}`);
+      const response = await axiosClient.get(`/supplier/${supplierId}`, {
+        validateStatus: () => true,
+      });
       if (response.data.error) {
         throw new Error(response.data.message);
       }
       setSelectedSupplier(response.data.data);
       setIsSupplierPopupOpen(true);
     } catch (err) {
-      enqueueSnackbar(err.message || "Lỗi khi lấy thông tin nhà cung cấp.", { variant: "error" });
+      enqueueSnackbar(err.message || "Lỗi khi lấy thông tin nhà cung cấp.", {
+        variant: "error",
+      });
     }
   };
 
@@ -176,17 +210,31 @@ const InventoryTransactionList = () => {
                     className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-700"
                   >
                     <option value="Tất cả">Tất cả</option>
-                    <option value="Sử dụng cho y tế hằng ngày">Sử dụng cho y tế hằng ngày</option>
-                    <option value="Nhập hàng từ nhà cung cấp">Nhập hàng từ nhà cung cấp</option>
-                    <option value="Mua hàng từ bên ngoài">Mua hàng từ bên ngoài</option>
-                    <option value="Thuốc vật tư kém chất lượng">Hủy thuốc vật tư kém chất lượng</option>
-                    <option value="Thuốc vật tư đã hết hạn">Hủy thuốc vật tư đã hết hạn</option>
+                    <option value="Sử dụng cho y tế hằng ngày">
+                      Sử dụng cho y tế hằng ngày
+                    </option>
+                    <option value="Nhập hàng từ nhà cung cấp">
+                      Nhập hàng từ nhà cung cấp
+                    </option>
+                    <option value="Mua hàng từ bên ngoài">
+                      Mua hàng từ bên ngoài
+                    </option>
+                    <option value="Thuốc vật tư kém chất lượng">
+                      Hủy thuốc vật tư kém chất lượng
+                    </option>
+                    <option value="Thuốc vật tư đã hết hạn">
+                      Hủy thuốc vật tư đã hết hạn
+                    </option>
                     <option value="Hoàn trả hàng">Hoàn trả hàng</option>
-                    <option value="Đơn dặn thuốc từ phụ huynh">Đơn dặn thuốc từ phụ huynh</option>
+                    <option value="Đơn dặn thuốc từ phụ huynh">
+                      Đơn dặn thuốc từ phụ huynh
+                    </option>
                   </select>
                 </div>
                 <button
-                  onClick={() => navigate("/admin/inventory-transaction/transaction-form")}
+                  onClick={() =>
+                    navigate("/admin/inventory-transaction/transaction-form")
+                  }
                   className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
                 >
                   <Plus className="w-4 h-4" />
@@ -232,44 +280,82 @@ const InventoryTransactionList = () => {
                     {filteredTransactions.length === 0 ? (
                       <tr>
                         <td colSpan="5" className="px-6 py-12 text-center">
-                          <Package size={40} className="mx-auto text-gray-400 mb-4" />
-                          <p className="text-gray-500 text-lg">Không có giao dịch</p>
-                          <p className="text-gray-400 text-sm mt-2">Hãy kiểm tra lại hoặc thêm giao dịch mới</p>
+                          <Package
+                            size={40}
+                            className="mx-auto text-gray-400 mb-4"
+                          />
+                          <p className="text-gray-500 text-lg">
+                            Không có giao dịch
+                          </p>
+                          <p className="text-gray-400 text-sm mt-2">
+                            Hãy kiểm tra lại hoặc thêm giao dịch mới
+                          </p>
                         </td>
                       </tr>
                     ) : (
                       filteredTransactions.map((transaction) => (
-                        <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
+                        <tr
+                          key={transaction.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
                             <span className="text-sm text-gray-600">
-                              {new Date(transaction.transaction_date).toLocaleDateString("vi-VN")}
+                              {new Date(
+                                transaction.transaction_date
+                              ).toLocaleDateString("vi-VN")}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[30%]">
-                            <span className="text-sm text-gray-600">{transaction.purpose_title || "Không xác định"}</span>
+                            <span className="text-sm text-gray-600">
+                              {transaction.purpose_title || "Không xác định"}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[15%] text-center">
-                            <span className="text-sm text-gray-600">{transaction.medical_items.length}</span>
+                            <span className="text-sm text-gray-600">
+                              {transaction.medical_items.length}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
                             <span
-                              className={`text-sm text-gray-600 ${transaction.supplier_name ? "cursor-pointer hover:text-blue-600" : ""}`}
-                              onClick={() => transaction.supplier_name && handleSupplierClick(transaction.supplier_name)}
+                              className={`text-sm text-gray-600 ${
+                                transaction.supplier_id
+                                  ? "cursor-pointer hover:text-blue-600"
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                transaction.supplier_id &&
+                                handleSupplierClick(
+                                  transaction.supplier_id,
+                                  transaction.supplier_name
+                                )
+                              }
                             >
-                              {transaction.supplier_name ? transaction.supplier_name : "Đơn xuất"}
+                              {transaction.supplier_name
+                                ? transaction.supplier_name
+                                : "Đơn xuất"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[20%]">
                             <div className="flex justify-center gap-2">
                               <button
-                                onClick={() => navigate(`/admin/inventory-transaction/transaction-form/${transaction.id}`)}
+                                onClick={() =>
+                                  navigate(
+                                    `/admin/inventory-transaction/transaction-form/${transaction.id}`
+                                  )
+                                }
                                 className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Edit size={14} />
                                 Sửa
                               </button>
                               <button
-                                onClick={() => openDeleteModal(transaction.id, transaction.purpose_title, transaction.supplier_name)}
+                                onClick={() =>
+                                  openDeleteModal(
+                                    transaction.id,
+                                    transaction.purpose_title,
+                                    transaction.supplier_name
+                                  )
+                                }
                                 className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Trash2 size={14} />
@@ -303,7 +389,9 @@ const InventoryTransactionList = () => {
         >
           <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-semibold text-gray-800">Chi tiết giao dịch</h4>
+              <h4 className="text-lg font-semibold text-gray-800">
+                Chi tiết giao dịch
+              </h4>
               <button
                 onClick={closeModal}
                 className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors duration-200"
@@ -313,22 +401,42 @@ const InventoryTransactionList = () => {
             </div>
             <div className="space-y-4">
               <div>
-                <h5 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Thông tin giao dịch</h5>
+                <h5 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                  Thông tin giao dịch
+                </h5>
                 <div className="mt-2 space-y-2 text-sm text-gray-600">
-                  <div><span className="font-medium">Ngày giao dịch:</span> {new Date(selectedTransaction.transaction_date).toLocaleDateString("vi-VN")}</div>
-                  <div><span className="font-medium">Mục đích:</span> {selectedTransaction.purpose_title || "Không xác định"}</div>
-                  <div><span className="font-medium">Nhà cung cấp:</span> {selectedTransaction.supplier_name || "Đơn xuất"}</div>
+                  <div>
+                    <span className="font-medium">Ngày giao dịch:</span>{" "}
+                    {new Date(
+                      selectedTransaction.transaction_date
+                    ).toLocaleDateString("vi-VN")}
+                  </div>
+                  <div>
+                    <span className="font-medium">Mục đích:</span>{" "}
+                    {selectedTransaction.purpose_title || "Không xác định"}
+                  </div>
+                  <div>
+                    <span className="font-medium">Nhà cung cấp:</span>{" "}
+                    {selectedTransaction.supplier_name || "Đơn xuất"}
+                  </div>
                 </div>
               </div>
               <div>
-                <h5 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Danh sách vật tư y tế</h5>
+                <h5 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                  Danh sách vật tư y tế
+                </h5>
                 <ul className="mt-2 space-y-2">
                   {selectedTransaction.medical_items.map((item, itemIndex) => (
                     <li key={itemIndex} className="text-sm text-gray-600">
-                      <strong>{item.name}</strong> ({item.unit}) - Số lượng: {item.transaction_quantity}
+                      <strong>{item.name}</strong> ({item.unit}) - Số lượng:{" "}
+                      {item.transaction_quantity}
                       <br />
                       <span className="text-xs text-gray-500">
-                        Mô tả: {item.description || "Không có"} | Hết hạn: {item.exp_date || "Không có"} | Loại: {item.category === "MEDICATION" ? "Thuốc" : "Vật tư y tế"}
+                        Mô tả: {item.description || "Không có"} | Hết hạn:{" "}
+                        {item.exp_date || "Không có"} | Loại:{" "}
+                        {item.category === "MEDICATION"
+                          ? "Thuốc"
+                          : "Vật tư y tế"}
                       </span>
                     </li>
                   ))}
@@ -359,7 +467,9 @@ const InventoryTransactionList = () => {
         confirmText="Xóa"
         cancelText="Hủy"
       >
-        Bạn có chắc muốn xóa giao dịch từ <strong>{transactionToDelete?.supplier_name || "này"}</strong>? Hành động này không thể hoàn tác.
+        Bạn có chắc muốn xóa giao dịch từ{" "}
+        <strong>{transactionToDelete?.supplier_name || "này"}</strong>? Hành
+        động này không thể hoàn tác.
       </Modal>
 
       {/* Supplier Details Popup */}

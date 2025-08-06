@@ -41,8 +41,8 @@ const AIChat = () => {
 
   // Function to strip markdown code block markers
   const stripMarkdownCodeBlock = (text) => {
-    const markdownRegex = /^```html\n([\s\S]*?)\n```$/;
-    const match = text.match(markdownRegex);
+    const markdownRegex = /```(?:html)?\n([\s\S]*?)```/gm;
+    const match = markdownRegex.exec(text);
     return match ? match[1].trim() : text.trim();
   };
 
@@ -110,10 +110,15 @@ const AIChat = () => {
       {/* Custom CSS for animations */}
       <style jsx>{`
         @keyframes bounce {
-          0%, 20%, 53%, 80%, 100% {
+          0%,
+          20%,
+          53%,
+          80%,
+          100% {
             transform: translate3d(0, 0, 0);
           }
-          40%, 43% {
+          40%,
+          43% {
             transform: translate3d(0, -8px, 0);
           }
           70% {
@@ -123,11 +128,11 @@ const AIChat = () => {
             transform: translate3d(0, -2px, 0);
           }
         }
-        
+
         .bounce-animation {
           animation: bounce 2s infinite;
         }
-        
+
         @keyframes slideUp {
           from {
             opacity: 0;
@@ -138,11 +143,11 @@ const AIChat = () => {
             transform: translateY(0);
           }
         }
-        
+
         .slide-up {
           animation: slideUp 0.3s ease-out;
         }
-        
+
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -151,11 +156,11 @@ const AIChat = () => {
             opacity: 1;
           }
         }
-        
+
         .fade-in {
           animation: fadeIn 0.2s ease-in;
         }
-        
+
         @keyframes pulse {
           0% {
             transform: scale(1);
@@ -167,11 +172,11 @@ const AIChat = () => {
             transform: scale(1);
           }
         }
-        
+
         .pulse-animation {
           animation: pulse 1s ease-in-out infinite;
         }
-        
+
         .message-enter {
           animation: slideUp 0.4s ease-out;
         }
@@ -262,10 +267,18 @@ const AIChat = () => {
                   <div className="inline-flex items-center gap-2 bg-white px-4 py-3 rounded-2xl shadow-sm">
                     <div className="flex gap-1">
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                      <div
+                        className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
+                        style={{ animationDelay: "0.4s" }}
+                      ></div>
                     </div>
-                    <span className="text-gray-600 text-sm">Đang suy nghĩ...</span>
+                    <span className="text-gray-600 text-sm">
+                      Đang suy nghĩ...
+                    </span>
                   </div>
                 </div>
               )}
@@ -295,7 +308,9 @@ const AIChat = () => {
                       }`}
                     >
                       {message.isUser ? (
-                        <p className="text-sm leading-relaxed">{message.text}</p>
+                        <p className="text-sm leading-relaxed">
+                          {message.text}
+                        </p>
                       ) : (
                         <div
                           className="prose prose-sm max-w-none text-sm leading-relaxed"

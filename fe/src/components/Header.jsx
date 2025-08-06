@@ -113,8 +113,12 @@ const Header = () => {
             className="flex items-center gap-3 cursor-pointer group"
             onClick={() => handleNavigation("/")}
           >
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white w-10 h-10 rounded-lg flex items-center justify-center group-hover:shadow-lg transition-shadow duration-200">
-              <MdOutlineSchool className="text-xl" />
+            <div className="flex justify-center">
+              <img
+                src="../../../public/Gemini_Generated_Image_yzvndbyzvndbyzvn.png" // Thay bằng đường dẫn thực tế của logo
+                alt="SchoolMedix Logo"
+                className="h-10 w-auto"
+              />
             </div>
             <span className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
               SchoolMedix

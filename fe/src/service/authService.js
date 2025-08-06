@@ -6,6 +6,7 @@ export const removeUser = () => {
     localStorage.removeItem("aiMessages");
     localStorage.removeItem("user");
     localStorage.removeItem("selectedChild");
+    localStorage.removeItem("access_token");
 }
 
 export const getUser = () => {
