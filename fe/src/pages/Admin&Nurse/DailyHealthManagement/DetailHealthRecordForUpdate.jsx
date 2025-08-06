@@ -103,9 +103,12 @@ const DetailHealthRecordForUpdate = () => {
   const handleItemChange = (e) => {
     const itemId = e.target.value;
     setSelectedItem(itemId);
-    const item = availableItems.find((i) => i.id === parseInt(itemId));
+    const item = availableItems.find((i) => {
+      i.id === parseInt(itemId);
+      console.log(item);
+    });
     if (item) {
-      setQuantity(item.quantity > 0 ? Number(item.quantity) : 0);
+      setQuantity(parseInt(item.quantity) > 0 ? parseInt(item.quantity) : 0);
     } else {
       setQuantity(0); // Reset quantity if item not found
     }
@@ -139,7 +142,8 @@ const DetailHealthRecordForUpdate = () => {
       // Đã có trong danh sách --> cộng thêm số lượng
       updatedItems[existingIndex] = {
         ...updatedItems[existingIndex],
-        quantity: updatedItems[existingIndex].quantity + quantity,
+        quantity:
+          parseInt(updatedItems[existingIndex].quantity) + parseInt(quantity),
       };
     } else {
       // Chưa có --> thêm mới

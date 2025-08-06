@@ -3,6 +3,7 @@ import { Send, Trash2, X } from "lucide-react";
 import axiosClient from "../config/axiosClient";
 import { getUser, getUserRole } from "../service/authService";
 import DOMPurify from "dompurify";
+import { supabase } from "../config/Supabase";
 
 const AIChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +51,6 @@ const AIChat = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // Add user message
     const newUserMessage = { text: input, isUser: true, isApiResponse: false };
     const newMessages = [...messages, newUserMessage];
     setMessages(newMessages);
@@ -58,22 +58,24 @@ const AIChat = () => {
     setError(null);
 
     try {
-      // Format chat history for backend
       const chatHistory = messages.map((msg) => ({
         role: msg.isUser ? "user" : "model",
         parts: [{ text: msg.text }],
       }));
 
-      // Call backend /ai-response endpoint
+      // 👉 Lấy token từ supabase
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+
       const response = await axiosClient.post("/ai-response", {
         current_user_role: currentUserRole,
         chat_history: chatHistory,
         new_message: input,
         student_info: currentUserRole === "student" ? currentUser : null,
         parent_info: currentUserRole === "parent" ? currentUser : null,
+        token: token, // ✅ truyền token ở đây nếu backend cần trong body
       });
 
-      // Extract and process all responses from new_contents
       const newMessagesToAdd = response.data.new_contents
         .filter((content) => content.role === "model")
         .flatMap((content) =>
@@ -89,7 +91,6 @@ const AIChat = () => {
         throw new Error("No valid AI response received");
       }
 
-      // Add all responses to messages
       setMessages((prev) => [...prev, ...newMessagesToAdd]);
     } catch (err) {
       setError("Không thể nhận phản hồi từ AI. Vui lòng thử lại!");
