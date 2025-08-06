@@ -408,10 +408,10 @@ const DrugRequestDetail = () => {
                   Lịch uống thuốc
                 </h2>
               </div>
-              <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
+              {/* <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
                 Tổng: {daysInfo.total} ngày, Đã uống: {daysInfo.taken}, Còn lại:{" "}
                 {daysInfo.remaining}
-              </p>
+              </p> */}
               {Object.keys(schedules).length === 0 ? (
                 <p className="text-xs sm:text-sm text-gray-500">
                   Không có lịch uống thuốc.
@@ -429,7 +429,7 @@ const DrugRequestDetail = () => {
                             key={date}
                             className={`p-2 sm:p-3 text-left font-medium ${
                               date === today
-                                ? "bg-blue-50 font-semibold"
+                                ? "bg-blue-200 font-semibold"
                                 : date > today
                                 ? "opacity-50"
                                 : ""

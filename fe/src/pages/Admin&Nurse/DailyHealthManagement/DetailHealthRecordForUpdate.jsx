@@ -285,6 +285,22 @@ const DetailHealthRecordForUpdate = () => {
           onSubmit={handleUpdate}
           className="bg-white rounded-lg shadow-md p-8 space-y-6"
         >
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tình Trạng
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+            >
+              <option value="">Chọn tình trạng</option>
+              <option value="MILD">Nhẹ</option>
+              <option value="SERIOUS">Nghiêm trọng</option>
+            </select>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -312,6 +328,7 @@ const DetailHealthRecordForUpdate = () => {
                 placeholder="Tên học sinh"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Ngày Ghi Nhận
@@ -371,22 +388,6 @@ const DetailHealthRecordForUpdate = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tình Trạng
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
-            >
-              <option value="">Chọn tình trạng</option>
-              <option value="MILD">Nhẹ</option>
-              <option value="SERIOUS">Nghiêm trọng</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
               Chuyển Đến
             </label>
             <input
@@ -421,7 +422,7 @@ const DetailHealthRecordForUpdate = () => {
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
-                    value={quantity}
+                    value={Number(quantity)}
                     onChange={handleQuantityChange}
                     min={0}
                     max={
