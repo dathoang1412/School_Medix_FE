@@ -218,6 +218,7 @@ const DetailHealthRecordForUpdate = () => {
       console.error(error);
     } finally {
       setUpdating(false);
+      navigate(-1)
     }
   };
 

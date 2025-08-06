@@ -1,22 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, Plus, ArrowLeft } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axiosClient from '../../../config/axiosClient';
+import React, { useState, useEffect } from "react";
+import { FileText, Plus, ArrowLeft } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import axiosClient from "../../../config/axiosClient";
+import { enqueueSnackbar } from "notistack";
 
 const VaccineAdd = () => {
   const { id } = useParams(); // Get vaccine ID for editing
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
-    origin: '',
-    description: '',
+    name: "",
+    origin: "",
+    description: "",
     dose_quantity: 0,
     disease_list: [],
   });
   const [diseases, setDiseases] = useState([]);
   const [loading, setLoading] = useState(false);
   const [diseaseLoading, setDiseaseLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [message, setMessage] = useState({ type: "", text: "" });
 
   // Fetch vaccine data for editing
   useEffect(() => {
@@ -25,35 +26,41 @@ const VaccineAdd = () => {
         setLoading(true);
         try {
           const response = await axiosClient.get(`/vaccine/${id}`);
-          console.log("Vaccine detail: ", response.data.data)
+          console.log("Vaccine detail: ", response.data.data);
           const vaccineData = response.data.data[0]; // Adjust to array response
           if (vaccineData) {
             // Split diseases string into array and map to IDs
             const diseaseNames = vaccineData.diseases
-              ? vaccineData.diseases.split(', ').map( name => name.trim())
+              ? vaccineData.diseases.split(", ").map((name) => name.trim())
               : [];
             // Fetch diseases to map names to IDs
-            const diseasesResponse = await axiosClient.get('/diseases');
+            const diseasesResponse = await axiosClient.get("/diseases");
             const allDiseases = diseasesResponse.data.data || [];
             const diseaseIds = diseaseNames
-              .map(name => {
-                const disease = allDiseases.find(d => d.name === name);
+              .map((name) => {
+                const disease = allDiseases.find((d) => d.name === name);
                 return disease ? disease.id : null;
               })
-              .filter(id => id !== null);
+              .filter((id) => id !== null);
 
             setFormData({
-              name: vaccineData.name || '',
-              origin: vaccineData.origin || '',
-              description: vaccineData.description || '',
+              name: vaccineData.name || "",
+              origin: vaccineData.origin || "",
+              description: vaccineData.description || "",
               dose_quantity: vaccineData.dose_quantity || 0,
               disease_list: diseaseIds,
             });
           } else {
-            setMessage({ type: 'error', text: 'Không thể tải dữ liệu vaccine.' });
+            setMessage({
+              type: "error",
+              text: "Không thể tải dữ liệu vaccine.",
+            });
           }
         } catch (error) {
-          setMessage({ type: 'error', text: 'Lỗi khi tải vaccine: ' + error.message });
+          setMessage({
+            type: "error",
+            text: "Lỗi khi tải vaccine: " + error.message,
+          });
         } finally {
           setLoading(false);
         }
@@ -67,10 +74,10 @@ const VaccineAdd = () => {
     const fetchDiseases = async () => {
       setDiseaseLoading(true);
       try {
-        const response = await axiosClient.get('/diseases');
+        const response = await axiosClient.get("/diseases");
         setDiseases(response.data.data || []);
       } catch (error) {
-        setMessage({ type: 'error', text: 'Lỗi khi lấy danh sách bệnh.' });
+        setMessage({ type: "error", text: "Lỗi khi lấy danh sách bệnh." });
       } finally {
         setDiseaseLoading(false);
       }
@@ -80,7 +87,7 @@ const VaccineAdd = () => {
 
   const handleInputChange = (e) => {
     const { name, value, options } = e.target;
-    if (name === 'disease_list') {
+    if (name === "disease_list") {
       const selectedIds = Array.from(options)
         .filter((option) => option.selected)
         .map((option) => parseInt(option.value));
@@ -91,16 +98,19 @@ const VaccineAdd = () => {
     } else {
       setFormData((prev) => ({
         ...prev,
-        [name]: name === 'dose_quantity' ? parseInt(value) || 0 : value,
+        [name]: name === "dose_quantity" ? parseInt(value) || 0 : value,
       }));
     }
   };
 
   const validateForm = () => {
-    if (!formData.name.trim()) return 'Tên vaccine không được để trống';
-    if (!formData.origin.trim()) return 'Nguồn gốc không được để trống';
-    if (!Array.isArray(formData.disease_list) || formData.disease_list.length === 0) {
-      return 'Vui lòng chọn ít nhất một bệnh';
+    if (!formData.name.trim()) return "Tên vaccine không được để trống";
+    if (!formData.origin.trim()) return "Nguồn gốc không được để trống";
+    if (
+      !Array.isArray(formData.disease_list) ||
+      formData.disease_list.length === 0
+    ) {
+      return "Vui lòng chọn ít nhất một bệnh";
     }
     return null;
   };
@@ -108,32 +118,32 @@ const VaccineAdd = () => {
   const handleSubmit = async () => {
     const validationError = validateForm();
     if (validationError) {
-      setMessage({ type: 'error', text: validationError });
+      setMessage({ type: "error", text: validationError });
       return;
     }
 
     setLoading(true);
-    setMessage({ type: '', text: '' });
+    setMessage({ type: "", text: "" });
 
     try {
-      const endpoint = id ? `/vaccine/${id}` : '/vaccine';
-      const method = id ? 'put' : 'post';
+      const endpoint = id ? `/vaccine/${id}` : "/vaccine";
+      const method = id ? "patch" : "post";
       const response = await axiosClient[method](endpoint, formData);
       if (response.data.error) {
-        setMessage({ type: 'error', text: response.data.message });
+        setMessage({ type: "error", text: response.data.message });
       } else {
-        setMessage({
-          type: 'success',
-          text: id ? 'Cập nhật vaccine thành công!' : 'Tạo vaccine thành công!',
-        });
-        setTimeout(() => navigate('/vaccine'), 1500); // Navigate back after success
+        enqueueSnackbar(
+          id ? "Cập nhật vaccine thành công!" : "Tạo vaccine thành công!",
+          { variant: "success" }
+        );
+        navigate(-1) // Navigate back after success
       }
     } catch (error) {
       setMessage({
-        type: 'error',
+        type: "error",
         text: id
-          ? 'Có lỗi xảy ra khi cập nhật vaccine. Vui lòng thử lại.'
-          : 'Có lỗi xảy ra khi tạo vaccine. Vui lòng thử lại.',
+          ? "Có lỗi xảy ra khi cập nhật vaccine. Vui lòng thử lại."
+          : "Có lỗi xảy ra khi tạo vaccine. Vui lòng thử lại.",
       });
     } finally {
       setLoading(false);
@@ -147,7 +157,7 @@ const VaccineAdd = () => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold text-gray-900 flex items-center">
               <FileText className="w-5 h-5 mr-2" />
-              {id ? 'Chỉnh sửa Vaccine' : 'Thêm Vaccine Mới'}
+              {id ? "Chỉnh sửa Vaccine" : "Thêm Vaccine Mới"}
             </h2>
             <button
               onClick={() => navigate(-1)}
@@ -161,9 +171,9 @@ const VaccineAdd = () => {
           {message.text && (
             <div
               className={`mb-6 p-4 rounded-md border ${
-                message.type === 'success'
-                  ? 'bg-green-50 border-green-200 text-green-800'
-                  : 'bg-red-50 border-red-200 text-red-800'
+                message.type === "success"
+                  ? "bg-green-50 border-green-200 text-green-800"
+                  : "bg-red-50 border-red-200 text-red-800"
               }`}
             >
               <div className="flex items-center">
@@ -176,7 +186,9 @@ const VaccineAdd = () => {
           {loading ? (
             <div className="flex items-center justify-center p-12">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600">Đang tải dữ liệu vaccine...</span>
+              <span className="ml-2 text-gray-600">
+                Đang tải dữ liệu vaccine...
+              </span>
             </div>
           ) : (
             <div className="space-y-6">
@@ -188,10 +200,14 @@ const VaccineAdd = () => {
                 {diseaseLoading ? (
                   <div className="flex items-center p-4">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                    <span className="ml-2 text-gray-600">Đang tải danh sách bệnh...</span>
+                    <span className="ml-2 text-gray-600">
+                      Đang tải danh sách bệnh...
+                    </span>
                   </div>
                 ) : diseases.length === 0 ? (
-                  <div className="text-red-800">Không có bệnh nào được tìm thấy.</div>
+                  <div className="text-red-800">
+                    Không có bệnh nào được tìm thấy.
+                  </div>
                 ) : (
                   <select
                     name="disease_list"
@@ -207,7 +223,9 @@ const VaccineAdd = () => {
                     ))}
                   </select>
                 )}
-                <p className="mt-1 text-xs text-gray-500">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều bệnh.</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều bệnh.
+                </p>
               </div>
 
               {/* Name */}
@@ -294,7 +312,7 @@ const VaccineAdd = () => {
                   ) : (
                     <>
                       <Plus className="w-5 h-5" />
-                      {id ? 'Cập nhật Vaccine' : 'Thêm Vaccine'}
+                      {id ? "Cập nhật Vaccine" : "Thêm Vaccine"}
                     </>
                   )}
                 </button>

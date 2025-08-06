@@ -356,7 +356,7 @@ const RegularCheckupRegisterList = () => {
                 <div className="space-y-4">
                   <ul className="space-y-2">
                     {selectedRegister.specialist_records
-                      .filter(record => record !== null)
+                      .filter(record => record !== null && record.status !== "CANNOT_ATTACH")
                       .map((record, index) => (
                         <li
                           key={record.spe_exam_id}

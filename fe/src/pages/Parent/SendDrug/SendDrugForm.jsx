@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { Plus, X, Loader2, Image as ImageIcon, ArrowLeft } from "lucide-react";
 import axiosClient from "../../../config/axiosClient";
 import { getUser, getUserRole } from "../../../service/authService";
 import { getStudentInfo } from "../../../service/childenService";
@@ -343,13 +343,17 @@ const SendDrugForm = () => {
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-6 sm:px-8 border-b border-gray-200">
+          <div className="px-6 py-6 sm:px-8 border-b border-gray-200 flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-900">
               {isEditMode ? "Cập Nhật Đơn Thuốc" : "Đơn Thuốc Học Sinh"}
             </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Vui lòng điền đầy đủ thông tin dưới đây
-            </p>
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 cursor-pointer"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Quay lại
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
@@ -473,8 +477,7 @@ const SendDrugForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Kết thúc uống thuốc{" "}
-                      <span className="text-red-500">*</span>
+                      Kết thúc uống thuốc <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
@@ -570,7 +573,7 @@ const SendDrugForm = () => {
                       {formData.request_items.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => handleRequestItemChange(index)}
+                          onClick={() => handleRemoveRequestItem(index)}
                           className="text-red-600 hover:text-red-800 cursor-pointer"
                         >
                           <X className="w-4 h-4" />

@@ -24,6 +24,7 @@ const MedicineList = () => {
       setLoading(true);
       try {
         const response = await axiosClient.get("/medication");
+        console.log("Kho thuoc: ", response.data.data);
         if (response.data.error) {
           throw new Error(response.data.message);
         }

@@ -1,7 +1,6 @@
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, RefreshCw } from "lucide-react";
 import useDiseaseRecords from "../../../hooks/useDiseaseRecords";
 import DiseaseRecordList from "./DiseaseRecordList";
-import AddDiseaseRecord from "./AddDiseaseRecord";
 import { useNavigate } from "react-router-dom";
 
 const DiseaseRecordManagement = () => {
@@ -52,36 +51,46 @@ const DiseaseRecordManagement = () => {
         )}
 
         {/* Search and Filter Controls */}
-        {
-          <div className="bg-white shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
-                <div className="relative flex-1 max-w-md">
-                  <input
-                    type="text"
-                    placeholder="Tìm kiếm theo mã học sinh hoặc tên bệnh..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <Search size={18} className="absolute left-3 top-2.5 text-gray-400" />
-                </div>
-                <div className="flex gap-3">
-                  {["Tất cả bệnh", "Bệnh truyền nhiễm", "Bệnh mãn tính"].map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => setCategoryFilter(category)}
-                      className={`px-4 py-2 rounded-md cursor-pointer font-medium text-sm transition-colors duration-200 ${
-                        categoryFilter === category
-                          ? "bg-blue-600 text-white"
-                          : "border border-gray-300 text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
+        <div className="bg-white shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
+              <div className="relative flex-1 max-w-md">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo mã học sinh hoặc tên bệnh..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <Search size={18} className="absolute left-3 top-2.5 text-gray-400" />
               </div>
+              <div className="flex gap-3">
+                {["Tất cả bệnh", "Bệnh truyền nhiễm", "Bệnh mãn tính"].map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setCategoryFilter(category)}
+                    className={`px-4 py-2 rounded-md cursor-pointer font-medium text-sm transition-colors duration-200 ${
+                      categoryFilter === category
+                        ? "bg-blue-600 text-white"
+                        : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setCategoryFilter("Tất cả bệnh");
+                }}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
+              >
+                <RefreshCw size={16} className="mr-2" />
+                Làm mới
+              </button>
               <button
                 onClick={() => navigate('/admin/diseaseRecord/add')}
                 className="flex cursor-pointer items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
@@ -91,7 +100,7 @@ const DiseaseRecordManagement = () => {
               </button>
             </div>
           </div>
-        }
+        </div>
 
         {/* Content */}
         {loading ? (
@@ -99,7 +108,7 @@ const DiseaseRecordManagement = () => {
             <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-4"></div>
             <p className="text-gray-500">Đang tải dữ liệu...</p>
           </div>
-        )  : records.length === 0 ? (
+        ) : records.length === 0 ? (
           <div className="bg-white shadow-sm border border-gray-200 p-12 text-center">
             <FileText size={40} className="mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">Không tìm thấy hồ sơ nào</p>
