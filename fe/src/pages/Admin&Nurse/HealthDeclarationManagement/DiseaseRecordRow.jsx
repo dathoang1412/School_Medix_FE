@@ -96,7 +96,7 @@ const DiseaseRecordRow = ({ record, diseaseMap, onUpdate }) => {
             )}
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-2 px-3 py-1 text-blue-600 border border-gray-300 rounded-lg hover:bg-blue-50 text-sm"
+              className="flex cursor-pointer items-center gap-2 px-3 py-1 text-blue-600 border border-gray-300 rounded-lg hover:bg-blue-50 text-sm"
             >
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               {expanded ? 'Ẩn' : 'Xem'}
