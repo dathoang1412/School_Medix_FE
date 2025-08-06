@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Loader2, Calendar, Package, Search, Users, Trash2, Undo2, X, Plus } from "lucide-react";
+import {
+  Loader2,
+  Calendar,
+  Package,
+  Search,
+  Users,
+  Trash2,
+  Undo2,
+  X,
+  Plus,
+} from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path
@@ -14,7 +24,8 @@ const DeletedTransactionList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
-  const [isPermanentDeleteModalOpen, setIsPermanentDeleteModalOpen] = useState(false);
+  const [isPermanentDeleteModalOpen, setIsPermanentDeleteModalOpen] =
+    useState(false);
   const [transactionToModify, setTransactionToModify] = useState(null);
   const [isSupplierPopupOpen, setIsSupplierPopupOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
@@ -25,13 +36,17 @@ const DeletedTransactionList = () => {
     const fetchTransactions = async () => {
       setLoading(true);
       try {
-        const response = await axiosClient.get("/deleted-inventory-transaction");
+        const response = await axiosClient.get(
+          "/deleted-inventory-transaction"
+        );
         if (response.data.error) throw new Error(response.data.message);
         setTransactions(response.data.data);
         setFilteredTransactions(response.data.data);
       } catch (err) {
         err && setError("Không thể tải danh sách giao dịch đã xóa.");
-        enqueueSnackbar("Không thể tải danh sách giao dịch đã xóa.", { variant: "error" });
+        enqueueSnackbar("Không thể tải danh sách giao dịch đã xóa.", {
+          variant: "error",
+        });
       } finally {
         setLoading(false);
       }
@@ -45,9 +60,14 @@ const DeletedTransactionList = () => {
       const lowerSearch = searchTerm.toLowerCase();
       result = result.filter(
         (transaction) =>
-          (transaction.supplier_name && transaction.supplier_name.toLowerCase().includes(lowerSearch)) ||
-          (transaction.purpose_title && transaction.purpose_title.toLowerCase().includes(lowerSearch)) ||
-          new Date(transaction.transaction_date).toLocaleDateString("vi-VN").toLowerCase().includes(lowerSearch)
+          (transaction.supplier_name &&
+            transaction.supplier_name.toLowerCase().includes(lowerSearch)) ||
+          (transaction.purpose_title &&
+            transaction.purpose_title.toLowerCase().includes(lowerSearch)) ||
+          new Date(transaction.transaction_date)
+            .toLocaleDateString("vi-VN")
+            .toLowerCase()
+            .includes(lowerSearch)
       );
     }
     setFilteredTransactions(result);
@@ -75,15 +95,25 @@ const DeletedTransactionList = () => {
     if (!transactionToModify) return;
 
     try {
-      const response = await axiosClient.get(`/inventory-transaction/${transactionToModify.id}/restore`);
+      const response = await axiosClient.get(
+        `/inventory-transaction/${transactionToModify.id}/restore`
+      );
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      setTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToModify.id));
-      setFilteredTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToModify.id));
-      enqueueSnackbar("Khôi phục giao dịch thành công.", { variant: "success" });
+      setTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== transactionToModify.id)
+      );
+      setFilteredTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== transactionToModify.id)
+      );
+      enqueueSnackbar("Khôi phục giao dịch thành công.", {
+        variant: "success",
+      });
     } catch (err) {
-      enqueueSnackbar(err.message || "Lỗi khi khôi phục giao dịch.", { variant: "error" });
+      enqueueSnackbar(err.message || "Lỗi khi khôi phục giao dịch.", {
+        variant: "error",
+      });
     } finally {
       setIsRestoreModalOpen(false);
       setTransactionToModify(null);
@@ -94,36 +124,52 @@ const DeletedTransactionList = () => {
     if (!transactionToModify) return;
 
     try {
-      const response = await axiosClient.delete(`/inventory-transaction/${transactionToModify.id}/permanent-delete`);
+      const response = await axiosClient.delete(
+        `/inventory-transaction/${transactionToModify.id}/permanent-delete`
+      );
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      setTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToModify.id));
-      setFilteredTransactions((prev) => prev.filter((transaction) => transaction.id !== transactionToModify.id));
-      enqueueSnackbar("Xóa vĩnh viễn giao dịch thành công.", { variant: "success" });
+      setTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== transactionToModify.id)
+      );
+      setFilteredTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== transactionToModify.id)
+      );
+      enqueueSnackbar("Xóa vĩnh viễn giao dịch thành công.", {
+        variant: "success",
+      });
     } catch (err) {
-      enqueueSnackbar(err.message || "Lỗi khi xóa vĩnh viễn giao dịch.", { variant: "error" });
+      enqueueSnackbar(err.message || "Lỗi khi xóa vĩnh viễn giao dịch.", {
+        variant: "error",
+      });
     } finally {
       setIsPermanentDeleteModalOpen(false);
       setTransactionToModify(null);
     }
   };
 
-  const handleSupplierClick = async (supplierName) => {
-    if (!supplierName) {
-      enqueueSnackbar("Không có thông tin nhà cung cấp để hiển thị.", { variant: "warning" });
+  const handleSupplierClick = async (supplierId, supplierName) => {
+    if (!supplierId) {
+      enqueueSnackbar("Không có thông tin nhà cung cấp để hiển thị.", {
+        variant: "warning",
+      });
       return;
     }
 
     try {
-      const response = await axiosClient.get(`/supplierDetail/${encodeURIComponent(supplierName)}`);
+      const response = await axiosClient.get(`/supplier/${supplierId}`, {
+        validateStatus: () => true,
+      });
       if (response.data.error) {
         throw new Error(response.data.message);
       }
       setSelectedSupplier(response.data.data);
       setIsSupplierPopupOpen(true);
     } catch (err) {
-      enqueueSnackbar(err.message || "Lỗi khi lấy thông tin nhà cung cấp.", { variant: "error" });
+      enqueueSnackbar(err.message || "Lỗi khi lấy thông tin nhà cung cấp.", {
+        variant: "error",
+      });
     }
   };
 
@@ -181,7 +227,9 @@ const DeletedTransactionList = () => {
                   <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 </div>
                 <button
-                  onClick={() => navigate("/admin/inventory-transaction/transaction-form")}
+                  onClick={() =>
+                    navigate("/admin/inventory-transaction/transaction-form")
+                  }
                   className="cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium ml-auto"
                 >
                   <Plus className="w-4 h-4" />
@@ -227,44 +275,84 @@ const DeletedTransactionList = () => {
                     {filteredTransactions.length === 0 ? (
                       <tr>
                         <td colSpan="5" className="px-6 py-12 text-center">
-                          <Package size={40} className="mx-auto text-gray-400 mb-4" />
-                          <p className="text-gray-500 text-lg">Không có giao dịch đã xóa</p>
-                          <p className="text-gray-400 text-sm mt-2">Hãy kiểm tra lại</p>
+                          <Package
+                            size={40}
+                            className="mx-auto text-gray-400 mb-4"
+                          />
+                          <p className="text-gray-500 text-lg">
+                            Không có giao dịch đã xóa
+                          </p>
+                          <p className="text-gray-400 text-sm mt-2">
+                            Hãy kiểm tra lại
+                          </p>
                         </td>
                       </tr>
                     ) : (
                       filteredTransactions.map((transaction) => (
-                        <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
+                        <tr
+                          key={transaction.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
                             <span className="text-sm text-gray-600">
-                              {new Date(transaction.transaction_date).toLocaleDateString("vi-VN")}
+                              {new Date(
+                                transaction.transaction_date
+                              ).toLocaleDateString("vi-VN")}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[30%]">
-                            <span className="text-sm text-gray-600">{transaction.purpose_title || "Không xác định"}</span>
+                            <span className="text-sm text-gray-600">
+                              {transaction.purpose_title || "Không xác định"}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[15%] text-center">
-                            <span className="text-sm text-gray-600">{transaction.medical_items.length}</span>
+                            <span className="text-sm text-gray-600">
+                              {transaction.medical_items.length}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
                             <span
-                              className={`text-sm text-gray-600 ${transaction.supplier_name ? "cursor-pointer hover:text-blue-600" : ""}`}
-                              onClick={() => transaction.supplier_name && handleSupplierClick(transaction.supplier_name)}
+                              className={`text-sm text-gray-600 ${
+                                transaction.supplier_id
+                                  ? "cursor-pointer hover:text-blue-600"
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                transaction.supplier_id &&
+                                handleSupplierClick(
+                                  transaction.supplier_id,
+                                  transaction.supplier_name
+                                )
+                              }
                             >
-                              {transaction.supplier_name ? transaction.supplier_name : "Không có"}
+                              {transaction.supplier_name
+                                ? transaction.supplier_name
+                                : "Không có"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[25%]">
                             <div className="flex justify-center gap-2">
                               <button
-                                onClick={() => openRestoreModal(transaction.id, transaction.purpose_title, transaction.supplier_name)}
+                                onClick={() =>
+                                  openRestoreModal(
+                                    transaction.id,
+                                    transaction.purpose_title,
+                                    transaction.supplier_name
+                                  )
+                                }
                                 className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Undo2 size={14} />
                                 Khôi phục
                               </button>
                               <button
-                                onClick={() => openPermanentDeleteModal(transaction.id, transaction.purpose_title, transaction.supplier_name)}
+                                onClick={() =>
+                                  openPermanentDeleteModal(
+                                    transaction.id,
+                                    transaction.purpose_title,
+                                    transaction.supplier_name
+                                  )
+                                }
                                 className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 px-2 py-1 rounded text-sm font-medium transition-colors duration-200"
                               >
                                 <Trash2 size={14} />
@@ -298,7 +386,9 @@ const DeletedTransactionList = () => {
         >
           <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-semibold text-gray-800">Chi tiết giao dịch đã xóa</h4>
+              <h4 className="text-lg font-semibold text-gray-800">
+                Chi tiết giao dịch đã xóa
+              </h4>
               <button
                 onClick={closeModal}
                 className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors duration-200"
@@ -308,22 +398,42 @@ const DeletedTransactionList = () => {
             </div>
             <div className="space-y-4">
               <div>
-                <h5 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Thông tin giao dịch</h5>
+                <h5 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                  Thông tin giao dịch
+                </h5>
                 <div className="mt-2 space-y-2 text-sm text-gray-600">
-                  <div><span className="font-medium">Ngày giao dịch:</span> {new Date(selectedTransaction.transaction_date).toLocaleDateString("vi-VN")}</div>
-                  <div><span className="font-medium">Mục đích:</span> {selectedTransaction.purpose_title || "Không xác định"}</div>
-                  <div><span className="font-medium">Nhà cung cấp:</span> {selectedTransaction.supplier_name || "Không có"}</div>
+                  <div>
+                    <span className="font-medium">Ngày giao dịch:</span>{" "}
+                    {new Date(
+                      selectedTransaction.transaction_date
+                    ).toLocaleDateString("vi-VN")}
+                  </div>
+                  <div>
+                    <span className="font-medium">Mục đích:</span>{" "}
+                    {selectedTransaction.purpose_title || "Không xác định"}
+                  </div>
+                  <div>
+                    <span className="font-medium">Nhà cung cấp:</span>{" "}
+                    {selectedTransaction.supplier_name || "Không có"}
+                  </div>
                 </div>
               </div>
               <div>
-                <h5 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Danh sách vật tư y tế</h5>
+                <h5 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                  Danh sách vật tư y tế
+                </h5>
                 <ul className="mt-2 space-y-2">
                   {selectedTransaction.medical_items.map((item, itemIndex) => (
                     <li key={itemIndex} className="text-sm text-gray-600">
-                      <strong>{item.name}</strong> ({item.unit}) - Số lượng: {item.transaction_quantity}
+                      <strong>{item.name}</strong> ({item.unit}) - Số lượng:{" "}
+                      {item.transaction_quantity}
                       <br />
                       <span className="text-xs text-gray-500">
-                        Mô tả: {item.description || "Không có"} | Hết hạn: {item.exp_date || "Không có"} | Loại: {item.category === "MEDICATION" ? "Thuốc" : "Vật tư y tế"}
+                        Mô tả: {item.description || "Không có"} | Hết hạn:{" "}
+                        {item.exp_date || "Không có"} | Loại:{" "}
+                        {item.category === "MEDICATION"
+                          ? "Thuốc"
+                          : "Vật tư y tế"}
                       </span>
                     </li>
                   ))}
@@ -354,7 +464,9 @@ const DeletedTransactionList = () => {
         confirmText="Khôi phục"
         cancelText="Hủy"
       >
-        Bạn có chắc muốn khôi phục giao dịch từ <strong>{transactionToModify?.supplier_name || "này"}</strong>? Giao dịch sẽ được đưa trở lại danh sách giao dịch.
+        Bạn có chắc muốn khôi phục giao dịch từ{" "}
+        <strong>{transactionToModify?.supplier_name || "này"}</strong>? Giao
+        dịch sẽ được đưa trở lại danh sách giao dịch.
       </Modal>
 
       {/* Modal for Permanent Delete Confirmation */}
@@ -369,7 +481,9 @@ const DeletedTransactionList = () => {
         confirmText="Xóa vĩnh viễn"
         cancelText="Hủy"
       >
-        Bạn có chắc muốn xóa vĩnh viễn giao dịch từ <strong>{transactionToModify?.supplier_name || "này"}</strong>? Hành động này không thể hoàn tác.
+        Bạn có chắc muốn xóa vĩnh viễn giao dịch từ{" "}
+        <strong>{transactionToModify?.supplier_name || "này"}</strong>? Hành
+        động này không thể hoàn tác.
       </Modal>
 
       {/* Supplier Details Popup */}

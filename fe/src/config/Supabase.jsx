@@ -18,10 +18,15 @@ export const loginWithEmailAndPassword = async (email, password) => {
   if (error) {
     console.error("❌ Login error:", error.message);
     return { error };
-  } else {
-    console.log("✅ Logged in:", data);
-    return { data };
   }
+
+  const token = data.session?.access_token;
+  if (token) {
+    localStorage.setItem("access_token", token);
+  }
+
+  console.log("✅ Logged in:", data);
+  return { data };
 };
 
 export const signOut = async () => {

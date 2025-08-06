@@ -24,7 +24,9 @@ const SupplierDetailsPopup = ({ isOpen, onClose, supplier }) => {
     >
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 w-1/2 overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h4 className="text-xl font-bold text-gray-900">Chi tiết nhà cung cấp</h4>
+          <h4 className="text-xl font-bold text-gray-900">
+            Chi tiết nhà cung cấp
+          </h4>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
@@ -35,7 +37,9 @@ const SupplierDetailsPopup = ({ isOpen, onClose, supplier }) => {
         </div>
         <div className="space-y-6">
           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Thông tin nhà cung cấp</h5>
+            <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">
+              Thông tin nhà cung cấp
+            </h5>
             <dl className="space-y-3 text-sm text-gray-700">
               <div className="flex items-start">
                 <dt className="font-medium text-gray-900 w-1/3">Tên:</dt>
@@ -50,7 +54,9 @@ const SupplierDetailsPopup = ({ isOpen, onClose, supplier }) => {
                 <dd className="w-2/3">{supplier.address || "Không có"}</dd>
               </div>
               <div className="flex items-start">
-                <dt className="font-medium text-gray-900 w-1/3">Số điện thoại:</dt>
+                <dt className="font-medium text-gray-900 w-1/3">
+                  Số điện thoại:
+                </dt>
                 <dd className="w-2/3">{supplier.phone || "Không có"}</dd>
               </div>
               <div className="flex items-start">
@@ -58,8 +64,12 @@ const SupplierDetailsPopup = ({ isOpen, onClose, supplier }) => {
                 <dd className="w-2/3">{supplier.email || "Không có"}</dd>
               </div>
               <div className="flex items-start">
-                <dt className="font-medium text-gray-900 w-1/3">Người liên hệ:</dt>
-                <dd className="w-2/3">{supplier.contact_person || "Không có"}</dd>
+                <dt className="font-medium text-gray-900 w-1/3">
+                  Người liên hệ:
+                </dt>
+                <dd className="w-2/3">
+                  {supplier.contact_person || "Không có"}
+                </dd>
               </div>
               <div className="flex items-start">
                 <dt className="font-medium text-gray-900 w-1/3">Mã số thuế:</dt>
@@ -67,7 +77,9 @@ const SupplierDetailsPopup = ({ isOpen, onClose, supplier }) => {
               </div>
               <div className="flex items-start">
                 <dt className="font-medium text-gray-900 w-1/3">Trạng thái:</dt>
-                <dd className={`w-2/3 font-medium ${status.color}`}>{status.text}</dd>
+                <dd className={`w-2/3 font-medium ${status.color}`}>
+                  {status.text}
+                </dd>
               </div>
             </dl>
           </div>
