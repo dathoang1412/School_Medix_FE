@@ -161,7 +161,7 @@ const VaccineDeclarationForm = () => {
   };
 
   const handleBack = () => {
-    navigate(`/parent/edit/${student_id}/history-vaccination-record`);
+    navigate(`/parent/edit/${student_id}/history-declare-record`);
   };
 
   return (
@@ -181,7 +181,7 @@ const VaccineDeclarationForm = () => {
             <button
               type="button"
               onClick={handleBack}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 flex items-center"
+              className="cursor-pointer px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 flex items-center"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -345,14 +345,14 @@ const VaccineDeclarationForm = () => {
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-4 py-2 text-sm font-medium text-white bg-gray-600 border border-transparent rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-gray-600 border border-transparent rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Hủy
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !formData.vaccine_id}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                className="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Đang gửi..." : "Gửi khai báo"}
               </button>

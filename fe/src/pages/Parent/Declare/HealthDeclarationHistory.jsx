@@ -23,7 +23,7 @@ const HealthDeclarationHistory = () => {
           <div className="flex items-center gap-4 mb-6">
             <Shield className="w-8 h-8 text-blue-600 p-2 bg-blue-50 rounded-lg" />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 ">
                 {viewMode === 'disease' ? 'Lịch sử khai báo bệnh' : 'Lịch sử khai báo tiêm chủng'}
               </h1>
               <p className="text-gray-600">
@@ -36,7 +36,7 @@ const HealthDeclarationHistory = () => {
               <div className="flex rounded-lg border border-gray-300 overflow-hidden">
                 <button
                   onClick={() => setViewMode('disease')}
-                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                  className={`cursor-pointer px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                     viewMode === 'disease'
                       ? 'bg-blue-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -46,7 +46,7 @@ const HealthDeclarationHistory = () => {
                 </button>
                 <button
                   onClick={() => setViewMode('vaccine')}
-                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                  className={`cursor-pointer px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                     viewMode === 'vaccine'
                       ? 'bg-blue-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -58,7 +58,7 @@ const HealthDeclarationHistory = () => {
             </div>
             <button
               onClick={handleAddNew}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 flex items-center gap-2"
+              className="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 flex items-center gap-2"
             >
               <Plus className="w-4 h-4" /> Thêm mới khai báo
             </button>
