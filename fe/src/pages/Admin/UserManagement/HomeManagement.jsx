@@ -295,7 +295,7 @@ const HomeManagement = () => {
         </div>
 
         <div className="flex items-center justify-between mb-6">
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
+          <div className="bg-white p-3 rounded-lg ">
             <div className="flex items-center gap-2">
               <Home size={16} className="text-gray-600" />
               <div>

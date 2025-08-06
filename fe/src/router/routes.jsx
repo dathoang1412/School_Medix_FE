@@ -77,6 +77,7 @@ import CreateNewHome from "../pages/Admin/UserManagement/CreateNewHome";
 import EditHome from "../pages/Admin/UserManagement/EditHome";
 import DrugRequestDetail from "../pages/Admin&Nurse/SendDrugManagement/DrugRequestDetail";
 import AddDiseaseRecord from "../pages/Admin&Nurse/DiseaseManagement/AddDiseaseRecord";
+import VaccineAdd from "../pages/Admin&Nurse/VaccineManagement/VaccineAdd";
 
 const routes = createBrowserRouter([
   {
@@ -338,6 +339,14 @@ const routes = createBrowserRouter([
           {
             path: "diseaseRecord/edit/:id",
             element: <AddDiseaseRecord/>
+          },
+          {
+            path: "vaccine/add",
+            element: <VaccineAdd/>
+          },
+          {
+            path: "vaccine/edit/:id",
+            element: <VaccineAdd/>
           }
         ],
       },
@@ -558,6 +567,14 @@ const routes = createBrowserRouter([
           {
             path: "diseaseRecord/edit/:id",
             element: <AddDiseaseRecord/>
+          },
+          {
+            path: "vaccine/add",
+            element: <VaccineAdd/>
+          },
+          {
+            path: "vaccine/edit/:id",
+            element: <VaccineAdd/>
           }
         ],
       },

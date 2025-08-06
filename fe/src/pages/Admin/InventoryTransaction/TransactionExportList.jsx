@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Calendar, Package, Search, Plus, Users, Edit, X } from "lucide-react";
+import {
+  Loader2,
+  Calendar,
+  Package,
+  Search,
+  Plus,
+  Users,
+  Edit,
+  X,
+} from "lucide-react";
 import { useSnackbar } from "notistack";
 import axiosClient from "../../../config/axiosClient";
 import Modal from "../MedicalSupplyManagement/Modal"; // Adjust the import path
@@ -99,21 +108,27 @@ const TransactionExportList = () => {
     }
   };
 
-  const handleSupplierClick = async (supplierName) => {
-    if (!supplierName) {
-      enqueueSnackbar("Không có thông tin nhà cung cấp để hiển thị.", { variant: "warning" });
+  const handleSupplierClick = async (supplierId, supplierName) => {
+    if (!supplierId) {
+      enqueueSnackbar("Không có thông tin nhà cung cấp để hiển thị.", {
+        variant: "warning",
+      });
       return;
     }
 
     try {
-      const response = await axiosClient.get(`/supplierDetail/${encodeURIComponent(supplierName)}`);
+      const response = await axiosClient.get(`/supplier/${supplierId}`, {
+        validateStatus: () => true,
+      });
       if (response.data.error) {
         throw new Error(response.data.message);
       }
       setSelectedSupplier(response.data.data);
       setIsSupplierPopupOpen(true);
     } catch (err) {
-      enqueueSnackbar(err.message || "Lỗi khi lấy thông tin nhà cung cấp.", { variant: "error" });
+      enqueueSnackbar(err.message || "Lỗi khi lấy thông tin nhà cung cấp.", {
+        variant: "error",
+      });
     }
   };
 
@@ -256,8 +271,18 @@ const TransactionExportList = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-[20%]">
                             <span
-                              className={`text-sm text-gray-600 ${transaction.supplier_name ? "cursor-pointer hover:text-blue-600" : ""}`}
-                              onClick={() => transaction.supplier_name && handleSupplierClick(transaction.supplier_name)}
+                              className={`text-sm text-gray-600 ${
+                                transaction.supplier_id
+                                  ? "cursor-pointer hover:text-blue-600"
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                transaction.supplier_id &&
+                                handleSupplierClick(
+                                  transaction.supplier_id,
+                                  transaction.supplier_name
+                                )
+                              }
                             >
                               {transaction.supplier_name
                                 ? transaction.supplier_name

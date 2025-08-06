@@ -18,9 +18,7 @@ const SendDrugForm = () => {
     end_intake_date: "",
     note: "",
     status: "PROCESSING",
-    request_items: [
-      { name: "", intake_templates: [], dosage_usage: "" },
-    ],
+    request_items: [{ name: "", intake_templates: [], dosage_usage: "" }],
     prescription_img_urls: [],
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +45,9 @@ const SendDrugForm = () => {
 
         const user = getUser();
         if (!user?.id) {
-          setError("Không thể lấy thông tin người dùng. Vui lòng đăng nhập lại.");
+          setError(
+            "Không thể lấy thông tin người dùng. Vui lòng đăng nhập lại."
+          );
           setIsLoading(false);
           return;
         }
@@ -63,7 +63,9 @@ const SendDrugForm = () => {
 
         if (request_id) {
           try {
-            const response = await axiosClient.get(`/send-drug-request/${request_id}`);
+            const response = await axiosClient.get(
+              `/send-drug-request/${request_id}`
+            );
             if (response.data.error) {
               throw new Error(response.data.message);
             }
@@ -83,22 +85,26 @@ const SendDrugForm = () => {
                 : "",
               note: requestData.note || "",
               status: requestData.status || "PROCESSING",
-              request_items: requestData.request_items.length > 0
-                ? requestData.request_items.map((item) => ({
-                    name: item.name || "",
-                    intake_templates: Array.isArray(item.intake_templates)
-                      ? item.intake_templates.filter((time) =>
-                          ["MORNING", "MIDDAY", "AFTERNOON"].includes(time)
-                        )
-                      : [],
-                    dosage_usage: item.dosage_usage || "",
-                  }))
-                : [{ name: "", intake_templates: [], dosage_usage: "" }],
+              request_items:
+                requestData.request_items.length > 0
+                  ? requestData.request_items.map((item) => ({
+                      name: item.name || "",
+                      intake_templates: Array.isArray(item.intake_templates)
+                        ? item.intake_templates.filter((time) =>
+                            ["MORNING", "MIDDAY", "AFTERNOON"].includes(time)
+                          )
+                        : [],
+                      dosage_usage: item.dosage_usage || "",
+                    }))
+                  : [{ name: "", intake_templates: [], dosage_usage: "" }],
               prescription_img_urls: requestData.prescription_img_urls || [],
             });
             setPreviews(requestData.prescription_img_urls || []);
           } catch (error) {
-            setError("Không thể tải dữ liệu đơn thuốc: " + (error.message || "Vui lòng thử lại."));
+            setError(
+              "Không thể tải dữ liệu đơn thuốc: " +
+                (error.message || "Vui lòng thử lại.")
+            );
           }
         } else {
           setFormData((prev) => ({
@@ -108,7 +114,9 @@ const SendDrugForm = () => {
           }));
         }
       } catch (error) {
-        setError("Lỗi khi tải dữ liệu: " + (error.message || "Vui lòng thử lại."));
+        setError(
+          "Lỗi khi tải dữ liệu: " + (error.message || "Vui lòng thử lại.")
+        );
       } finally {
         setIsLoading(false);
       }
@@ -135,7 +143,9 @@ const SendDrugForm = () => {
   const handleRemoveFile = (index) => {
     const isExistingUrl = index < formData.prescription_img_urls.length;
     if (isExistingUrl) {
-      const newUrls = formData.prescription_img_urls.filter((_, i) => i !== index);
+      const newUrls = formData.prescription_img_urls.filter(
+        (_, i) => i !== index
+      );
       setFormData((prev) => ({ ...prev, prescription_img_urls: newUrls }));
     } else {
       const fileIndex = index - formData.prescription_img_urls.length;
@@ -156,7 +166,9 @@ const SendDrugForm = () => {
     const newRequestItems = [...formData.request_items];
     const currentTimes = newRequestItems[index].intake_templates;
     if (currentTimes.includes(time)) {
-      newRequestItems[index].intake_templates = currentTimes.filter((t) => t !== time);
+      newRequestItems[index].intake_templates = currentTimes.filter(
+        (t) => t !== time
+      );
     } else {
       newRequestItems[index].intake_templates = [...currentTimes, time];
     }
@@ -175,7 +187,9 @@ const SendDrugForm = () => {
 
   const handleRemoveRequestItem = (index) => {
     if (formData.request_items.length > 1) {
-      const newRequestItems = formData.request_items.filter((_, i) => i !== index);
+      const newRequestItems = formData.request_items.filter(
+        (_, i) => i !== index
+      );
       setFormData((prev) => ({ ...prev, request_items: newRequestItems }));
     }
   };
@@ -183,9 +197,12 @@ const SendDrugForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (userRole !== "parent") {
-      enqueueSnackbar("Chỉ phụ huynh mới có quyền gửi hoặc cập nhật đơn thuốc.", {
-        variant: "error",
-      });
+      enqueueSnackbar(
+        "Chỉ phụ huynh mới có quyền gửi hoặc cập nhật đơn thuốc.",
+        {
+          variant: "error",
+        }
+      );
       return;
     }
 
@@ -198,8 +215,14 @@ const SendDrugForm = () => {
       return;
     }
 
-    if (!formData.schedule_send_date || !formData.start_intake_date || !formData.end_intake_date) {
-      setError("Vui lòng nhập đầy đủ ngày hẹn gửi và khoảng thời gian uống thuốc.");
+    if (
+      !formData.schedule_send_date ||
+      !formData.start_intake_date ||
+      !formData.end_intake_date
+    ) {
+      setError(
+        "Vui lòng nhập đầy đủ ngày hẹn gửi và khoảng thời gian uống thuốc."
+      );
       setIsSubmitting(false);
       return;
     }
@@ -215,7 +238,9 @@ const SendDrugForm = () => {
       }));
 
     if (validRequestItems.length === 0) {
-      setError("Vui lòng nhập ít nhất một loại thuốc hợp lệ với thời gian uống.");
+      setError(
+        "Vui lòng nhập ít nhất một loại thuốc hợp lệ với thời gian uống."
+      );
       setIsSubmitting(false);
       return;
     }
@@ -225,15 +250,25 @@ const SendDrugForm = () => {
       try {
         const formDataFiles = new FormData();
         files.forEach((file) => formDataFiles.append("images", file));
-        const uploadResponse = await axiosClient.post("/upload-prescription-imgs", formDataFiles, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const uploadResponse = await axiosClient.post(
+          "/upload-prescription-imgs",
+          formDataFiles,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
         if (uploadResponse.data.error) {
           throw new Error(uploadResponse.data.message);
         }
-        prescriptionImgUrls = [...prescriptionImgUrls, ...uploadResponse.data.prescription_img_urls];
+        prescriptionImgUrls = [
+          ...prescriptionImgUrls,
+          ...uploadResponse.data.prescription_img_urls,
+        ];
       } catch (error) {
-        setError("Lỗi khi tải lên ảnh đơn thuốc: " + (error.message || "Vui lòng thử lại."));
+        setError(
+          "Lỗi khi tải lên ảnh đơn thuốc: " +
+            (error.message || "Vui lòng thử lại.")
+        );
         setIsSubmitting(false);
         return;
       }
@@ -252,15 +287,22 @@ const SendDrugForm = () => {
     };
 
     try {
-      const endpoint = isEditMode ? `/send-drug-request/${request_id}` : "/send-drug-request";
+      const endpoint = isEditMode
+        ? `/send-drug-request/${request_id}`
+        : "/send-drug-request";
       const method = isEditMode ? "patch" : "post";
       const response = await axiosClient[method](endpoint, dataToSend);
       if (response.data.error) {
         throw new Error(response.data.message);
       }
-      enqueueSnackbar(isEditMode ? "Cập nhật đơn thuốc thành công!" : "Gửi đơn thuốc thành công!", {
-        variant: "success",
-      });
+      enqueueSnackbar(
+        isEditMode
+          ? "Cập nhật đơn thuốc thành công!"
+          : "Gửi đơn thuốc thành công!",
+        {
+          variant: "success",
+        }
+      );
       navigate(`/parent/edit/${currChild.id}/drug-table`);
     } catch (error) {
       console.error("Error submitting drug request:", error);
@@ -289,7 +331,9 @@ const SendDrugForm = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center">
           <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600 text-sm font-medium">Đang tải dữ liệu...</p>
+          <p className="text-gray-600 text-sm font-medium">
+            Đang tải dữ liệu...
+          </p>
         </div>
       </div>
     );
@@ -310,7 +354,9 @@ const SendDrugForm = () => {
 
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
             <section>
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Thông tin học sinh</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Thông tin học sinh
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="hidden">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -350,7 +396,9 @@ const SendDrugForm = () => {
             </section>
 
             <section className="hidden">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Thông tin người gửi</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Thông tin người gửi
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -379,7 +427,9 @@ const SendDrugForm = () => {
             </section>
 
             <section>
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Thông tin đơn thuốc</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Thông tin đơn thuốc
+              </h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -423,7 +473,8 @@ const SendDrugForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Kết thúc uống thuốc <span className="text-red-500">*</span>
+                      Kết thúc uống thuốc{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
@@ -450,7 +501,9 @@ const SendDrugForm = () => {
                   </div>
                   {previews.length > 0 && (
                     <div className="mt-4">
-                      <h3 className="text-sm font-medium text-gray-700 mb-2">Xem trước ảnh</h3>
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">
+                        Xem trước ảnh
+                      </h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {previews.map((preview, index) => (
                           <div key={index} className="relative group">
@@ -491,7 +544,9 @@ const SendDrugForm = () => {
 
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-gray-900">Danh sách thuốc</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                  Danh sách thuốc
+                </h2>
                 <button
                   type="button"
                   onClick={handleAddRequestItem}
@@ -504,9 +559,14 @@ const SendDrugForm = () => {
 
               <div className="space-y-4">
                 {formData.request_items.map((item, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-medium text-gray-900">Thuốc #{index + 1}</h3>
+                      <h3 className="text-sm font-medium text-gray-900">
+                        Thuốc #{index + 1}
+                      </h3>
                       {formData.request_items.length > 1 && (
                         <button
                           type="button"
@@ -526,7 +586,13 @@ const SendDrugForm = () => {
                         <input
                           type="text"
                           value={item.name}
-                          onChange={(e) => handleRequestItemChange(index, "name", e.target.value)}
+                          onChange={(e) =>
+                            handleRequestItemChange(
+                              index,
+                              "name",
+                              e.target.value
+                            )
+                          }
                           placeholder="Nhập tên thuốc"
                           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           required
@@ -541,9 +607,13 @@ const SendDrugForm = () => {
                           type="text"
                           value={item.dosage_usage}
                           onChange={(e) =>
-                            handleRequestItemChange(index, "dosage_usage", e.target.value)
+                            handleRequestItemChange(
+                              index,
+                              "dosage_usage",
+                              e.target.value
+                            )
                           }
-                          placeholder="VD: Uống 1 viên/lần"
+                          placeholder="VD: Uống 1 viên/lần, sau ăn 30 phút"
                           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           required
                         />
@@ -555,16 +625,25 @@ const SendDrugForm = () => {
                         </label>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
                           {["MORNING", "MIDDAY", "AFTERNOON"].map((time) => (
-                            <label key={time} className="flex items-center gap-2">
+                            <label
+                              key={time}
+                              className="flex items-center gap-2"
+                            >
                               <input
                                 type="checkbox"
                                 checked={item.intake_templates.includes(time)}
-                                onChange={() => handleIntakeTimeChange(index, time)}
+                                onChange={() =>
+                                  handleIntakeTimeChange(index, time)
+                                }
                                 className="h-4 cursor-pointer w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                 required={item.intake_templates.length === 0}
                               />
                               <span className="text-sm cursor-pointer text-gray-700">
-                                {time === "MORNING" ? "Sáng" : time === "MIDDAY" ? "Trưa" : "Chiều"}
+                                {time === "MORNING"
+                                  ? "Sáng"
+                                  : time === "MIDDAY"
+                                  ? "Trưa"
+                                  : "Chiều"}
                               </span>
                             </label>
                           ))}
@@ -585,7 +664,9 @@ const SendDrugForm = () => {
             <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => navigate(`/parent/edit/${currChild.id}/drug-table`)}
+                onClick={() =>
+                  navigate(`/parent/edit/${currChild.id}/drug-table`)
+                }
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer"
               >
                 Hủy

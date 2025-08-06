@@ -1,5 +1,6 @@
 // src/api/axiosClient.js
 import axios from 'axios';
+import { enqueueSnackbar } from 'notistack';
 
 // const axiosClient = axios.create({
 //   baseURL: 'https://schoolmedix-be.fly.dev/api',
@@ -17,24 +18,37 @@ const axiosClient = axios.create({
   timeout: 60000,
 });
 
-// axiosClient.interceptors.request.use(
-//   (config) => {
-//     const token = localStorage.getItem('token'); // hoặc từ Redux, Zustand...
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-//   },
-//   (error) => Promise.reject(error)
-// );
+axiosClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    console.error("Request Interceptor Error", error);
+    return Promise.reject(error);
+  }
+);
 
-// // Response Interceptor (handle lỗi chung)
-// axiosClient.interceptors.response.use(
-//   (response) => response.data,
-//   (error) => {
-//     console.error('API error:', error.response || error.message);
-//     return Promise.reject(error);
-//   }
-// );
+
+axiosClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+
+    if (status === 401) {
+      enqueueSnackbar("Chưa đăng nhập hoặc token hết hạn", { variant: 'warning' });
+    } else if (status === 403) {
+      enqueueSnackbar("Bạn không có quyền truy cập", { variant: 'error' });
+    } else if (status === 404) {
+      enqueueSnackbar("API không tồn tại", { variant: 'info' });
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 
 export default axiosClient;

@@ -1,51 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, CheckCircle, X } from 'lucide-react';
-import axiosClient from '../../../config/axiosClient';
-import { getUserRole } from '../../../service/authService';
-import { enqueueSnackbar } from 'notistack';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { AlertCircle, ArrowLeft, CheckCircle, X } from "lucide-react";
+import axiosClient from "../../../config/axiosClient";
+import { getUserRole } from "../../../service/authService";
+import { enqueueSnackbar } from "notistack";
 
 const DetailHealthRecordForUpdate = () => {
   const { record_id } = useParams();
   const navigate = useNavigate();
   const [record, setRecord] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    diagnosis: '',
-    on_site_treatment: '',
-    transferred_to: '',
+    diagnosis: "",
+    on_site_treatment: "",
+    transferred_to: "",
     medical_items: [], // Changed to array for items
-    status: '',
-    detect_time: '',
+    status: "",
+    detect_time: "",
     transaction_id: 0,
   });
   const [updating, setUpdating] = useState(false);
   const [isChanged, setIsChanged] = useState(false);
   const [availableItems, setAvailableItems] = useState([]); // Fetch from DB
-  const [selectedItem, setSelectedItem] = useState('');
+  const [selectedItem, setSelectedItem] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [items, setItems] = useState([]); // Local items state
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'Chưa xác định';
+    if (!dateString) return "Chưa xác định";
     try {
-      return new Date(dateString).toLocaleDateString('vi-VN');
+      return new Date(dateString).toLocaleDateString("vi-VN");
     } catch {
-      return 'Chưa xác định';
+      return "Chưa xác định";
     }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      setError('');
+      setError("");
       try {
-        const response = await axiosClient.get(`/daily-health-record/${record_id}`);
+        const response = await axiosClient.get(
+          `/daily-health-record/${record_id}`
+        );
         const fetchedRecord = response.data.data;
         if (!fetchedRecord) {
-          setError('Không tìm thấy hồ sơ y tế.');
+          setError("Không tìm thấy hồ sơ y tế.");
           setLoading(false);
           return;
         }
@@ -54,17 +56,19 @@ const DetailHealthRecordForUpdate = () => {
         const initialItems = fetchedRecord.medical_items || [];
         setItems(initialItems);
         setFormData({
-          diagnosis: fetchedRecord.diagnosis || '',
-          on_site_treatment: fetchedRecord.on_site_treatment || '',
-          transferred_to: fetchedRecord.transferred_to || '',
+          diagnosis: fetchedRecord.diagnosis || "",
+          on_site_treatment: fetchedRecord.on_site_treatment || "",
+          transferred_to: fetchedRecord.transferred_to || "",
           medical_items: initialItems, // Sync with items state
-          status: fetchedRecord.status || '',
-          detect_time: fetchedRecord.detect_time ? new Date(fetchedRecord.detect_time).toISOString().split('T')[0] : '',
-          transaction_id: fetchedRecord.transaction_id
+          status: fetchedRecord.status || "",
+          detect_time: fetchedRecord.detect_time
+            ? new Date(fetchedRecord.detect_time).toISOString().split("T")[0]
+            : "",
+          transaction_id: fetchedRecord.transaction_id,
         });
       } catch (error) {
-        setError('Không thể tải chi tiết hồ sơ y tế.');
-        console.error('Error fetching record:', error);
+        setError("Không thể tải chi tiết hồ sơ y tế.");
+        console.error("Error fetching record:", error);
       } finally {
         setLoading(false);
       }
@@ -72,10 +76,10 @@ const DetailHealthRecordForUpdate = () => {
 
     const fetchItems = async () => {
       try {
-        const response = await axiosClient.get('/medical-item');
+        const response = await axiosClient.get("/medical-item");
         setAvailableItems(response.data.data || []);
       } catch (error) {
-        console.error('Error fetching items:', error);
+        console.error("Error fetching items:", error);
         setAvailableItems([]); // Set to empty array on error
       }
     };
@@ -88,7 +92,10 @@ const DetailHealthRecordForUpdate = () => {
     const { name, value } = e.target;
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
-      setIsChanged(JSON.stringify(newData) !== JSON.stringify({ ...record, medical_items: items }));
+      setIsChanged(
+        JSON.stringify(newData) !==
+          JSON.stringify({ ...record, medical_items: items })
+      );
       return newData;
     });
   };
@@ -96,7 +103,7 @@ const DetailHealthRecordForUpdate = () => {
   const handleItemChange = (e) => {
     const itemId = e.target.value;
     setSelectedItem(itemId);
-    const item = availableItems.find(i => i.id === parseInt(itemId));
+    const item = availableItems.find((i) => i.id === parseInt(itemId));
     if (item) {
       setQuantity(item.quantity > 0 ? item.quantity : 0);
     } else {
@@ -105,50 +112,79 @@ const DetailHealthRecordForUpdate = () => {
   };
 
   const handleQuantityChange = (e) => {
-    const selectedItemObj = availableItems.find(i => i.id === parseInt(selectedItem));
+    const selectedItemObj = availableItems.find(
+      (i) => i.id === parseInt(selectedItem)
+    );
     const maxQuantity = selectedItemObj ? selectedItemObj.quantity : 0;
-    const value = Math.min(Math.max(0, parseInt(e.target.value) || 0), maxQuantity);
+    const value = Math.min(
+      Math.max(0, parseInt(e.target.value) || 0),
+      maxQuantity
+    );
     setQuantity(value);
   };
 
   const handleAddItem = () => {
     if (!selectedItem || quantity <= 0) {
-      setError('Vui lòng chọn vật tư và nhập số lượng hợp lệ.');
+      setError("Vui lòng chọn vật tư và nhập số lượng hợp lệ.");
       return;
     }
-    const item = availableItems.find(i => i.id === parseInt(selectedItem));
+
+    const item = availableItems.find((i) => i.id === parseInt(selectedItem));
     if (!item) return;
 
-    const newItem = {
-      id: item.id,
-      name: item.name,
-      quantity: quantity,
-      unit: item.unit
-    };
-    // Update availableItems by reducing the quantity
-    const updatedAvailableItems = availableItems.map(i =>
-      i.id === parseInt(selectedItem) ? { ...i, quantity: i.quantity - quantity } : i
-    );
-    setAvailableItems(updatedAvailableItems);
+    const existingIndex = items.findIndex((i) => i.id === item.id);
+    let updatedItems = [...items];
 
-    setItems([...items, newItem]);
-    setFormData(prev => ({ ...prev, medical_items: [...items, newItem] }));
-    setSelectedItem('');
+    if (existingIndex !== -1) {
+      // Đã có trong danh sách --> cộng thêm số lượng
+      updatedItems[existingIndex] = {
+        ...updatedItems[existingIndex],
+        quantity: updatedItems[existingIndex].quantity + quantity,
+      };
+    } else {
+      // Chưa có --> thêm mới
+      const newItem = {
+        id: item.id,
+        name: item.name,
+        quantity: quantity,
+        unit: item.unit,
+      };
+      updatedItems.push(newItem);
+    }
+
+    // Trừ số lượng khỏi availableItems
+    const updatedAvailableItems = availableItems.map((i) =>
+      i.id === parseInt(selectedItem)
+        ? { ...i, quantity: i.quantity - quantity }
+        : i
+    );
+
+    setAvailableItems(updatedAvailableItems);
+    setItems(updatedItems);
+    setFormData((prev) => ({ ...prev, medical_items: updatedItems }));
+    setSelectedItem("");
     setQuantity(0);
     setIsChanged(true);
-    setError('');
+    setError("");
   };
 
   const handleRemoveItem = (index) => {
     const removedItem = items[index];
     const newItems = items.filter((_, i) => i !== index);
     setItems(newItems);
-    setFormData(prev => ({ ...prev, medical_items: newItems }));
+    setFormData((prev) => ({ ...prev, medical_items: newItems }));
     setIsChanged(true);
 
     // Restore quantity in availableItems
-    const updatedAvailableItems = availableItems.map(i =>
-      i.id === removedItem.id ? { ...i, quantity: parseInt(parseInt(i.quantity) + parseInt(removedItem.quantity)) } : i
+    const updatedAvailableItems = availableItems.map((i) =>
+      i.id === removedItem.id
+        ? {
+            ...i,
+            quantity: parseInt(
+              parseInt(i.quantity) + parseInt(removedItem.quantity)
+            ),
+          }
+        : i
     );
     setAvailableItems(updatedAvailableItems);
   };
@@ -156,22 +192,29 @@ const DetailHealthRecordForUpdate = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!formData.diagnosis) {
-      setError('Vui lòng điền đầy đủ các trường bắt buộc: Chẩn đoán.');
+      setError("Vui lòng điền đầy đủ các trường bắt buộc: Chẩn đoán.");
       return;
     }
     setUpdating(true);
     try {
       await axiosClient.put(`/daily-health-record/${record_id}`, formData);
-      setMessage('Cập nhật hồ sơ thành công.');
-      enqueueSnackbar('Cập nhật hồ sơ thành công.', {variant: "success"})
+      setMessage("Cập nhật hồ sơ thành công.");
+      enqueueSnackbar("Cập nhật hồ sơ thành công.", { variant: "success" });
       setIsChanged(false); // Reset isChanged sau khi cập nhật thành công
       // Fetch updated record to sync state
-      const response = await axiosClient.get(`/daily-health-record/${record_id}`);
+      const response = await axiosClient.get(
+        `/daily-health-record/${record_id}`
+      );
       setRecord(response.data.data);
       setItems(response.data.data.medical_items || []);
-      setFormData(prev => ({ ...prev, medical_items: response.data.data.medical_items || [] }));
+      setFormData((prev) => ({
+        ...prev,
+        medical_items: response.data.data.medical_items || [],
+      }));
     } catch (error) {
-      setError(error.response?.data?.message || 'Không thể cập nhật hồ sơ y tế');
+      setError(
+        error.response?.data?.message || "Không thể cập nhật hồ sơ y tế"
+      );
       console.error(error);
     } finally {
       setUpdating(false);
@@ -179,7 +222,12 @@ const DetailHealthRecordForUpdate = () => {
   };
 
   const handleBack = () => {
-    if (isChanged && !window.confirm('Bạn có chắc muốn quay lại? Các thay đổi sẽ không được lưu.')) {
+    if (
+      isChanged &&
+      !window.confirm(
+        "Bạn có chắc muốn quay lại? Các thay đổi sẽ không được lưu."
+      )
+    ) {
       return;
     }
     navigate(`/${getUserRole()}/daily-health`);
@@ -207,7 +255,9 @@ const DetailHealthRecordForUpdate = () => {
               <ArrowLeft size={18} />
               Quay lại
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">Chi tiết hồ sơ y tế</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Chi tiết hồ sơ y tế
+            </h1>
           </div>
         </div>
 
@@ -226,7 +276,10 @@ const DetailHealthRecordForUpdate = () => {
         )}
 
         {/* Form */}
-        <form onSubmit={handleUpdate} className="bg-white rounded-lg shadow-md p-8 space-y-6">
+        <form
+          onSubmit={handleUpdate}
+          className="bg-white rounded-lg shadow-md p-8 space-y-6"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -235,7 +288,7 @@ const DetailHealthRecordForUpdate = () => {
               <input
                 type="number"
                 name="student_id"
-                value={record?.student_id || ''}
+                value={record?.student_id || ""}
                 disabled
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm bg-gray-100"
                 placeholder="Mã học sinh"
@@ -248,7 +301,7 @@ const DetailHealthRecordForUpdate = () => {
               <input
                 type="text"
                 name="name"
-                value={record?.student_name || ''}
+                value={record?.student_name || ""}
                 disabled
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm bg-gray-100"
                 placeholder="Tên học sinh"
@@ -261,7 +314,7 @@ const DetailHealthRecordForUpdate = () => {
               <input
                 type="text"
                 name="record_date"
-                value={formatDate(record?.record_date) || ''}
+                value={formatDate(record?.record_date) || ""}
                 disabled
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm bg-gray-100"
                 placeholder="Ngày ghi nhận"
@@ -283,7 +336,9 @@ const DetailHealthRecordForUpdate = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Chẩn Đoán</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Chẩn Đoán
+            </label>
             <textarea
               name="diagnosis"
               value={formData.diagnosis}
@@ -296,7 +351,9 @@ const DetailHealthRecordForUpdate = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Xử Lý Tại Chỗ</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Xử Lý Tại Chỗ
+            </label>
             <textarea
               name="on_site_treatment"
               value={formData.on_site_treatment}
@@ -308,7 +365,9 @@ const DetailHealthRecordForUpdate = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Tình Trạng</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tình Trạng
+            </label>
             <select
               name="status"
               value={formData.status}
@@ -320,9 +379,11 @@ const DetailHealthRecordForUpdate = () => {
               <option value="SERIOUS">Nghiêm trọng</option>
             </select>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Chuyển Đến</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Chuyển Đến
+            </label>
             <input
               type="text"
               name="transferred_to"
@@ -334,7 +395,9 @@ const DetailHealthRecordForUpdate = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Vật Tư Sử Dụng</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Vật Tư Sử Dụng
+            </label>
             <div className="space-y-4">
               <div className="flex gap-4 items-end">
                 <select
@@ -343,11 +406,12 @@ const DetailHealthRecordForUpdate = () => {
                   className="w-1/2 px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
                 >
                   <option value="">Chọn vật tư</option>
-                  {availableItems && availableItems.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name} (Còn: {item.quantity} {item.unit})
-                    </option>
-                  ))}
+                  {availableItems &&
+                    availableItems.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name} (Còn: {item.quantity} {item.unit})
+                      </option>
+                    ))}
                 </select>
                 <div className="flex items-center gap-2">
                   <input
@@ -355,7 +419,11 @@ const DetailHealthRecordForUpdate = () => {
                     value={quantity}
                     onChange={handleQuantityChange}
                     min={0}
-                    max={availableItems.find(i => i.id === parseInt(selectedItem))?.quantity || 0}
+                    max={
+                      availableItems.find(
+                        (i) => i.id === parseInt(selectedItem)
+                      )?.quantity || 0
+                    }
                     className="w-20 px-2 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
                     placeholder="Số lượng"
                   />
@@ -369,18 +437,22 @@ const DetailHealthRecordForUpdate = () => {
                 </div>
               </div>
               <div className="border border-gray-200 rounded-md p-2 bg-gray-50 min-h-[100px]">
-                {items && items.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between py-1 border-b border-gray-300 last:border-b-0">
-                    <span className="text-sm text-gray-800">{`${item.name} - ${item.quantity} ${item.unit}`}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem(index)}
-                      className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
+                {items &&
+                  items.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between py-1 border-b border-gray-300 last:border-b-0"
                     >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
+                      <span className="text-sm text-gray-800">{`${item.name} - ${item.quantity} ${item.unit}`}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem(index)}
+                        className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
               </div>
             </div>
           </div>
@@ -398,7 +470,7 @@ const DetailHealthRecordForUpdate = () => {
               disabled={!isChanged || updating}
               className="px-6 py-2.5 cursor-pointer bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
-              {updating ? 'Đang cập nhật...' : 'Lưu Hồ Sơ'}
+              {updating ? "Đang cập nhật..." : "Lưu Hồ Sơ"}
             </button>
           </div>
         </form>

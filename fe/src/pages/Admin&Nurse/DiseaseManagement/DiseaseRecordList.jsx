@@ -10,7 +10,6 @@ import {
   Activity,
   Eye,
   X,
-  Edit2,
   PenBox,
 } from "lucide-react";
 import { getUserRole } from "../../../service/authService";
@@ -46,7 +45,7 @@ const DiseaseRecordList = ({ records }) => {
 
   // Truncate text to 30 characters with "..." if exceeding 25 characters
   const truncateText = (text, maxLength = 30, ellipsisThreshold = 25) => {
-    if (!text) return "Chưa có chẩn đoán";
+    if (!text) return "N/A";
     if (text.length <= ellipsisThreshold) return text;
     return text.slice(0, maxLength) + "...";
   };
@@ -75,27 +74,27 @@ const DiseaseRecordList = ({ records }) => {
   };
 
   // Get status badge
-  const getStatusBadge = (category) => {
+  const getStatusBadge = (status) => {
+    return status === "RECOVERED" ? (
+      <span className="px-2 py-1 bg-green-50 text-green-800 text-xs font-medium rounded border border-green-200">
+        Đã khỏi
+      </span>
+    ) : (
+      <span className="px-2 py-1 bg-yellow-50 text-yellow-800 text-xs font-medium rounded border border-yellow-200">
+        Đang điều trị
+      </span>
+    );
+  };
+
+  // Get category badge
+  const getCategoryBadge = (category) => {
     return category === "Bệnh truyền nhiễm" ? (
-      <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border ed-200">
+      <span className="px-2 py-1 bg-red-50 text-red-800 text-xs font-medium rounded border border-red-200">
         Truyền nhiễm
       </span>
     ) : (
       <span className="px-2 py-1 bg-yellow-50 text-yellow-800 text-xs font-medium rounded border border-yellow-200">
         Mãn tính
-      </span>
-    );
-  };
-
-  // Get vaccine badge
-  const getVaccineBadge = (vaccineNeed) => {
-    return vaccineNeed ? (
-      <span className="px-2 py-1 bg-green-50 text-green-800 text-xs font-medium rounded border border-green-200">
-        Cần thiết
-      </span>
-    ) : (
-      <span className="px-2 py-1 bg-gray-50 text-gray-800 text-xs font-medium rounded border border-gray-200">
-        Không cần
       </span>
     );
   };
@@ -192,6 +191,13 @@ const DiseaseRecordList = ({ records }) => {
                             selectedRecord.disease_category || "Chưa phân loại",
                         },
                         {
+                          label: "Trạng thái",
+                          value:
+                            selectedRecord.status === "RECOVERED"
+                              ? "Đã khỏi"
+                              : "Đang điều trị",
+                        },
+                        {
                           label: "Ngày phát hiện",
                           value: formatDate(selectedRecord.detect_date),
                         },
@@ -210,32 +216,9 @@ const DiseaseRecordList = ({ records }) => {
                         </div>
                       ))}
                     </div>
-                    <div className="space-y-4 mt-6">
-                      <h5 className="text-sm font-bold text-gray-800">
-                        II. Chẩn đoán{" "}
-                      </h5>
-                      {[
-                        {
-                          label: "Chẩn đoán",
-                          value:
-                            selectedRecord.diagnosis || "Chưa có chẩn đoán",
-                        },
-                        // { label: "Yêu cầu vaccine", value: selectedRecord.vaccine_need ? 'Cần thiết' : 'Không cần' },
-                        // { label: "Số liều vaccine", value: selectedRecord.dose_quantity || 'Chưa xác định' },
-                      ].map(({ label, value }) => (
-                        <div key={label} className="flex items-start">
-                          <label className="w-1/4 text-sm font-bold text-gray-800">
-                            {label}
-                          </label>
-                          <p className="flex-1 text-sm text-gray-800">
-                            {value}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
                     <div className="mt-6 space-y-4">
                       <h5 className="text-sm font-bold text-gray-800">
-                        III. Điều trị & Cập nhật
+                        II. Điều trị & Cập nhật
                       </h5>
                       {[
                         {
@@ -248,6 +231,11 @@ const DiseaseRecordList = ({ records }) => {
                           label: "Nơi điều trị",
                           value:
                             selectedRecord.location_cure || "Chưa xác định",
+                        },
+                        {
+                          label: "Chuyển đến",
+                          value:
+                            selectedRecord.transferred_to || "Chưa xác định",
                         },
                         {
                           label: "Ngày tạo",
@@ -297,7 +285,7 @@ const DiseaseRecordList = ({ records }) => {
           <thead className="bg-gray-50">
             <tr>
               <th
-                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200"
                 style={{ width: "7%" }}
               >
                 <div className="flex items-center gap-1 whitespace-nowrap">
@@ -306,7 +294,7 @@ const DiseaseRecordList = ({ records }) => {
                 </div>
               </th>
               <th
-                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200"
                 style={{ width: "15%" }}
               >
                 <div className="flex items-center gap-1 whitespace-nowrap">
@@ -315,7 +303,7 @@ const DiseaseRecordList = ({ records }) => {
                 </div>
               </th>
               <th
-                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200"
                 style={{ width: "12%" }}
               >
                 <div className="flex items-center gap-1 whitespace-nowrap">
@@ -324,7 +312,7 @@ const DiseaseRecordList = ({ records }) => {
                 </div>
               </th>
               <th
-                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200"
                 style={{ width: "12%" }}
               >
                 <div className="flex items-center gap-1 whitespace-nowrap">
@@ -333,7 +321,7 @@ const DiseaseRecordList = ({ records }) => {
                 </div>
               </th>
               <th
-                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200"
                 style={{ width: "13%" }}
               >
                 <div className="flex items-center gap-1 whitespace-nowrap">
@@ -342,16 +330,13 @@ const DiseaseRecordList = ({ records }) => {
                 </div>
               </th>
               <th
-                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
-                style={{ width: "18%" }}
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200"
+                style={{ width: "11%" }}
               >
-                <div className="flex items-center gap-1 whitespace-nowrap">
-                  <Activity size={14} />
-                  <span>Chẩn Đoán</span>
-                </div>
+                <div className="whitespace-nowrap">Trạng thái</div>
               </th>
               <th
-                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider  border-gray-200"
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-gray-200"
                 style={{ width: "11%" }}
               >
                 <div className="whitespace-nowrap">Phân Loại</div>
@@ -382,8 +367,8 @@ const DiseaseRecordList = ({ records }) => {
                 <React.Fragment key={index}>
                   <tr className="hover:bg-gray-50 transition-colors">
                     <td
-                      className="px-3 py-3  border-gray-100"
-                      style={{ width: "10%" }}
+                      className="px-3 py-3 border-gray-100"
+                      style={{ width: "7%" }}
                     >
                       <div
                         className="text-sm font-medium text-gray-900 truncate"
@@ -393,7 +378,7 @@ const DiseaseRecordList = ({ records }) => {
                       </div>
                     </td>
                     <td
-                      className="px-3 py-3  border-gray-100"
+                      className="px-3 py-3 border-gray-100"
                       style={{ width: "15%" }}
                     >
                       <button
@@ -405,7 +390,7 @@ const DiseaseRecordList = ({ records }) => {
                       </button>
                     </td>
                     <td
-                      className="px-3 py-3  border-gray-100"
+                      className="px-3 py-3 border-gray-100"
                       style={{ width: "12%" }}
                     >
                       <div className="flex items-center">
@@ -421,7 +406,7 @@ const DiseaseRecordList = ({ records }) => {
                       </div>
                     </td>
                     <td
-                      className="px-3 py-3  border-gray-100"
+                      className="px-3 py-3 border-gray-100"
                       style={{ width: "12%" }}
                     >
                       <div className="flex items-center">
@@ -437,8 +422,8 @@ const DiseaseRecordList = ({ records }) => {
                       </div>
                     </td>
                     <td
-                      className="px-3 py-3  border-gray-100"
-                      style={{ width: "18%" }}
+                      className="px-3 py-3 border-gray-100"
+                      style={{ width: "13%" }}
                     >
                       <span
                         className="text-sm text-gray-900 truncate block"
@@ -448,29 +433,31 @@ const DiseaseRecordList = ({ records }) => {
                       </span>
                     </td>
                     <td
-                      className="px-3 py-3  border-gray-100"
-                      style={{ width: "18%" }}
-                    >
-                      <span
-                        className="text-sm text-gray-900 truncate block"
-                        title={record.diagnosis || "Chưa có chẩn đoán"}
-                      >
-                        {truncateText(record.diagnosis)}
-                      </span>
-                    </td>
-                    <td
-                      className="px-3 py-3  border-gray-100"
-                      style={{ width: "10%" }}
+                      className="px-3 py-3 border-gray-100"
+                      style={{ width: "11%" }}
                     >
                       <div className="flex justify-start">
-                        {getStatusBadge(record.disease_category)}
+                        {getStatusBadge(record.status)}
+                      </div>
+                    </td>
+                    <td
+                      className="px-3 py-3 border-gray-100"
+                      style={{ width: "11%" }}
+                    >
+                      <div className="flex justify-start">
+                        {getCategoryBadge(record.disease_category)}
                       </div>
                     </td>
                     <td
                       className="px-3 py-3 gap-2 text-center"
-                      style={{ width: "5%" }}
+                      style={{ width: "8%" }}
                     >
-                      <button className="cursor-pointer mr-2" onClick={() => {navigate(`/${getUserRole()}/diseaseRecord/edit/${record.id}`)}}>
+                      <button
+                        className="cursor-pointer mr-2"
+                        onClick={() => {
+                          navigate(`/${getUserRole()}/diseaseRecord/edit/${record.id}`);
+                        }}
+                      >
                         <PenBox className="text-green-600" size={18} />
                       </button>
                       <button
@@ -511,7 +498,7 @@ const DiseaseRecordList = ({ records }) => {
                               className="opacity-75"
                               fill="currentColor"
                               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
+                            ></path>
                           </svg>
                         ) : (
                           <FileText className="h-4 w-4" />
