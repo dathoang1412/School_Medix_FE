@@ -167,13 +167,7 @@ const AddTransactionForm = () => {
       navigate("/admin/inventory-transaction");
     } catch (err) {
       console.log(err);
-      let errorMessage = "Có lỗi xảy ra khi xử lý giao dịch.";
-      if (err.message.includes("Request failed with status code 400")) {
-        errorMessage = err.message || "Dữ liệu không hợp lệ.";
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      enqueueSnackbar(err.response.data.message, { variant: "error" });
     } finally {
       setLoading(false);
     }
