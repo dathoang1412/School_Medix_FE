@@ -30,7 +30,7 @@ const VaccineAdd = () => {
           if (vaccineData) {
             // Split diseases string into array and map to IDs
             const diseaseNames = vaccineData.diseases
-              ? vaccineData.diseases.split(', ').map(name => name.trim())
+              ? vaccineData.diseases.split(', ').map( name => name.trim())
               : [];
             // Fetch diseases to map names to IDs
             const diseasesResponse = await axiosClient.get('/diseases');
