@@ -35,7 +35,7 @@ const createDiseaseRecord = async (studentId, data) => {
 // Function to update a disease record
 const updateDiseaseRecord = async (id, data) => {
   try {
-    const response = await axiosClient.patch(`admin/student/${id}/disease-record`, {
+    const response = await axiosClient.patch(`student/${id}/disease-record`, {
       diagnosis: data.diagnosis,
       detect_date: data.detect_date,
       cure_date: data.cure_date || null, // Send null if cure_date is empty

@@ -119,13 +119,13 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-50 to-indigo-100 py-20">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-center mb-8">
+          {/* <div className="flex justify-center mb-8">
             <img
               src="../../../public/Gemini_Generated_Image_yzvndbyzvndbyzvn.png" // Thay bằng đường dẫn thực tế của logo
               alt="SchoolMedix Logo"
               className="h-60"
             />
-          </div>
+          </div> */}
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
