@@ -1,38 +1,38 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, X } from 'lucide-react';
-import axiosClient from '../../../config/axiosClient';
-import { getUserRole } from '../../../service/authService';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { AlertCircle, ArrowLeft, X } from "lucide-react";
+import axiosClient from "../../../config/axiosClient";
+import { getUserRole } from "../../../service/authService";
 
 const AddRecordPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    student_id: '',
-    detect_time: '',
-    diagnosis: '',
-    on_site_treatment: '',
-    transferred_to: '',
+    student_id: "",
+    detect_time: "",
+    diagnosis: "",
+    on_site_treatment: "",
+    transferred_to: "",
     medical_items: [], // Changed to array to store items
-    status: ''
+    status: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [items, setItems] = useState([]); // Array to store selected items
   const [availableItems, setAvailableItems] = useState([]); // Fetch from DB
-  const [selectedItem, setSelectedItem] = useState('');
+  const [selectedItem, setSelectedItem] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [classes, setClasses] = useState([]); // List of classes
-  const [selectedClass, setSelectedClass] = useState(''); // Selected class
+  const [selectedClass, setSelectedClass] = useState(""); // Selected class
   const [students, setStudents] = useState([]); // List of students in selected class
-  const [selectedStudent, setSelectedStudent] = useState(''); // Selected student
+  const [selectedStudent, setSelectedStudent] = useState(""); // Selected student
 
   // Fetch available classes from database
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axiosClient.get('/class');
+        const response = await axiosClient.get("/class");
         setClasses(response.data.data || []);
       } catch (error) {
-        console.error('Error fetching classes:', error);
+        console.error("Error fetching classes:", error);
       }
     };
     fetchClasses();
@@ -45,17 +45,17 @@ const AddRecordPage = () => {
         try {
           const response = await axiosClient.get(`/students/${selectedClass}`);
           setStudents(response.data.data || []);
-          setSelectedStudent(''); // Reset selected student when class changes
-          setFormData(prev => ({ ...prev, student_id: '' })); // Reset student_id
+          setSelectedStudent(""); // Reset selected student when class changes
+          setFormData((prev) => ({ ...prev, student_id: "" })); // Reset student_id
         } catch (error) {
-          console.error('Error fetching students:', error);
+          console.error("Error fetching students:", error);
         }
       };
       fetchStudents();
     } else {
       setStudents([]);
-      setSelectedStudent('');
-      setFormData(prev => ({ ...prev, student_id: '' }));
+      setSelectedStudent("");
+      setFormData((prev) => ({ ...prev, student_id: "" }));
     }
   }, [selectedClass]);
 
@@ -63,10 +63,10 @@ const AddRecordPage = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = await axiosClient.get('/medical-item');
+        const response = await axiosClient.get("/medical-item");
         setAvailableItems(response.data.data || []);
       } catch (error) {
-        console.error('Error fetching items:', error);
+        console.error("Error fetching items:", error);
       }
     };
     fetchItems();
@@ -82,46 +82,51 @@ const AddRecordPage = () => {
   const handleStudentChange = (e) => {
     const studentId = e.target.value;
     setSelectedStudent(studentId);
-    setFormData(prev => ({ ...prev, student_id: studentId }));
+    setFormData((prev) => ({ ...prev, student_id: studentId }));
   };
 
   // Format date to YYYY-MM-DD for API
   const formatDateForAPI = (dateString) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   };
 
   // Handle item selection and quantity change
   const handleItemChange = (e) => {
     const itemId = e.target.value;
     setSelectedItem(itemId);
-    const item = availableItems.find(i => i.id === parseInt(itemId));
+    const item = availableItems.find((i) => i.id === parseInt(itemId));
     if (item) {
       setQuantity(item.quantity > 0 ? item.quantity : 0);
     }
   };
 
   const handleQuantityChange = (e) => {
-    const selectedItemObj = availableItems.find(i => i.id === parseInt(selectedItem));
+    const selectedItemObj = availableItems.find(
+      (i) => i.id === parseInt(selectedItem)
+    );
     const maxQuantity = selectedItemObj ? selectedItemObj.quantity : 0;
-    const value = Math.min(Math.max(0, parseInt(e.target.value) || 0), maxQuantity);
+    const value = Math.min(
+      Math.max(0, parseInt(e.target.value) || 0),
+      maxQuantity
+    );
     setQuantity(value);
   };
 
   // Handle adding item to items array and update availableItems
   const handleAddItem = () => {
     if (!selectedItem || quantity <= 0) {
-      setError('Vui lòng chọn vật tư và nhập số lượng hợp lệ.');
+      setError("Vui lòng chọn vật tư và nhập số lượng hợp lệ.");
       return;
     }
-    const item = availableItems.find(i => i.id === parseInt(selectedItem));
+    const item = availableItems.find((i) => i.id === parseInt(selectedItem));
     if (!item) return;
 
     // Check if item already exists in items array
-    const existingItemIndex = items.findIndex(i => i.id === item.id);
+    const existingItemIndex = items.findIndex((i) => i.id === item.id);
     let updatedItems;
-    
+
     if (existingItemIndex !== -1) {
       // Item exists, update its quantity
       updatedItems = items.map((i, index) =>
@@ -135,22 +140,24 @@ const AddRecordPage = () => {
         id: item.id,
         name: item.name,
         quantity: quantity,
-        unit: item.unit
+        unit: item.unit,
       };
       updatedItems = [...items, newItem];
     }
 
     // Update availableItems by reducing the quantity
-    const updatedAvailableItems = availableItems.map(i =>
-      i.id === parseInt(selectedItem) ? { ...i, quantity: i.quantity - quantity } : i
+    const updatedAvailableItems = availableItems.map((i) =>
+      i.id === parseInt(selectedItem)
+        ? { ...i, quantity: i.quantity - quantity }
+        : i
     );
     setAvailableItems(updatedAvailableItems);
 
     // Update items array
     setItems(updatedItems);
-    setSelectedItem('');
+    setSelectedItem("");
     setQuantity(0);
-    setError('');
+    setError("");
   };
 
   // Handle removing item from items array and restore quantity in availableItems
@@ -159,8 +166,10 @@ const AddRecordPage = () => {
     setItems(items.filter((_, i) => i !== index));
 
     // Restore quantity in availableItems
-    const updatedAvailableItems = availableItems.map(i =>
-      i.id === removedItem.id ? { ...i, quantity: i.quantity + removedItem.quantity } : i
+    const updatedAvailableItems = availableItems.map((i) =>
+      i.id === removedItem.id
+        ? { ...i, quantity: i.quantity + removedItem.quantity }
+        : i
     );
     setAvailableItems(updatedAvailableItems);
   };
@@ -169,20 +178,24 @@ const AddRecordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.student_id || !formData.detect_time) {
-      setError('Vui lòng điền đầy đủ các trường bắt buộc: Học Sinh và Ngày Phát Hiện.');
+      setError(
+        "Vui lòng điền đầy đủ các trường bắt buộc: Học Sinh và Ngày Phát Hiện."
+      );
       return;
     }
     try {
       const payload = {
         ...formData,
         detect_time: formatDateForAPI(formData.detect_time),
-        medical_items: items // Send items array to API
+        medical_items: items, // Send items array to API
       };
       console.log("Health record POST: ", payload);
-      await axiosClient.post('/daily-health-record', payload);
-      navigate('/' + getUserRole() + '/daily-health', { state: { success: 'Hồ sơ y tế đã được tạo thành công!' } });
+      await axiosClient.post("/daily-health-record", payload);
+      navigate("/" + getUserRole() + "/daily-health", {
+        state: { success: "Hồ sơ y tế đã được tạo thành công!" },
+      });
     } catch (error) {
-      setError(error.response?.data?.message || 'Không thể tạo hồ sơ y tế');
+      setError(error.response?.data?.message || "Không thể tạo hồ sơ y tế");
       console.error(error);
     }
   };
@@ -206,7 +219,9 @@ const AddRecordPage = () => {
               <ArrowLeft size={18} />
               Quay lại
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">Thêm Hồ Sơ Y Tế Mới</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Thêm Hồ Sơ Y Tế Mới
+            </h1>
           </div>
         </div>
 
@@ -262,7 +277,25 @@ const AddRecordPage = () => {
         </form>
 
         {/* Existing Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-lg shadow-md p-8 space-y-6"
+        >
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tình Trạng <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+            >
+              <option value="">Chọn tình trạng</option>
+              <option value="MILD">Nhẹ</option>
+              <option value="SERIOUS">Nghiêm trọng</option>
+            </select>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -295,7 +328,9 @@ const AddRecordPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Chẩn Đoán</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Chẩn Đoán
+            </label>
             <textarea
               name="diagnosis"
               value={formData.diagnosis}
@@ -308,22 +343,8 @@ const AddRecordPage = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tình Trạng <span className="text-red-500">*</span>
+              Xử Lý Tại Chỗ
             </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
-            >
-              <option value="">Chọn tình trạng</option>
-              <option value="MILD">Nhẹ</option>
-              <option value="SERIOUS">Nghiêm trọng</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Xử Lý Tại Chỗ</label>
             <textarea
               name="on_site_treatment"
               value={formData.on_site_treatment}
@@ -335,7 +356,9 @@ const AddRecordPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Chuyển Đến</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Chuyển Đến
+            </label>
             <input
               type="text"
               name="transferred_to"
@@ -347,7 +370,9 @@ const AddRecordPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Vật Tư Sử Dụng</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Vật Tư Sử Dụng
+            </label>
             <div className="space-y-4">
               <div className="flex gap-4 items-end">
                 <select
@@ -368,7 +393,11 @@ const AddRecordPage = () => {
                     value={quantity}
                     onChange={handleQuantityChange}
                     min={0}
-                    max={availableItems.find(i => i.id === parseInt(selectedItem))?.quantity || 0}
+                    max={
+                      availableItems.find(
+                        (i) => i.id === parseInt(selectedItem)
+                      )?.quantity || 0
+                    }
                     className="w-20 px-2 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
                     placeholder="Số lượng"
                   />
@@ -383,7 +412,10 @@ const AddRecordPage = () => {
               </div>
               <div className="border border-gray-200 rounded-md p-2 bg-gray-50 min-h-[100px]">
                 {items.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between py-1 border-b border-gray-300 last:border-b-0">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-1 border-b border-gray-300 last:border-b-0"
+                  >
                     <span className="text-sm text-gray-800">{`${item.name} - ${item.quantity} ${item.unit}`}</span>
                     <button
                       type="button"
